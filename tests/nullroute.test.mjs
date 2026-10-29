@@ -12,9 +12,10 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 test("compute-betas refuses without Qloo data", () => {
   const dir = mkdtempSync(resolve(tmpdir(), "cb-nullroute-"));
+  const out = mkdtempSync(resolve(tmpdir(), "cb-nullroute-out-"));
   try {
     const res = spawnSync(process.execPath, [resolve(ROOT, "scripts/compute-betas.mjs")], {
-      env: { ...process.env, CULTURALBETA_QLOO_DIR: dir },
+      env: { ...process.env, CULTURALBETA_QLOO_DIR: dir, CULTURALBETA_OUTPUT_DIR: out },
       encoding: "utf8",
       cwd: ROOT,
     });
@@ -22,8 +23,10 @@ test("compute-betas refuses without Qloo data", () => {
     assert.match(res.stderr, /REFUSING TO PRINT/);
     assert.match(res.stderr, /QLOO_REQUIRED/);
     assert.doesNotMatch(res.stdout + res.stderr, /cultural 0\.00|culturalBeta":\s*0\b/);
-    assert.ok(!existsSync(resolve(ROOT, "output/desk.json")) || !res.stdout.includes("Saved"), "must not save a desk from empty Qloo");
+    assert.ok(!existsSync(resolve(out, "desk.json")), "must not save a desk from empty Qloo");
+    assert.ok(!existsSync(resolve(out, "series.json")), "must not save series from empty Qloo");
   } finally {
     rmSync(dir, { recursive: true, force: true });
+    rmSync(out, { recursive: true, force: true });
   }
 });
