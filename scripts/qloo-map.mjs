@@ -12,7 +12,9 @@ mkdirSync(QLOO_DIR, { recursive: true });
 const rows = [];
 for (const h of book.holdings) {
   const json = await qlooGet("/search", { query: h.qlooQuery, types: "urn:entity:brand", take: 5 }, { cacheName: `search-${h.ticker}.json` });
-  const entities = (json.entities ?? json.results?.entities ?? []).map((e) => ({ id: e.id, name: e.name }));
+  // documented shape: { success, results: [ {id, name, type, ...} ] }
+  const raw = Array.isArray(json.results) ? json.results : (json.results?.entities ?? json.entities ?? []);
+  const entities = raw.map((e) => ({ id: e.id, name: e.name })).filter((e) => e.id);
   const exact = entities.find((e) => e.name?.toLowerCase() === h.qlooQuery.toLowerCase()) ?? entities[0] ?? null;
   rows.push({
     ticker: h.ticker,
