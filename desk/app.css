@@ -45,6 +45,7 @@ p{margin:0 0 12px}
 .lede{font-size:16.5px;max-width:760px;margin:16px 0 8px}
 .muted{color:var(--muted)}
 /* table */
+.tw{width:100%;overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;margin-top:8px}
 thead th{
   font:10.5px/1.2 ui-sans-serif,system-ui,sans-serif;letter-spacing:.13em;
@@ -134,5 +135,15 @@ footer .note code{font:11px ui-monospace,Consolas,monospace}
   .kicker{flex-wrap:wrap}
   .tabs{margin-left:0;width:100%;margin-top:6px}
   table{font-size:13px}
+  thead th:nth-child(4),tbody td:nth-child(4){display:none}
+}
+@media (max-width:600px){
+  .desk-empty{padding:30px 22px}
+  .desk-empty h2{font-size:34px}
+  h1{font-size:34px}
+  .kicker{font-size:10.5px}
+  table{min-width:0}
+  thead th,tbody td{padding:12px 8px}
+  thead th:nth-child(3),tbody td:nth-child(3),
   thead th:nth-child(4),tbody td:nth-child(4){display:none}
 }
