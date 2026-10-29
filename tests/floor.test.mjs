@@ -55,7 +55,18 @@ test("missing trending signal marks the row insufficient, others still compute",
     for (const r of okRows) {
       const s = r.basketWeights.reduce((a, w) => a + w.weight, 0);
       assert.ok(Math.abs(s - 1) < 1e-9, `${r.ticker} weights sum ${s}`);
+      // ΔR² is exactly the gain of the two-regressor fit over market-only
+      assert.ok(Math.abs(r.deltaR2 - (r.r2 - r.r2Market)) < 1e-12, `${r.ticker} ΔR² mismatch`);
+      assert.ok(r.deltaR2 >= -1e-12, `${r.ticker} nested model cannot lose r²`);
     }
+    const meanDelta = okRows.reduce((a, r) => a + r.deltaR2, 0) / okRows.length;
+    assert.ok(Math.abs(desk.valueAdd.meanDeltaR2 - meanDelta) < 1e-12, "valueAdd mean mismatch");
+    assert.equal(desk.valueAdd.holdings, okRows.length);
+    // median |t| is the honest strength summary: robust to one strong name
+    const ts = okRows.map((r) => Math.abs(r.culturalT)).sort((a, b) => a - b);
+    const mid = ts.length >> 1;
+    const medT = ts.length % 2 ? ts[mid] : (ts[mid - 1] + ts[mid]) / 2;
+    assert.ok(Math.abs(desk.valueAdd.medianAbsCulturalT - medT) < 1e-12, "valueAdd median |t| mismatch");
     assert.ok(!res.stdout.includes("cultural 0.00"), "never prints fabricated zero beta");
   } finally {
     rmSync(dir, { recursive: true, force: true });
