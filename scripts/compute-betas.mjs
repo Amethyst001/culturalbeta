@@ -1,0 +1,90 @@
+// Step 4 (Regression): per holding, weekly return ~ index return + cultural
+// basket return over 106 aligned weeks. Null-route: without live-Qloo fixtures
+// this exits with an error and writes nothing — it never prints 0.00.
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
+import { resolve } from "node:path";
+import { ROOT } from "../src/env.mjs";
+import { ols } from "../src/ols.mjs";
+import { loadCulturalInputs, alignTaste, basketWeights } from "../src/factor.mjs";
+
+const book = JSON.parse(readFileSync(resolve(ROOT, "config/book.json"), "utf8"));
+const pricesFile = resolve(ROOT, "fixtures/prices.json");
+if (!existsSync(pricesFile)) { console.error("Run npm run fetch-prices first (fixtures/prices.json)."); process.exit(1); }
+const prices = JSON.parse(readFileSync(pricesFile, "utf8"));
+const dates = prices.window.alignedDates;
+
+let cultural;
+try {
+  cultural = loadCulturalInputs(book);
+} catch (err) {
+  console.error(`REFUSING TO PRINT: ${err.message}`);
+  process.exit(2);
+}
+
+const idxReturns = prices.symbols[book.index.ticker].returns;
+const tickers = book.holdings.map((h) => h.ticker);
+const rows = [];
+const seriesOut = {};
+
+for (const h of book.holdings) {
+  const base = { ticker: h.ticker, label: h.label, qlooEntityId: cultural.idByTicker[h.ticker] ?? null };
+  if (cultural.coverage[h.ticker] < book.minTrendingWeeks) {
+    rows.push({ ...base, status: "insufficient signal", weeks: cultural.coverage[h.ticker], marketBeta: null, culturalBeta: null, provenance: `fixtures/qloo/trending-${h.ticker}.json (insufficient weekly points)` });
+    console.log(`${h.ticker}: INSUFFICIENT SIGNAL (${cultural.coverage[h.ticker]} weekly points < ${book.minTrendingWeeks})`);
+    continue;
+  }
+  let weights;
+  try { weights = basketWeights(cultural.affinityMatrix, tickers, h.ticker); }
+  catch (err) {
+    rows.push({ ...base, status: "insufficient signal", note: err.message, marketBeta: null, culturalBeta: null });
+    console.log(`${h.ticker}: INSUFFICIENT SIGNAL (${err.message})`);
+    continue;
+  }
+  const basket = new Array(dates.length).fill(0);
+  const hit = new Array(dates.length).fill(0);
+  for (const [t, w] of weights) {
+    const s = alignTaste(cultural.taste[t], dates);
+    for (let i = 0; i < dates.length; i++) if (s[i] !== null) { basket[i] += w * s[i]; hit[i]++; }
+  }
+  if (hit.some((v) => v === 0)) {
+    rows.push({ ...base, status: "insufficient signal", note: "basket gap: taste return missing for aligned weeks", marketBeta: null, culturalBeta: null });
+    continue;
+  }
+  const reg = ols(prices.symbols[h.ticker].returns, [idxReturns, basket]);
+  seriesOut[h.ticker] = { basket, weights };
+  rows.push({
+    ...base,
+    status: "ok",
+    weeks: dates.length,
+    marketBeta: reg.beta[1], marketSE: reg.se[1], marketT: reg.t[1], marketP: reg.p[1],
+    culturalBeta: reg.beta[2], culturalSE: reg.se[2], culturalT: reg.t[2], culturalP: reg.p[2],
+    r2: reg.r2,
+    flagged: Math.abs(reg.t[2]) >= book.flagRule.absT && reg.beta[2] < 0,
+    basketWeights: weights.map(([t, w]) => ({ ticker: t, weight: w })),
+    provenance: {
+      prices: "fixtures/prices.json",
+      trending: `fixtures/qloo/trending-${h.ticker}.json`,
+      affinity: `fixtures/qloo/affinity-${h.ticker}.json`,
+      entity: `fixtures/qloo/search-${h.ticker}.json`,
+      qlooRequest: { path: "/v2/trending", entity: base.qlooEntityId, window: [prices.window.start, prices.window.end] },
+    },
+  });
+  console.log(`${h.ticker}: market ${reg.beta[1].toFixed(2)}±${reg.se[1].toFixed(2)}  cultural ${reg.beta[2].toFixed(2)}±${reg.se[2].toFixed(2)}${rows.at(-1).flagged ? "  [FLAG]" : ""}`);
+}
+
+const ok = rows.filter((r) => r.status === "ok").length;
+if (ok < 4) {
+  console.error(`SAMPLE FLOOR: only ${ok}/7 usable signals (<4). Report honestly; not widening the floor.`);
+}
+
+mkdirSync(resolve(ROOT, "output"), { recursive: true });
+writeFileSync(resolve(ROOT, "output/desk.json"), JSON.stringify({
+  window: prices.window,
+  factorConstruction: "weekly taste momentum from Qloo /v2/trending (velocity_fold_change), leave-one-out affinity-weighted basket (Qloo /v2/insights affinity, normalized); regression per holding: weekly return ~ SPY return + basket return over " + dates.length + " aligned weeks.",
+  index: book.index,
+  rows,
+  sampleFloor: { usable: ok, total: rows.length, floor: 4 },
+  pricesSource: prices.source,
+}, null, 1));
+writeFileSync(resolve(ROOT, "output/series.json"), JSON.stringify(seriesOut));
+console.log(`Saved output/desk.json (${ok}/7 rows ok)`);

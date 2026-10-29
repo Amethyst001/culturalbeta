@@ -1,0 +1,24 @@
+{
+  "index": { "ticker": "SPY", "label": "S&P 500 (SPDR)" },
+  "weeks": 106,
+  "minTrendingWeeks": 100,
+  "holdings": [
+    { "ticker": "ELF",  "label": "e.l.f. Beauty",  "qlooQuery": "e.l.f. Beauty" },
+    { "ticker": "NKE",  "label": "Nike",           "qlooQuery": "Nike" },
+    { "ticker": "LULU", "label": "Lululemon",      "qlooQuery": "lululemon athletica" },
+    { "ticker": "CMG",  "label": "Chipotle",       "qlooQuery": "Chipotle" },
+    { "ticker": "SBUX", "label": "Starbucks",      "qlooQuery": "Starbucks" },
+    { "ticker": "MCD",  "label": "McDonald's",     "qlooQuery": "McDonald's" },
+    { "ticker": "DIS",  "label": "Disney",         "qlooQuery": "Disney" }
+  ],
+  "tasteSignal": {
+    "field": "velocity_fold_change",
+    "fallbackField": "population_percent_delta",
+    "transform": "log_ratio"
+  },
+  "flagRule": {
+    "description": "Flag when cultural beta is significant (|t| >= threshold) and negative — short-taste exposure nobody is charging for.",
+    "absT": 2.0,
+    "negativeOnly": true
+  }
+}
