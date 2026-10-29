@@ -300,7 +300,7 @@ function deskView() {
     const w = MARKET.window;
     return `${headBlock("Taste is a <span class=\"thin\">risk factor.</span>",
       "Market beta prices how a stock moves with the index. Cultural beta prices how much of that movement is exposure to taste — built from Qloo weekly trend data and read next to the market number.",
-      w, "price half live · taste factor locked", "warn", false)}
+      w, "prices committed · taste factor locked", "warn", false)}
     <div class="notice" role="status">
       <span class="dot"></span>
       <span class="notice-text"><b>Cultural factor locked.</b> No Qloo response is connected to this build, so no taste beta is printed.
@@ -435,7 +435,7 @@ function limitsCard(w, va) {
     <ul class="limits">
       <li><b>Universe.</b> Seven large-cap US consumer names chosen to span beauty, athletic apparel, restaurants and media — a readable sector spread, not a screen. One index (SPY), one window.</li>
       <li><b>Window.</b> 106 weekly returns ending ${esc(w.end)}, fixed before estimation. No weight, window or threshold was tuned on these returns.</li>
-      <li><b>Multiple testing.</b> Seven |t| ≥ 2 tests. If they were independent, the chance of at least one false flag would be about 30% (1 − 0.95⁷); they are not independent. Read the flag as a screen, not a verdict.</li>
+      <li><b>Multiple testing.</b> Seven |t| ≥ 2 tests. If they were independent, the chance of at least one false flag would be about 30% (1 − 0.95⁷); they are not independent. A Bonferroni screen at 0.05/7 needs |t| ≈ 2.75 on these degrees of freedom — the desk keeps the looser 2.0 rule and says so here. Read the flag as a screen, not a verdict.</li>
       <li><b>ΔR², twice.</b> In-sample, it shows the taste basket adds information inside the fitted window. ${oosTxt}</li>
       <li><b>Placebo.</b> ${plTxt}</li>
       <li><b>No trading.</b> The desk measures exposure. It does not size, weight, route or recommend a position.</li>
@@ -450,14 +450,14 @@ function evidenceView(tick) {
     const urls = Object.entries(MARKET.pricesSource?.requestUrls || {})
       .map(([s, u]) => `<tr${s === tick ? ' class="hl"' : ""}><td><b>${s}</b></td><td class="url" data-l="Request">${esc(u)}</td><td class="num" data-l="Weeks">${MARKET.window.weeks}</td></tr>`).join("");
     return `${headBlock("Evidence <span class=\"thin\">desk.</span>",
-      "Every number on the desk, and the request it came from. The price half is live and traceable now; the Qloo requests are listed with what they will supply.",
-      MARKET.window, "price half live · taste factor locked", "warn")}
+      "Every number on the desk, and the request it came from. The price half is a committed snapshot and traceable now; the Qloo requests are listed with what they will supply.",
+      MARKET.window, "prices committed · taste factor locked", "warn")}
     <div class="cards">
-      <div class="card wide"><h3>Price requests — live</h3>
+      <div class="card wide"><h3>Price source — committed snapshot</h3>
         <div class="tw"><table>
           <thead><tr><th>Symbol</th><th class="th-left">Yahoo Finance request</th><th><span class="th">Weeks</span></th></tr></thead>
           <tbody>${urls}</tbody></table></div>
-        <p class="muted" style="font-size:12px;margin-top:10px">Committed in fixtures/prices.json. Weekly bars, ${MARKET.window.start} → ${MARKET.window.end}, aligned to one calendar before any regression runs.</p>
+        <p class="muted" style="font-size:12px;margin-top:10px">Fetched once by <code>scripts/fetch-prices.mjs</code> and committed to fixtures/prices.json. The desk reads that file and makes no network call for prices at runtime. Weekly bars, ${MARKET.window.start} → ${MARKET.window.end}, aligned to one calendar before any regression runs.</p>
       </div>
       <div class="card wide"><h3>Qloo requests — run when the key is connected</h3>
         <div class="tw"><table>
@@ -491,7 +491,7 @@ function evidenceView(tick) {
     </div>
     <div class="card"><h3>Price evidence</h3>
       <div class="ev">${urls}</div>
-      <p class="muted" style="font-size:12px;margin-top:10px">Committed in fixtures/prices.json. ${EVIDENCE.window.weeks} aligned weekly returns per name, window ${EVIDENCE.window.start} → ${EVIDENCE.window.end}.</p>
+      <p class="muted" style="font-size:12px;margin-top:10px">Fetched once and committed to fixtures/prices.json; read from disk, never refetched at runtime. ${EVIDENCE.window.weeks} aligned weekly returns per name, window ${EVIDENCE.window.start} → ${EVIDENCE.window.end}.</p>
     </div>
     <div class="card"><h3>Factor construction</h3>
       <p style="font-size:13.5px">${esc(EVIDENCE.factorConstruction)}</p>

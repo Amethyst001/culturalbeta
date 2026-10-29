@@ -25,38 +25,42 @@ const BASE = {
   beatapi: env.BEATAPI_BASE_URL || "https://api.beatapi.io/v1",
   nvidia: "https://integrate.api.nvidia.com/v1",
   groq: "https://api.groq.com/openai/v1",
+  abhibots: "https://opus.abhibots.com/v1",
 };
 
 // Ordered best-first inside each slot. A slot is filled by the first model that
 // returns usable text; the report records who actually answered and what failed.
 // Alpme is excluded by standing instruction (probing stopped 2026-10-26). dahl
 // MiniMax is excluded: on 2026-10-29 it returned 17.6k chars of a repeating
-// chain-of-thought loop and never reached an answer.
+// chain-of-thought loop and never reached an answer. Abhibots is a free daily
+// pass that serves 429 outside low-load hours, so it sits first and the live
+// NVIDIA/Groq models backfill.
 const ROSTER = [
   {
     slot: "reviewer-1 · structure",
     tie: "information architecture, hierarchy, what a judge sees in the first 15 seconds",
     candidates: [
-      { label: "ZenMux · Claude Opus 5.5", provider: "zenmux", model: "anthropic/claude-opus-5.5", keys: keys("ZENMUX_API_KEY"), vision: true },
-      { label: "Oxion · Claude Opus 5.5", provider: "oxion", model: "claude-opus-5.5", keys: keys("OXION_API_KEY", "OXION_API_KEY_2"), vision: true },
-      { label: "BeatAPI · Claude Opus 5.5", provider: "beatapi", model: "claude-opus-5-5", keys: keys("BEATAPI_API_KEY"), vision: true },
+      { label: "Abhibots · Claude Opus 5.5", provider: "abhibots", model: "claude-opus-5-5", keys: keys("ABHIBOTS_API_KEY", "OPUS_PROXY_KEY"), vision: true },
+      { label: "NVIDIA · Nemotron 3.5 Super VL 120B", provider: "nvidia", model: "nvidia/nemotron-3.5-super-vl-120b-a12b", keys: keys("NVIDIA_API_KEY"), vision: true },
       { label: "Groq · GPT-OSS 120B", provider: "groq", model: "openai/gpt-oss-120b", keys: keys("GROQ_API_KEY", "GROQ_API_KEY_2") },
+      { label: "Groq · Qwen 3.8 27B", provider: "groq", model: "qwen/qwen3.8-27b", keys: keys("GROQ_API_KEY", "GROQ_API_KEY_2"), compact: true },
     ],
   },
   {
     slot: "reviewer-2 · product",
     tie: "does this read as a desk a consumer-equity PM would actually use; what is missing or bloated",
     candidates: [
-      { label: "ZenMux · GPT-6.1 Sol", provider: "zenmux", model: "openai/gpt-6.1-sol", keys: keys("ZENMUX_API_KEY"), vision: true },
-      { label: "Oxion · GPT-5.6 Sol", provider: "oxion", model: "gpt-5.6-sol", keys: keys("OXION_API_KEY", "OXION_API_KEY_2") },
-      { label: "BeatAPI · GPT-6.1 Sol", provider: "beatapi", model: "gpt-6.1-sol", keys: keys("BEATAPI_API_KEY") },
+      { label: "Abhibots · Claude Fable 5.1", provider: "abhibots", model: "claude-fable-5-1", keys: keys("ABHIBOTS_API_KEY", "OPUS_PROXY_KEY"), vision: true },
       { label: "Groq · GPT-OSS 120B", provider: "groq", model: "openai/gpt-oss-120b", keys: keys("GROQ_API_KEY", "GROQ_API_KEY_2") },
+      { label: "NVIDIA · Nemotron 3.5 Super VL 120B", provider: "nvidia", model: "nvidia/nemotron-3.5-super-vl-120b-a12b", keys: keys("NVIDIA_API_KEY"), vision: true },
+      { label: "Groq · Qwen 3.8 27B", provider: "groq", model: "qwen/qwen3.8-27b", keys: keys("GROQ_API_KEY", "GROQ_API_KEY_2"), compact: true },
     ],
   },
   {
     slot: "reviewer-3 · craft",
     tie: "typography, colour, chart craft, mobile, and what looks amateur",
     candidates: [
+      { label: "Abhibots · Claude Sonnet 5", provider: "abhibots", model: "claude-sonnet-5", keys: keys("ABHIBOTS_API_KEY", "OPUS_PROXY_KEY"), vision: true },
       { label: "NVIDIA · Nemotron 3.5 Super VL 120B", provider: "nvidia", model: "nvidia/nemotron-3.5-super-vl-120b-a12b", keys: keys("NVIDIA_API_KEY"), vision: true },
       { label: "Groq · Qwen 3.8 27B", provider: "groq", model: "qwen/qwen3.8-27b", keys: keys("GROQ_API_KEY", "GROQ_API_KEY_2"), compact: true },
       { label: "Groq · GPT-OSS 120B", provider: "groq", model: "openai/gpt-oss-120b", keys: keys("GROQ_API_KEY", "GROQ_API_KEY_2"), compact: true },
