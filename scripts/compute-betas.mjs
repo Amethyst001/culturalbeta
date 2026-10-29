@@ -8,6 +8,7 @@ import { ols } from "../src/ols.mjs";
 import { loadCulturalInputs, alignTaste, basketWeights } from "../src/factor.mjs";
 
 const book = JSON.parse(readFileSync(resolve(ROOT, "config/book.json"), "utf8"));
+const OUT = process.env.CULTURALBETA_OUTPUT_DIR ? resolve(process.env.CULTURALBETA_OUTPUT_DIR) : resolve(ROOT, "output");
 const pricesFile = resolve(ROOT, "fixtures/prices.json");
 if (!existsSync(pricesFile)) { console.error("Run npm run fetch-prices first (fixtures/prices.json)."); process.exit(1); }
 const prices = JSON.parse(readFileSync(pricesFile, "utf8"));
@@ -51,7 +52,14 @@ for (const h of book.holdings) {
     continue;
   }
   const reg = ols(prices.symbols[h.ticker].returns, [idxReturns, basket]);
-  seriesOut[h.ticker] = { basket, weights };
+  seriesOut[h.ticker] = {
+    basket,
+    weights,
+    taste: alignTaste(cultural.taste[h.ticker], dates),
+    returns: prices.symbols[h.ticker].returns,
+    index: idxReturns,
+    dates,
+  };
   rows.push({
     ...base,
     status: "ok",
@@ -77,8 +85,8 @@ if (ok < 4) {
   console.error(`SAMPLE FLOOR: only ${ok}/7 usable signals (<4). Report honestly; not widening the floor.`);
 }
 
-mkdirSync(resolve(ROOT, "output"), { recursive: true });
-writeFileSync(resolve(ROOT, "output/desk.json"), JSON.stringify({
+mkdirSync(OUT, { recursive: true });
+writeFileSync(resolve(OUT, "desk.json"), JSON.stringify({
   window: prices.window,
   factorConstruction: "weekly taste momentum from Qloo /v2/trending (velocity_fold_change), leave-one-out affinity-weighted basket (Qloo /v2/insights affinity, normalized); regression per holding: weekly return ~ SPY return + basket return over " + dates.length + " aligned weeks.",
   index: book.index,
@@ -86,5 +94,5 @@ writeFileSync(resolve(ROOT, "output/desk.json"), JSON.stringify({
   sampleFloor: { usable: ok, total: rows.length, floor: 4 },
   pricesSource: prices.source,
 }, null, 1));
-writeFileSync(resolve(ROOT, "output/series.json"), JSON.stringify(seriesOut));
-console.log(`Saved output/desk.json (${ok}/7 rows ok)`);
+writeFileSync(resolve(OUT, "series.json"), JSON.stringify(seriesOut));
+console.log(`Saved desk.json (${ok}/7 rows ok) → ${OUT}`);

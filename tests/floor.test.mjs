@@ -36,14 +36,15 @@ function seedFixtures(dir, dropTrendingFor) {
 
 test("missing trending signal marks the row insufficient, others still compute", () => {
   const dir = mkdtempSync(resolve(tmpdir(), "cb-floor-"));
+  const out = mkdtempSync(resolve(tmpdir(), "cb-floor-out-"));
   try {
     seedFixtures(dir, "MCD");
     const res = spawnSync(process.execPath, [resolve(ROOT, "scripts/compute-betas.mjs")], {
-      env: { ...process.env, CULTURALBETA_QLOO_DIR: dir }, encoding: "utf8", cwd: ROOT,
+      env: { ...process.env, CULTURALBETA_QLOO_DIR: dir, CULTURALBETA_OUTPUT_DIR: out }, encoding: "utf8", cwd: ROOT,
     });
     assert.equal(res.status, 0, res.stdout + res.stderr);
     assert.match(res.stdout, /MCD: INSUFFICIENT SIGNAL/);
-    const desk = JSON.parse(readFileSync(resolve(ROOT, "output/desk.json"), "utf8"));
+    const desk = JSON.parse(readFileSync(resolve(out, "desk.json"), "utf8"));
     const mcd = desk.rows.find((r) => r.ticker === "MCD");
     assert.equal(mcd.status, "insufficient signal");
     assert.equal(mcd.culturalBeta, null);
@@ -58,5 +59,6 @@ test("missing trending signal marks the row insufficient, others still compute",
     assert.ok(!res.stdout.includes("cultural 0.00"), "never prints fabricated zero beta");
   } finally {
     rmSync(dir, { recursive: true, force: true });
+    rmSync(out, { recursive: true, force: true });
   }
 });
