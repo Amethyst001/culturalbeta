@@ -1,0 +1,16 @@
+{
+  "name": "culturalbeta",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --test \"tests/**/*.test.mjs\"",
+    "fetch-prices": "node scripts/fetch-prices.mjs",
+    "compute-betas": "node scripts/compute-betas.mjs",
+    "serve": "node server/desk-server.mjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "type": "module"
+}
