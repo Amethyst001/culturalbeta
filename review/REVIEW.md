@@ -334,3 +334,82 @@ missing.
 
 Still gated on the key: the first live run produces the actual out-of-sample ΔR² and placebo p, and
 both can come back unfavourable. That is the point of printing them.
+
+## 8. The scored panel — judging the entry as it will be submitted (2026-10-29, 22:00)
+
+The question asked was narrow: **assume the Qloo key is present; score what gets submitted.** So the
+panel was briefed with the four rubric criteria at 25 points each, told that the pending key is not a
+defect, told that the eight stand-in magnitudes in the screenshots are for layout only and that the
+real run may be weaker (small or negative ΔR², zero flags, a placebo p that fails), and asked for a
+total out of 100 plus one change, two fixes, one cut and a competitiveness verdict.
+
+Brief: `review/brief-2026-10-29-scored.md` · artifact: `review/panel-2026-10-29T21-52-18.md`.
+Four images: desktop desk / holding / evidence, phone desk.
+
+### 8.1 Who answered
+
+| Slot | Model | Saw the images | Latency |
+|---|---|---|---|
+| structure | NVIDIA Nemotron 3.5 Super VL 120B | yes | 54.8 s |
+| product | Groq GPT-OSS 120B | **no** — text only | 4.6 s |
+| craft | Groq Qwen 3.8 27B | **no** — compact, text only | 2.1 s |
+
+Abhibots (Opus 5.5 / Fable 5.1 / Sonnet 5) was tried first in all three slots and returned
+`429 free plan runs during low-load hours` — it opens at 22:30 UTC. The premium re-run is the honest
+way to settle Design, because two of these three scored a UI they could not see.
+
+### 8.2 Scores
+
+| Criterion | Nemotron | GPT-OSS | Qwen | Mean (max 25) |
+|---|---|---|---|---|
+| Technological Implementation | 19 | 20 | 21 | **20.0** |
+| Design | 22 | 22 | 23 | **22.3** |
+| Potential Impact | 18 | 18 | 17 | **17.7** |
+| Quality of Idea | 22 | 23 | 23 | **22.7** |
+| **Total** | **81** | **83** | **84** | **82.7** |
+
+Verdicts split: Nemotron "competitive for a top prize", the two text-only reviewers "credible
+mid-pack". All three named **Impact** as the weakest axis and gave the same reason — seven names and
+a measurement-only stance cap immediate utility. That matches my own read, and it is the axis the
+key does not move.
+
+Discount the Design column: two of the three never saw a screenshot. The defensible reading is
+**~80/100 with a design score of 21–22 from the one reviewer who could actually see it**, not 82.7.
+
+### 8.3 The three deductions, checked rather than accepted
+
+- **"Yahoo Finance HTML scrape is a single point of failure on prize day."** *False as stated.*
+  Prices are fetched once by `scripts/fetch-prices.mjs` (Yahoo's JSON chart endpoint, not HTML) into
+  `fixtures/prices.json`, which is committed; `scripts/compute-betas.mjs` reads that file and the
+  server reads `desk.json`. Nothing calls out at runtime. But the objection was *earned*: the cold
+  evidence page was headed **"Price requests — live"** and the header pill said **"price half live"**,
+  which invites exactly that reading. Fixed in this round: "Price source — committed snapshot", the
+  footnote now says the file is read from disk and never refetched, and the pill reads "prices
+  committed · taste factor locked". A judge reading the page cannot now mistake it for a live scrape.
+- **"Cut the dead Taste map link."** *False.* `#/map` is a real fourth view (`mapView`, the
+  beta scatter) and the tab is hidden unless the data is live. Two of three reviewers inferred a
+  dead end from a static image, which is a fair warning about the *video*: the map has to appear on
+  screen or it will be read as broken.
+- **"Add a synthetic / simulate-weak-result toggle."** *Rejected.* It breaches the standing rule that
+  no simulated Qloo data ships anywhere, and it would be the first thing a Qloo judge recognised.
+  The null-result argument is already made honestly by printing ΔR² and p as computed.
+- **"Bonferroni correction for seven tests."** *Accepted.* The limits card already gave the 30%
+  false-flag figure; it now also states the corrected threshold — |t| ≈ 2.75 at 0.05/7 on these
+  degrees of freedom (computed from `tDistP` rather than asserted) — and says the desk keeps the
+  looser 2.0 rule on purpose.
+
+### 8.4 Re-verified after the copy change
+
+- **165/165** cold-state checks (desktop / tablet / phone, four routes).
+- **141/141** populated-state checks against throwaway temp fixtures, then deleted.
+- Screenshots re-captured so the panel and the video show the corrected wording.
+
+### 8.5 Is this the best we are submitting?
+
+With the key present: **yes on build, open on data.** The remaining variance is not in the code — it
+is whether Qloo's weekly trend series produce a cultural beta that separates from the rotation. Three
+reviewers independently converged on the same structural weakness (Impact), which is a positioning
+limit of a seven-name desk, not a defect to patch in the last two days. The one change all three
+asked for that is worth doing is **export**: a CSV of the panel and a copy-JSON of the provenance
+payload would make the desk usable as an instrument rather than a screen, and it is the only
+remaining idea that adds capability at near-zero risk.
