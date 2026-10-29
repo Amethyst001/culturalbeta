@@ -20,16 +20,17 @@ for (const row of entities) {
     sort_by: "affinity",
     take: 50,
   }, { cacheName: `affinity-${row.ticker}.json` });
-  const results = json.entities ?? json.results?.entities ?? [];
+  // documented shape: { success, results: { entities: [...] } }; item fields are
+  // untyped in the schema, so read the documented score name and its known aliases.
+  const results = Array.isArray(json.results) ? json.results : (json.results?.entities ?? json.entities ?? []);
   const byTicker = {};
   for (const o of others) {
     const hit = results.find((r) => r.id === o.entityId);
-    // affinity documented as 0..1; defensive on field shape pending live probe
-    const score = hit?.affinity ?? hit?.score ?? hit?.query?.affinity ?? null;
-    byTicker[o.ticker] = score;
+    const score = hit?.affinity ?? hit?.score ?? hit?.query?.affinity ?? hit?.properties?.affinity ?? null;
+    byTicker[o.ticker] = typeof score === "number" ? score : null;
   }
   const missing = Object.values(byTicker).filter((v) => v === null).length;
-  if (missing) console.warn(`${row.ticker}: ${missing} affinity scores missing — inspect fixtures/qloo/affinity-${row.ticker}.json field names`);
+  if (missing) console.warn(`${row.ticker}: ${missing} affinity scores missing — inspect fixtures/qloo/affinity-${row.ticker}.json (item keys: ${Object.keys(results[0] ?? {}).join(", ") || "none returned"})`);
   matrix[row.ticker] = byTicker;
   console.log(`${row.ticker}: ${others.length - missing}/${others.length} affinity scores`);
 }
