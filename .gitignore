@@ -4,3 +4,5 @@ output/
 fixtures/qloo/
 *.log
 .DS_Store
+review/shots-*/
+review/panel-*.json

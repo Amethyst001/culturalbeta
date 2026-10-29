@@ -9,7 +9,7 @@
 <body>
 <div class="wrap">
   <div class="kicker">
-    <span class="dot"></span>CULTURAL BETA<span>·</span>CONSUMER BOOK<span>·</span>EVIDENCE DESK
+    <span class="dot"></span>CULTURAL BETA<span>·</span>TASTE-FACTOR DESK
     <nav class="tabs">
       <a href="#/" data-tab="desk">Desk</a>
       <a href="#/map" data-tab="map">Taste map</a>
@@ -22,9 +22,9 @@
       <b>Method.</b> Weekly taste momentum from Qloo <code>/v2/trending</code> (velocity fold change),
       leave-one-out affinity-weighted basket from Qloo <code>/v2/insights</code>. Per holding:
       OLS of 106 aligned weekly returns on SPY and the taste basket. The basket coefficient is the
-      cultural beta; standard errors in grey. <span id="note-live"></span>
+      cultural beta; standard errors in grey; ΔR² is the gain over the market-only fit.
+      <span id="note-live"></span>
     </div>
-    <button class="btn" id="recompute">Refresh from Qloo</button>
   </footer>
 </div>
 <script src="/app.js"></script>

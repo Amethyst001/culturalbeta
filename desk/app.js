@@ -1,6 +1,7 @@
 /* Cultural Beta desk — dependency-free SPA. Views: desk, holding, taste map, evidence. */
 const $ = (s) => document.querySelector(s);
 const f2 = (x, d = 2) => x == null ? "—" : (x >= 0 ? "+" : "") + x.toFixed(d);
+const pts = (x) => x == null ? "—" : (x >= 0 ? "+" : "") + (x * 100).toFixed(Math.abs(x * 100) < 1 ? 2 : 1) + " pts";
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 let DESK = null, SERIES = null, EVIDENCE = null, MARKET = null;
@@ -84,13 +85,13 @@ function scatter(ry, rx, slope, tick) {
   const miny = Math.min(...ry) * 1.1, maxy = Math.max(...ry) * 1.1;
   const x = (v) => pad2.l + ((v - minx) / (maxx - minx)) * (W - pad2.l - pad2.r);
   const y = (v) => H - pad2.b - ((v - miny) / (maxy - miny)) * (H - pad2.t - pad2.b);
-  const pts = ry.map((v, i) => `<circle cx="${x(rx[i]).toFixed(1)}" cy="${y(v).toFixed(1)}" r="2.6" fill="var(--ink)" opacity=".55"/>`).join("");
+  const ptsHtml = ry.map((v, i) => `<circle cx="${x(rx[i]).toFixed(1)}" cy="${y(v).toFixed(1)}" r="2.6" fill="var(--ink)" opacity=".55"/>`).join("");
   const x0 = minx, x1 = maxx;
   return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Residualised return against residualised taste basket">
     <line class="axis" x1="${pad2.l}" x2="${W - pad2.r}" y1="${y(0).toFixed(1)}" y2="${y(0).toFixed(1)}"/>
     <line class="axis" x1="${x(0).toFixed(1)}" x2="${x(0).toFixed(1)}" y1="${pad2.t}" y2="${H - pad2.b}"/>
     <line x1="${x(x0).toFixed(1)}" y1="${y(slope * x0).toFixed(1)}" x2="${x(x1).toFixed(1)}" y2="${y(slope * x1).toFixed(1)}" stroke="var(--accent)" stroke-width="1.6" stroke-dasharray="5 4"/>
-    ${pts}
+    ${ptsHtml}
     <text class="anno" x="${W - pad2.r}" y="${pad2.t + 12}" text-anchor="end">slope = cultural beta ${f2(slope)}</text>
     <text class="ticklabel" x="${W / 2}" y="${H - 6}" text-anchor="middle">taste basket return, residualised on SPY</text>
     <text class="ticklabel" x="12" y="${H / 2}" transform="rotate(-90 12 ${H / 2})" text-anchor="middle">${tick} return, residualised on SPY</text>
@@ -106,16 +107,33 @@ function quadrant(rows) {
   const y = (v) => H - pad2.b - ((v + maxAbsY) / (2 * maxAbsY)) * (H - pad2.t - pad2.b);
   const dots = (() => {
     const placed = [];
-    return rows.slice().sort((a, b) => b.culturalBeta - a.culturalBeta).map((r) => {
-      const cx = x(r.marketBeta), cy = y(r.culturalBeta);
-      let ly = cy + 4;
-      for (const p of placed) {
-        if (Math.abs(p.cx - cx) < 90 && Math.abs(p.ly - ly) < 14) ly = p.ly + 14;
+    const pts = rows.map((r) => ({ t: r.ticker, cx: x(r.marketBeta), cy: y(r.culturalBeta), neg: r.culturalBeta < 0 }));
+    const dotBoxes = pts.map((p) => ({ x0: p.cx - 9, x1: p.cx + 9, y0: p.cy - 9, y1: p.cy + 9 }));
+    const textWidth = (t) => t.length * 6.6 + 4;
+    return pts.slice().sort((a, b) => b.cy - a.cy).map((p) => {
+      const w = textWidth(p.t);
+      const cands = [
+        { lx: p.cx + 11, ly: p.cy + 3.5, anchor: "start" },
+        { lx: p.cx + 11, ly: p.cy - 8, anchor: "start" },
+        { lx: p.cx - 11, ly: p.cy + 3.5, anchor: "end" },
+        { lx: p.cx + 11, ly: p.cy + 15, anchor: "start" },
+        { lx: p.cx - 11, ly: p.cy + 15, anchor: "end" },
+      ];
+      let box = null, pick = cands[0];
+      for (const c of cands) {
+        const x0 = c.anchor === "start" ? c.lx : c.lx - w;
+        const b = { x0, x1: x0 + w, y0: c.ly - 9, y1: c.ly + 3 };
+        const hitsLabel = placed.some((q) => b.x0 < q.x1 && b.x1 > q.x0 && b.y0 < q.y1 && b.y1 > q.y0);
+        const hitsDot = dotBoxes.some((q) => b.x0 < q.x1 && b.x1 > q.x0 && b.y0 < q.y1 && b.y1 > q.y0);
+        if (!hitsLabel && !hitsDot) { pick = c; box = b; break; }
       }
-      placed.push({ cx, ly });
+      if (!box) {
+        box = { x0: pick.lx, x1: pick.lx + w, y0: pick.ly - 9, y1: pick.ly + 3 };
+      }
+      placed.push(box);
       return `<g>
-      <circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="7" fill="${r.culturalBeta < 0 ? "var(--accent)" : "var(--good)"}" opacity=".9"/>
-      <text class="anno" x="${(cx + 11).toFixed(1)}" y="${ly.toFixed(1)}">${r.ticker}</text>
+      <circle cx="${p.cx.toFixed(1)}" cy="${p.cy.toFixed(1)}" r="7" fill="${p.neg ? "var(--accent)" : "var(--good)"}" opacity=".9"/>
+      <text class="anno" x="${pick.lx.toFixed(1)}" y="${pick.ly.toFixed(1)}" text-anchor="${pick.anchor}">${p.t}</text>
     </g>`;
     }).join("");
   })();
@@ -134,73 +152,68 @@ function quadrant(rows) {
 }
 
 /* ---------- shared fragments ---------- */
-function metaBlock(rowsOk) {
-  const w = DESK.window;
-  return `<div class="meta">
-    <span class="pill">${w.weeks} weeks · ${w.start} → ${w.end}</span>
-    <div class="state ok">${rowsOk}/${DESK.rows.length} holdings priced · live Qloo</div>
-  </div>`;
-}
-function strip() {
-  const ok = DESK.rows.filter((r) => r.status === "ok");
-  const flagged = ok.filter((r) => r.flagged).length;
-  return `<div class="strip">
-    <div class="stat"><b>${DESK.rows.length}</b><span>holdings</span></div>
-    <div class="stat"><b>${DESK.window.weeks}</b><span>aligned weeks</span></div>
-    <div class="stat"><b>${flagged}</b><span>taste-risk flags</span></div>
-    <div class="stat"><b>/v2/trending</b><span>factor source · Qloo</span></div>
-  </div>`;
-}
-function refusePanel() {
-  return `<div class="desk-empty">
-    <h2>No Qloo. No factor.</h2>
-    <p>This desk will not print a cultural beta it cannot trace to a live Qloo response.
-    The taste column is not decoration, and it will never fall back to zero.</p>
-    <p>Add <code>QLOO_API_KEY</code> to <code>.env</code> and press <b>Refresh from Qloo</b>.
-    The price half below is real and committed; only the taste half is refused.</p>
+function windowPill(w) { return `<span class="pill">${w.weeks} weeks · ${w.start} → ${w.end}</span>`; }
+
+function headBlock(title, sub, w, state, tone, action = true) {
+  return `<div class="head">
+    <div class="lede-col">
+      <h1>${title}</h1>
+      <p class="sub">${sub}</p>
+    </div>
+    <div class="side">
+      ${windowPill(w)}
+      <div class="state ${tone}">${state}</div>
+      ${action ? `<button class="btn" id="recompute">Recompute from Qloo</button>` : ""}
+    </div>
   </div>`;
 }
 
-function refuseView() {
-  if (!MARKET) return refusePanel();
-  const w = MARKET.window;
-  const rows = MARKET.rows.map((r) => `<tr>
-    <td><span class="tick">${r.ticker}</span><span class="name">${esc(r.label)}</span></td>
-    <td class="num">${f2(r.marketBeta)}<span class="se">± ${r.marketSE.toFixed(2)}</span></td>
-    <td class="num">${f2(r.marketT, 1)}</td>
-    <td class="num">${r.r2.toFixed(2)}</td>
-    <td><span class="withheld">withheld</span></td>
-  </tr>`).join("");
-  return `<div class="desk-empty refuse">
+function strip(stats) {
+  return `<div class="strip">${stats.map(([v, l, hl]) =>
+    `<div class="stat${hl ? " hl" : ""}"><b>${v}</b><span>${l}</span></div>`).join("")}</div>`;
+}
+
+function policyBlock() {
+  return `<div class="policy">
     <div>
       <h2>No Qloo. No factor.</h2>
-      <p>This desk will not print a cultural beta it cannot trace to a live Qloo response.
-      The taste column is not decoration, and it will never fall back to zero.</p>
-      <p>Add <code>QLOO_API_KEY</code> to <code>.env</code> and press <b>Refresh from Qloo</b>.
-      The price half below is real and committed; only the taste half is refused.</p>
+      <p>The desk will not print a cultural beta it cannot trace to a live Qloo response, and it will
+      never fall back to zero. Set <code>QLOO_API_KEY</code>, run the pipeline, and every withheld cell
+      fills from one live pass: entity search, weekly trending, affinity, then the regression.</p>
+      <button class="btn ghost" id="recompute">Recompute from Qloo</button>
+      <p class="caption">Without a key the endpoint answers with a refusal, not a zero-filled run.</p>
     </div>
     <dl class="ledger">
-      <dt>Live</dt><dd>${w.weeks} weekly returns × ${MARKET.rows.length} names<br>${w.start} → ${w.end}<br>Yahoo Finance · committed fixture</dd>
-      <dt>Withheld</dt><dd>taste series · cultural betas<br>taste-risk flags</dd>
+      <dt>Live</dt><dd>${MARKET.window.weeks} weekly returns × ${MARKET.rows.length} names<br>${MARKET.window.start} → ${MARKET.window.end}<br>Yahoo Finance · committed fixture</dd>
+      <dt>Withheld</dt><dd>taste series · cultural betas<br>taste-risk flags · ΔR² from taste</dd>
       <dt>Source</dt><dd>Qloo /v2/trending<br>Qloo /v2/insights</dd>
     </dl>
-  </div>
-  <div class="meta-row">
-    <span class="pill">${w.weeks} weeks · ${w.start} → ${w.end}</span>
-    <span class="state ok">price half · Yahoo weekly bars vs ${esc(MARKET.index.ticker)}</span>
-  </div>
-  <div class="tw">
-  <table>
-    <thead><tr><th>Holding</th><th>Market beta (± s.e.)</th><th>t-stat</th><th>r²</th><th>Cultural beta</th></tr></thead>
-    <tbody>${rows}</tbody>
-  </table>
-  </div>
-  <p class="muted" style="margin-top:12px;font-size:12.5px">Market beta is a one-regressor fit of weekly return on ${esc(MARKET.index.label || MARKET.index.ticker)}.
-  It needs no Qloo data, so it is shown; the cultural column is withheld until a live Qloo run fills it.</p>`;
+  </div>`;
 }
 
-/* ---------- views ---------- */
-function deskView() {
+function coldTable() {
+  const rows = MARKET.rows.map((r) => `<tr class="link" data-ev="${r.ticker}">
+    <td class="c-name" data-l="Holding"><span class="tick">${r.ticker}</span><span class="name">${esc(r.label)}</span></td>
+    <td class="num" data-l="Market beta"><span class="val"><span class="v">${f2(r.marketBeta)}</span><span class="se">± ${r.marketSE.toFixed(2)}</span></span></td>
+    <td class="num c-cult" data-l="Cultural beta" data-c="cultural"><span class="waitbar" aria-hidden="true"></span><span class="val"><span class="withheld">withheld</span></span></td>
+    <td class="c-sig" data-l="Signal"><span class="signal none">—</span></td>
+    <td class="ta" data-l="Trace"><a class="tracelink" href="#/evidence/${r.ticker}">trace</a></td>
+  </tr>`).join("");
+  return `<div class="tw">
+    <table class="desk-table" data-audit="holdings">
+      <thead><tr>
+        <th>Holding</th>
+        <th><span class="th">Market beta</span><span class="thsub">± std. error</span></th>
+        <th><span class="th">Cultural beta</span><span class="thsub">± std. error</span></th>
+        <th><span class="th">Signal</span><span class="thsub">|t| ≥ 2</span></th>
+        <th class="th-right"></th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>`;
+}
+
+function liveTable() {
   const rows = [...DESK.rows].sort((a, b) => {
     const av = a[sortKey] ?? -Infinity, bv = b[sortKey] ?? -Infinity;
     return (av - bv) * sortDir || a.ticker.localeCompare(b.ticker);
@@ -210,44 +223,75 @@ function deskView() {
   const body = rows.map((r) => {
     if (r.status !== "ok") {
       return `<tr>
-        <td><span class="tick">${r.ticker}</span><span class="name">${esc(r.label)}</span></td>
-        <td class="num">—</td><td class="num">—</td><td class="num">—</td>
-        <td><span class="signal ins">insufficient signal</span></td>
-        <td><a class="tracelink" href="#/evidence">trace</a></td></tr>`;
+        <td class="c-name" data-l="Holding"><span class="tick">${r.ticker}</span><span class="name">${esc(r.label)}</span></td>
+        <td class="num" data-l="Market beta"><span class="signal ins">insufficient signal</span></td>
+        <td class="num c-cult" data-l="Cultural beta"><span class="signal ins">not printed</span></td>
+        <td class="c-sig" data-l="Signal"><span class="signal ins">—</span></td>
+        <td class="ta" data-l="Trace"><a class="tracelink" href="#/evidence/${r.ticker}">trace</a></td></tr>`;
     }
     const b = r.culturalBeta, pct = Math.abs(b) / maxAbs * 50;
     return `<tr class="link" data-h="${r.ticker}">
-      <td><span class="tick">${r.ticker}</span><span class="name">${esc(r.label)}</span></td>
-      <td class="num">${f2(r.marketBeta)}<span class="se">± ${r.marketSE.toFixed(2)}</span></td>
-      <td class="num ${b < 0 ? "neg" : ""}">
+      <td class="c-name" data-l="Holding"><span class="tick">${r.ticker}</span><span class="name">${esc(r.label)}</span></td>
+      <td class="num" data-l="Market beta"><span class="val"><span class="v">${f2(r.marketBeta)}</span><span class="se">± ${r.marketSE.toFixed(2)}</span></span></td>
+      <td class="num c-cult ${b < 0 ? "neg" : ""}" data-l="Cultural beta">
         <div class="bar"><i class="${b >= 0 ? "pos" : "negs"}" style="width:${pct}%"></i></div>
-        ${f2(b)}<span class="se">± ${r.culturalSE.toFixed(2)}</span></td>
-      <td class="num">${f2(r.culturalT, 1)}</td>
-      <td>${r.flagged ? '<span class="signal risk">⚑ taste risk</span>' : '<span class="signal none">—</span>'}</td>
-      <td><a class="tracelink" href="#/evidence">trace</a></td></tr>`;
+        <span class="val"><span class="v">${f2(b)}</span><span class="se">± ${r.culturalSE.toFixed(2)}</span></span></td>
+      <td class="c-sig" data-l="Signal">${r.flagged ? '<span class="signal risk">● taste risk</span>' : '<span class="signal none">—</span>'}</td>
+      <td class="ta" data-l="Trace"><a class="tracelink" href="#/evidence/${r.ticker}">trace</a></td></tr>`;
   }).join("");
-  return `<div class="head">
-      <div>
-        <h1>Taste is a<br><span class="thin">risk factor.</span></h1>
-        <p class="sub">Market beta prices how a stock moves with the index. Cultural beta prices how much
-        of that movement is exposure to taste — built from Qloo weekly trend data and reported next to the market number.</p>
-      </div>
-      ${metaBlock(DESK.rows.filter((r) => r.status === "ok").length)}
-    </div>
-    ${strip()}
-    <div class="tw">
-    <table>
+  return `<div class="tw">
+    <table class="desk-table" data-audit="holdings">
       <thead><tr>
         <th class="sort" data-k="ticker">Holding ${arrow("ticker")}</th>
-        <th class="sort" data-k="marketBeta">Market beta ${arrow("marketBeta")}</th>
-        <th class="sort" data-k="culturalBeta">Cultural beta (± s.e.) ${arrow("culturalBeta")}</th>
-        <th class="sort" data-k="culturalT">t-stat ${arrow("culturalT")}</th>
-        <th>Signal</th><th></th>
+        <th class="sort" data-k="marketBeta"><span class="th">Market beta</span><span class="thsub">± std. error</span></th>
+        <th class="sort" data-k="culturalBeta"><span class="th">Cultural beta ${arrow("culturalBeta")}</span><span class="thsub">± std. error · Qloo</span></th>
+        <th><span class="th">Signal</span><span class="thsub">|t| ≥ 2</span></th>
+        <th class="th-right"></th>
       </tr></thead>
       <tbody>${body}</tbody>
     </table>
+  </div>`;
+}
+
+/* ---------- views ---------- */
+function deskView() {
+  if (!DESK) {
+    if (!MARKET) return `<div class="head"><div class="lede-col"><h1>Taste is a <span class="thin">risk factor.</span></h1>
+      <p class="sub">The desk server is not answering. Start it with <code>npm start</code> and reload.</p></div></div>`;
+    const w = MARKET.window;
+    return `${headBlock("Taste is a <span class=\"thin\">risk factor.</span>",
+      "Market beta prices how a stock moves with the index. Cultural beta prices how much of that movement is exposure to taste — built from Qloo weekly trend data and read next to the market number.",
+      w, "price half live · taste factor locked", "warn", false)}
+    <div class="notice" role="status">
+      <span class="dot"></span>
+      <span class="notice-text"><b>Cultural factor locked.</b> No Qloo response is connected to this build, so no taste beta is printed.
+      The market half below is live for all seven names.</span>
+      <a class="notice-link" href="#/evidence">What is withheld →</a>
     </div>
-    <p class="muted" style="margin-top:12px;font-size:12.5px">Click a holding for its full reading. Taste risk = negative cultural beta with |t| ≥ 2.</p>`;
+    ${strip([["7", "holdings"], ["106", "aligned weeks"], ["7", "market betas, live"], ["0", "taste betas"]])}
+    ${coldTable()}
+    <p class="caption">Market beta is a one-regressor fit of weekly return on ${esc(MARKET.index.label)}. It needs no Qloo data,
+    so it is shown; the cultural column stays withheld until a live Qloo run fills it.
+    ΔR² from taste and the median |t| of the cultural betas appear with that first keyed run, and the signal
+    column flags a cultural beta that is negative with |t| ≥ 2.</p>
+    ${policyBlock()}`;
+  }
+  const ok = DESK.rows.filter((r) => r.status === "ok");
+  const flagged = ok.filter((r) => r.flagged).length;
+  const va = DESK.valueAdd;
+  return `${headBlock("Taste is a <span class=\"thin\">risk factor.</span>",
+    "Market beta prices how a stock moves with the index. Cultural beta prices how much of that movement is exposure to taste — built from Qloo weekly trend data and read next to the market number.",
+    DESK.window, `${ok.length}/${DESK.rows.length} holdings priced · live Qloo`, "ok")}
+    ${strip([
+      [String(DESK.rows.length), "holdings"],
+      [String(DESK.window.weeks), "aligned weeks"],
+      [String(flagged), flagged === 1 ? "taste-risk flag" : "taste-risk flags"],
+      [pts(va?.meanDeltaR2), "ΔR² from taste", true],
+      [va ? va.medianAbsCulturalT.toFixed(2) : "—", "median |t|, cultural"],
+    ])}
+    ${liveTable()}
+    <p class="caption">Flag rule: cultural beta negative with |t| ≥ 2 — a measured headwind, not an instruction.
+    Click a holding for its full reading. ${va ? `The taste basket adds ${pts(va.meanDeltaR2)} of in-sample r² on average (market ${va.meanMarketR2.toFixed(3)} → ${va.meanFullR2.toFixed(3)}); the median |t| of the cultural betas is ${va.medianAbsCulturalT.toFixed(2)}, so this is a signal strength, not a guarantee.` : ""}</p>`;
 }
 
 function holdingView(tick) {
@@ -258,6 +302,11 @@ function holdingView(tick) {
     return `${back}<h1>${tick}</h1><p class="lede">${esc(r.label)} has too few Qloo weekly points to price taste.
       It stays on the desk, flagged, with no cultural beta — the sample floor, shown rather than hidden.</p>`;
   }
+  const sig = Math.abs(r.culturalT) >= 2;
+  const verdict = r.flagged
+    ? "Flag raised: taste is a significant headwind."
+    : sig ? "Significant, and with taste — a tailwind, not a risk flag."
+    : "Not significant at |t| ≥ 2. Measured, and not charged.";
   const s = SERIES?.[tick];
   const chart1 = s ? lineChart(s.dates, s.returns, s.taste, tick, "taste basket") : "<p>series unavailable</p>";
   let chart2 = "";
@@ -270,30 +319,33 @@ function holdingView(tick) {
     <div>${(w.weight * 100).toFixed(1)}%</div>`).join("");
   return `${back}
   <div class="head">
-    <div>
+    <div class="lede-col">
       <h1>${tick} <span class="thin">— ${esc(r.label)}</span></h1>
-      <p class="sub">${r.flagged
-        ? "Moves with the market and against taste. The index explains most of it; the taste factor pushes the other way."
-        : "Moves with the market; its taste loading is measured, and its sign is what the desk charges for."}</p>
+      <p class="sub">${verdict}</p>
     </div>
-    ${metaBlock(DESK.rows.filter((x) => x.status === "ok").length)}
+    <div class="side">${windowPill(DESK.window)}
+      <div class="state ok">${DESK.rows.filter((x) => x.status === "ok").length}/${DESK.rows.length} holdings priced · live Qloo</div>
+    </div>
   </div>
   <div class="big">
     <div class="stat"><b>${f2(r.marketBeta)}</b><small>market beta ± ${r.marketSE.toFixed(2)}</small></div>
     <div class="stat"><b style="color:${r.culturalBeta < 0 ? "var(--accent)" : "var(--good)"}">${f2(r.culturalBeta)}</b><small>cultural beta ± ${r.culturalSE.toFixed(2)}</small></div>
     <div class="stat"><b>${f2(r.culturalT, 1)}</b><small>t-stat · p ${r.culturalP < 0.001 ? "<.001" : r.culturalP.toFixed(3)}</small></div>
+    <div class="stat"><b>${pts(r.deltaR2)}</b><small>ΔR² over market only</small></div>
     <div class="stat"><b>${r.r2.toFixed(2)}</b><small>r² · ${r.weeks} weeks</small></div>
   </div>
   <div class="cards">
-    <div class="card"><h3>Price and taste, 106 weeks — both indexed to 100</h3>${chart1}</div>
+    <div class="card"><h3>Price and taste, ${r.weeks} weeks — both indexed to 100</h3>${chart1}</div>
     <div class="card"><h3>Taste basket — shared-audience weights (Qloo affinity)</h3>
       <div class="wh">${weights}</div>
       <p class="muted" style="font-size:12px;margin-top:14px">Leave-one-out: ${tick} is never in its own basket. Weights are normalised affinity scores from Qloo /v2/insights.</p>
     </div>
-    <div class="card" style="grid-column:1/-1"><h3>Why the slope is the cultural beta</h3>${chart2}
+    <div class="card wide"><h3>Why the slope is the cultural beta</h3>${chart2}
       <p class="muted" style="font-size:12px">Both axes are residualised on SPY, so the slope is the partial coefficient — Frisch–Waugh–Lovell; identical to the regression in the desk.</p>
     </div>
-  </div>`;
+  </div>
+  <p class="caption">Source: ${esc(r.provenance.trending)} · ${esc(r.provenance.affinity)} · ${esc(r.provenance.prices)}.
+  <a href="#/evidence/${tick}">Open the evidence row →</a></p>`;
 }
 
 function mapView() {
@@ -301,67 +353,125 @@ function mapView() {
   const negative = ok.filter((r) => r.culturalBeta < 0).map((r) => r.ticker);
   return `
   <div class="head">
-    <div><h1>Taste <span class="thin">map.</span></h1>
+    <div class="lede-col"><h1>Taste <span class="thin">map.</span></h1>
       <p class="sub">Every holding placed by how it moves with the market (x) and with taste (y).
       The interesting corner is bottom-right: it takes market risk, and taste is working against it.</p></div>
-    ${metaBlock(ok.length)}
+    <div class="side">${windowPill(DESK.window)}
+      <div class="state ok">${ok.length}/${DESK.rows.length} holdings priced · live Qloo</div>
+    </div>
   </div>
   <div class="cards">
-    <div class="card" style="grid-column:1/-1"><h3>The book, priced two ways</h3>${quadrant(ok)}</div>
+    <div class="card wide"><h3>The book, priced two ways</h3>${quadrant(ok)}</div>
   </div>
   <p class="lede">${negative.length
     ? `${negative.join(", ")} ${negative.length === 1 ? "carries" : "carry"} a negative cultural beta — taste is a headwind, not a tailwind, for ${negative.length === 1 ? "it" : "them"}.`
     : "Every priced name currently loads positively on taste."}</p>`;
 }
 
-function evidenceView() {
-  const rows = EVIDENCE.rows.map((r) => r.status === "ok"
-    ? `<tr><td><b>${r.ticker}</b></td>
-        <td>${esc(r.provenance.qlooRequest?.entity || "—")}</td>
-        <td>GET ${esc(r.provenance.qlooRequest?.path || "")}</td>
-        <td>${esc((r.provenance.qlooRequest?.window || []).join(" → "))}</td>
-        <td>${esc(r.provenance.trending)}<br>${esc(r.provenance.affinity)}</td></tr>`
-    : `<tr><td><b>${r.ticker}</b></td><td colspan="4" class="muted">insufficient signal — no beta printed</td></tr>`).join("");
+function evidenceRows(rows) {
+  return rows.map((r) => r.status === "ok"
+    ? `<tr id="ev-${r.ticker}"><td><b>${r.ticker}</b></td>
+        <td class="th-left" data-l="Qloo entity">${esc(r.provenance.qlooRequest?.entity || "—")}</td>
+        <td class="th-left" data-l="Endpoint">GET ${esc(r.provenance.qlooRequest?.path || "")}</td>
+        <td class="th-left" data-l="Window">${esc((r.provenance.qlooRequest?.window || []).join(" → "))}</td>
+        <td data-l="Cached response">${esc(r.provenance.trending)}<br>${esc(r.provenance.affinity)}</td></tr>`
+    : `<tr id="ev-${r.ticker}"><td><b>${r.ticker}</b></td><td colspan="4" class="muted">insufficient signal — no beta printed</td></tr>`).join("");
+}
+
+function limitsCard(w) {
+  return `<div class="card wide"><h3>What this desk is, and is not</h3>
+    <ul class="limits">
+      <li><b>Universe.</b> Seven large-cap US consumer names chosen to span beauty, athletic apparel, restaurants and media — a readable sector spread, not a screen. One index (SPY), one window.</li>
+      <li><b>Window.</b> 106 weekly returns ending ${esc(w.end)}, fixed before estimation. No weight, window or threshold was tuned on these returns.</li>
+      <li><b>Multiple testing.</b> Seven |t| ≥ 2 tests. If they were independent, the chance of at least one false flag would be about 30% (1 − 0.95⁷); they are not independent. Read the flag as a screen, not a verdict.</li>
+      <li><b>ΔR².</b> In-sample, single-factor. It shows the taste basket adds information inside this window; it does not promise that it will out of sample.</li>
+      <li><b>No trading.</b> The desk measures exposure. It does not size, weight, route or recommend a position.</li>
+    </ul>
+  </div>`;
+}
+
+function evidenceView(tick) {
+  if (!EVIDENCE) {
+    if (!MARKET) return `<div class="head"><div class="lede-col"><h1>Evidence <span class="thin">desk.</span></h1>
+      <p class="sub">The desk server is not answering. Start it with <code>npm start</code> and reload.</p></div></div>`;
+    const urls = Object.entries(MARKET.pricesSource?.requestUrls || {})
+      .map(([s, u]) => `<tr${s === tick ? ' class="hl"' : ""}><td><b>${s}</b></td><td class="url" data-l="Request">${esc(u)}</td><td class="num" data-l="Weeks">${MARKET.window.weeks}</td></tr>`).join("");
+    return `${headBlock("Evidence <span class=\"thin\">desk.</span>",
+      "Every number on the desk, and the request it came from. The price half is live and traceable now; the Qloo requests are listed with what they will supply.",
+      MARKET.window, "price half live · taste factor locked", "warn")}
+    <div class="cards">
+      <div class="card wide"><h3>Price requests — live</h3>
+        <div class="tw"><table>
+          <thead><tr><th>Symbol</th><th class="th-left">Yahoo Finance request</th><th><span class="th">Weeks</span></th></tr></thead>
+          <tbody>${urls}</tbody></table></div>
+        <p class="muted" style="font-size:12px;margin-top:10px">Committed in fixtures/prices.json. Weekly bars, ${MARKET.window.start} → ${MARKET.window.end}, aligned to one calendar before any regression runs.</p>
+      </div>
+      <div class="card wide"><h3>Qloo requests — run when the key is connected</h3>
+        <div class="tw"><table>
+          <thead><tr><th class="th-left">Endpoint</th><th class="th-left">Supplies</th></tr></thead>
+          <tbody>
+            <tr><td class="url" data-l="Endpoint">GET /search</td><td class="th-left" data-l="Supplies">entity id for each holding</td></tr>
+            <tr><td class="url" data-l="Endpoint">GET /v2/trending</td><td class="th-left" data-l="Supplies">weekly taste momentum · velocity_fold_change</td></tr>
+            <tr><td class="url" data-l="Endpoint">GET /v2/insights</td><td class="th-left" data-l="Supplies">shared-audience affinity → basket weights</td></tr>
+          </tbody></table></div>
+        <p class="muted" style="font-size:12px;margin-top:10px">Raw Qloo responses are cached locally under fixtures/qloo/ and never committed: the hackathon terms keep response data out of public repositories.</p>
+      </div>
+      ${limitsCard(MARKET.window)}
+    </div>`;
+  }
+  const rows = evidenceRows(EVIDENCE.rows);
   const urls = Object.entries(EVIDENCE.pricesSource?.requestUrls || {})
     .map(([s, u]) => `<div class="prow"><b>${s}</b><span>${esc(u)}</span></div>`).join("");
   return `
   <div class="head">
-    <div><h1>Evidence <span class="thin">desk.</span></h1>
+    <div class="lede-col"><h1>Evidence <span class="thin">desk.</span></h1>
       <p class="sub">Every number on the desk, and the request it came from. The Qloo API does not return
       request ids, so provenance is the exact request plus the cached raw response — held locally, never committed.</p></div>
-    ${metaBlock(EVIDENCE.rows.filter((r) => r.status === "ok").length)}
+    <div class="side">${windowPill(EVIDENCE.window)}
+      <div class="state ok">${EVIDENCE.rows.filter((r) => r.status === "ok").length}/${EVIDENCE.rows.length} holdings priced · live Qloo</div>
+    </div>
   </div>
   <div class="cards">
-    <div class="card" style="grid-column:1/-1"><h3>Qloo requests behind the cultural betas</h3>
-      <div class="tw"><table><thead><tr><th>Holding</th><th>Qloo entity</th><th>Endpoint</th><th>Window</th><th>Cached response</th></tr></thead>
+    <div class="card wide"><h3>Qloo requests behind the cultural betas</h3>
+      <div class="tw"><table data-audit="holdings"><thead><tr><th>Holding</th><th class="th-left">Qloo entity</th><th class="th-left">Endpoint</th><th class="th-left">Window</th><th class="th-left">Cached response</th></tr></thead>
       <tbody>${rows}</tbody></table></div>
     </div>
     <div class="card"><h3>Price evidence</h3>
       <div class="ev">${urls}</div>
-      <p class="muted" style="font-size:12px;margin-top:10px">Committed in fixtures/prices.json. 106 aligned weekly returns per name, window ${EVIDENCE.window.start} → ${EVIDENCE.window.end}.</p>
+      <p class="muted" style="font-size:12px;margin-top:10px">Committed in fixtures/prices.json. ${EVIDENCE.window.weeks} aligned weekly returns per name, window ${EVIDENCE.window.start} → ${EVIDENCE.window.end}.</p>
     </div>
     <div class="card"><h3>Factor construction</h3>
       <p style="font-size:13.5px">${esc(EVIDENCE.factorConstruction)}</p>
       <p class="muted" style="font-size:12px">Null route: with Qloo responses emptied the desk refuses to print — enforced by tests/nullroute.test.mjs. Sample floor: a holding with fewer than 100 weekly points keeps its row and loses its beta.</p>
     </div>
+    ${limitsCard(EVIDENCE.window)}
   </div>`;
 }
 
 /* ---------- router ---------- */
-function route() {
-  const h = location.hash || "#/";
-  document.querySelectorAll(".tabs a").forEach((a) => a.classList.toggle("on",
-    (h === "#/" && a.dataset.tab === "desk") || (h.startsWith("#/map") && a.dataset.tab === "map") || (h.startsWith("#/evidence") && a.dataset.tab === "evidence")));
-  const v = $("#view");
-  if (!DESK) { v.innerHTML = refuseView(); wire(); return; }
-  if (h.startsWith("#/holding/")) v.innerHTML = holdingView(decodeURIComponent(h.split("/")[2] || ""));
-  else if (h.startsWith("#/map")) v.innerHTML = mapView();
-  else if (h.startsWith("#/evidence")) v.innerHTML = evidenceView();
-  else v.innerHTML = deskView();
-  wire();
+function setTabs(hash) {
+  document.querySelectorAll(".tabs a").forEach((a) => {
+    const on = (a.dataset.tab === "desk" && (hash === "#/" || hash.startsWith("#/holding/")))
+      || (hash.startsWith("#/map") && a.dataset.tab === "map")
+      || (hash.startsWith("#/evidence") && a.dataset.tab === "evidence");
+    a.classList.toggle("on", on);
+    if (a.dataset.tab === "map") a.hidden = !DESK;
+  });
 }
 
-function wire() {
+function route() {
+  let h = location.hash || "#/";
+  document.body.dataset.mode = DESK ? "live" : "cold";
+  const v = $("#view");
+  if (DESK && h.startsWith("#/holding/")) v.innerHTML = holdingView(decodeURIComponent(h.split("/")[2] || ""));
+  else if (DESK && h.startsWith("#/map")) v.innerHTML = mapView();
+  else if (h.startsWith("#/evidence")) v.innerHTML = evidenceView(DESK ? decodeURIComponent(h.split("/")[2] || "") : "");
+  else v.innerHTML = deskView();
+  setTabs(h);
+  wire(h);
+}
+
+function wire(hash) {
   document.querySelectorAll("th.sort").forEach((th) => th.onclick = () => {
     const k = th.dataset.k;
     if (k === sortKey) sortDir *= -1; else { sortKey = k; sortDir = k === "ticker" ? 1 : -1; }
@@ -369,23 +479,37 @@ function wire() {
   });
   document.querySelectorAll("tr.link").forEach((tr) => tr.onclick = (e) => {
     if (e.target.closest("a")) return;
-    location.hash = `#/holding/${tr.dataset.h}`;
+    location.hash = tr.dataset.ev ? `#/evidence/${tr.dataset.ev}` : `#/holding/${tr.dataset.h}`;
   });
+  const btn = $("#recompute");
+  if (btn) btn.onclick = recompute;
+  const target = hash.startsWith("#/evidence/") ? hash.split("/")[2] : "";
+  const row = target ? document.getElementById("ev-" + decodeURIComponent(target)) : null;
+  if (row) { row.classList.add("hl"); row.scrollIntoView({ block: "center" }); }
 }
 
-window.addEventListener("hashchange", route);
-$("#recompute").onclick = async () => {
-  const btn = $("#recompute"); btn.disabled = true; btn.textContent = "Working…";
+async function recompute() {
+  const btn = $("#recompute");
+  if (btn) { btn.disabled = true; btn.textContent = "Working…"; }
   try {
     const r = await fetch("/api/recompute", { method: "POST" });
     const j = await r.json();
-    if (r.ok) { $("#note-live").textContent = "Desk refreshed from a live Qloo run just now."; await load(); }
-    else { DESK = null; SERIES = null; EVIDENCE = null;
+    if (r.ok) { await load(); refreshNote("Desk refreshed from a live Qloo run just now."); }
+    else {
+      DESK = null; SERIES = null; EVIDENCE = null;
       const m = await get("/api/market-only.json"); if (m.ok) MARKET = m.data;
       route();
-      $("#note-live").textContent = "Live run refused: " + (((j.log?.at(-1)?.err || "") + "").split("\n")[0].slice(0, 140)); }
-  } catch (e) { $("#note-live").textContent = "Live run failed: " + e.message; }
-  btn.disabled = false; btn.textContent = "Refresh from Qloo";
-};
+      const err = ((j.log?.at(-1)?.err || "") + "").split("\n")[0].slice(0, 140);
+      refreshNote("Live run refused: " + err);
+    }
+  } catch (e) { refreshNote("Live run failed: " + e.message); }
+  const again = $("#recompute");
+  if (again) { again.disabled = false; again.textContent = "Recompute from Qloo"; }
+}
 
+function refreshNote(text) {
+  const el = $("#note-live"); if (el) el.textContent = text;
+}
+
+window.addEventListener("hashchange", route);
 load();

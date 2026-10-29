@@ -9,6 +9,7 @@ import { ROOT } from "../src/env.mjs";
 import { ols } from "../src/ols.mjs";
 
 const PORT = Number(process.env.PORT || 8787);
+const OUT = process.env.CULTURALBETA_OUTPUT_DIR ? resolve(process.env.CULTURALBETA_OUTPUT_DIR) : resolve(ROOT, "output");
 
 function marketOnly() {
   const prices = JSON.parse(readFileSync(resolve(ROOT, "fixtures/prices.json"), "utf8"));
@@ -30,7 +31,7 @@ function send(res, status, body, type = "application/json") {
 const server = createServer((req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
   if (url.pathname === "/api/desk.json") {
-    const f = resolve(ROOT, "output/desk.json");
+    const f = resolve(OUT, "desk.json");
     if (!existsSync(f)) return send(res, 503, JSON.stringify({ error: "QLOO_REQUIRED", message: "No cultural factor without Qloo. Run the fetch scripts with a live key." }));
     return send(res, 200, readFileSync(f));
   }
@@ -38,12 +39,12 @@ const server = createServer((req, res) => {
     return send(res, 200, JSON.stringify(marketOnly()));
   }
   if (url.pathname === "/api/series.json") {
-    const f = resolve(ROOT, "output/series.json");
+    const f = resolve(OUT, "series.json");
     if (!existsSync(f)) return send(res, 503, JSON.stringify({ error: "QLOO_REQUIRED", message: "No series without Qloo." }));
     return send(res, 200, readFileSync(f));
   }
   if (url.pathname === "/api/evidence.json") {
-    const deskF = resolve(ROOT, "output/desk.json");
+    const deskF = resolve(OUT, "desk.json");
     if (!existsSync(deskF)) return send(res, 503, JSON.stringify({ error: "QLOO_REQUIRED", message: "No evidence without Qloo." }));
     const desk = JSON.parse(readFileSync(deskF, "utf8"));
     const dir = process.env.CULTURALBETA_QLOO_DIR ? resolve(process.env.CULTURALBETA_QLOO_DIR) : resolve(ROOT, "fixtures/qloo");

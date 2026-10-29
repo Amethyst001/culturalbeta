@@ -51,6 +51,7 @@ for (const h of book.holdings) {
     rows.push({ ...base, status: "insufficient signal", note: "basket gap: taste return missing for aligned weeks", marketBeta: null, culturalBeta: null });
     continue;
   }
+  const mkt = ols(prices.symbols[h.ticker].returns, [idxReturns]);
   const reg = ols(prices.symbols[h.ticker].returns, [idxReturns, basket]);
   seriesOut[h.ticker] = {
     basket,
@@ -66,7 +67,7 @@ for (const h of book.holdings) {
     weeks: dates.length,
     marketBeta: reg.beta[1], marketSE: reg.se[1], marketT: reg.t[1], marketP: reg.p[1],
     culturalBeta: reg.beta[2], culturalSE: reg.se[2], culturalT: reg.t[2], culturalP: reg.p[2],
-    r2: reg.r2,
+    r2: reg.r2, r2Market: mkt.r2, deltaR2: reg.r2 - mkt.r2,
     flagged: Math.abs(reg.t[2]) >= book.flagRule.absT && reg.beta[2] < 0,
     basketWeights: weights.map(([t, w]) => ({ ticker: t, weight: w })),
     provenance: {
@@ -84,6 +85,13 @@ const ok = rows.filter((r) => r.status === "ok").length;
 if (ok < 4) {
   console.error(`SAMPLE FLOOR: only ${ok}/7 usable signals (<4). Report honestly; not widening the floor.`);
 }
+const priced = rows.filter((r) => r.status === "ok");
+const mean = (xs) => xs.reduce((a, b) => a + b, 0) / xs.length;
+const median = (xs) => {
+  const s = [...xs].sort((a, b) => a - b);
+  const mid = s.length >> 1;
+  return s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2;
+};
 
 mkdirSync(OUT, { recursive: true });
 writeFileSync(resolve(OUT, "desk.json"), JSON.stringify({
@@ -91,6 +99,14 @@ writeFileSync(resolve(OUT, "desk.json"), JSON.stringify({
   factorConstruction: "weekly taste momentum from Qloo /v2/trending (velocity_fold_change), leave-one-out affinity-weighted basket (Qloo /v2/insights affinity, normalized); regression per holding: weekly return ~ SPY return + basket return over " + dates.length + " aligned weeks.",
   index: book.index,
   rows,
+  valueAdd: {
+    note: "mean in-sample gain in r² from adding the taste basket to the market regression, in percentage points",
+    meanDeltaR2: mean(priced.map((r) => r.deltaR2)),
+    meanMarketR2: mean(priced.map((r) => r.r2Market)),
+    meanFullR2: mean(priced.map((r) => r.r2)),
+    medianAbsCulturalT: median(priced.map((r) => Math.abs(r.culturalT))),
+    holdings: priced.length,
+  },
   sampleFloor: { usable: ok, total: rows.length, floor: 4 },
   pricesSource: prices.source,
 }, null, 1));
