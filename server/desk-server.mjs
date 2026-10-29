@@ -76,4 +76,4 @@ const server = createServer((req, res) => {
   send(res, 404, "not found", "text/plain");
 });
 
-server.listen(PORT, () => console.log(`Cultural beta desk on http://localhost:${PORT}`));
+server.listen(PORT, () => console.log(`Cultural beta desk on http://localhost:${server.address().port}`));

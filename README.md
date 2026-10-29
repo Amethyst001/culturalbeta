@@ -52,9 +52,23 @@ Yahoo request URL per symbol.
 
 ELF (reference name), NKE, LULU, CMG, SBUX, MCD, DIS. Index proxy: SPY.
 Window: 106 aligned weekly closes, returns computed only on weeks where every
-symbol has data. e.l.f. reproduces the structure of the spike (high market beta);
-the reference numbers 1.92 / −0.23 came from a *simulated* factor and are reported
-as structure, not forced bits — the real-data values are what the desk prints.
+symbol has data. On the committed real prices e.l.f. fits a market beta of
+**2.03 ± 0.41** (t = 4.9) against SPY — the same high-market-loading structure the
+reference described. The reference numbers 1.92 / −0.23 came from a *simulated*
+factor; they are not forced onto real data, and `tests/market-only.test.mjs` pins
+the real price-half value instead.
+
+## What the desk shows
+
+- **Desk** — the seven names, market beta next to cultural beta, with the flag rule.
+- **Holding** — one name: price vs taste indexed to 100, the leave-one-out basket
+  weights, and a residualised scatter whose slope is the cultural beta.
+- **Taste map** — the book placed by market beta against cultural beta.
+- **Evidence** — the Qloo request and cached response behind every cultural beta,
+  plus the Yahoo request URL behind every price.
+
+With no Qloo key the cultural column is **withheld** — the desk still serves the
+real price half from the committed Yahoo fixture and refuses only the taste half.
 
 ## Run
 
@@ -67,7 +81,7 @@ node scripts/qloo-trending.mjs  # weekly taste series per brand
 node scripts/qloo-affinity.mjs  # shared-audience affinity matrix
 npm run compute-betas       # refuses to print without Qloo fixtures
 npm run serve               # desk at http://localhost:8787
-npm test                    # ols + null-route + sample-floor
+npm test                    # ols + null-route + sample-floor + price half
 ```
 
 Auth: `X-Api-Key` header against `https://hackathon.api.qloo.com` only.
