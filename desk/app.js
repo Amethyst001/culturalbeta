@@ -189,10 +189,12 @@ function refuseView() {
     <span class="pill">${w.weeks} weeks · ${w.start} → ${w.end}</span>
     <span class="state ok">price half · Yahoo weekly bars vs ${esc(MARKET.index.ticker)}</span>
   </div>
+  <div class="tw">
   <table>
     <thead><tr><th>Holding</th><th>Market beta (± s.e.)</th><th>t-stat</th><th>r²</th><th>Cultural beta</th></tr></thead>
     <tbody>${rows}</tbody>
   </table>
+  </div>
   <p class="muted" style="margin-top:12px;font-size:12.5px">Market beta is a one-regressor fit of weekly return on ${esc(MARKET.index.label || MARKET.index.ticker)}.
   It needs no Qloo data, so it is shown; the cultural column is withheld until a live Qloo run fills it.</p>`;
 }
@@ -233,6 +235,7 @@ function deskView() {
       ${metaBlock(DESK.rows.filter((r) => r.status === "ok").length)}
     </div>
     ${strip()}
+    <div class="tw">
     <table>
       <thead><tr>
         <th class="sort" data-k="ticker">Holding ${arrow("ticker")}</th>
@@ -243,6 +246,7 @@ function deskView() {
       </tr></thead>
       <tbody>${body}</tbody>
     </table>
+    </div>
     <p class="muted" style="margin-top:12px;font-size:12.5px">Click a holding for its full reading. Taste risk = negative cultural beta with |t| ≥ 2.</p>`;
 }
 
@@ -329,8 +333,8 @@ function evidenceView() {
   </div>
   <div class="cards">
     <div class="card" style="grid-column:1/-1"><h3>Qloo requests behind the cultural betas</h3>
-      <table><thead><tr><th>Holding</th><th>Qloo entity</th><th>Endpoint</th><th>Window</th><th>Cached response</th></tr></thead>
-      <tbody>${rows}</tbody></table>
+      <div class="tw"><table><thead><tr><th>Holding</th><th>Qloo entity</th><th>Endpoint</th><th>Window</th><th>Cached response</th></tr></thead>
+      <tbody>${rows}</tbody></table></div>
     </div>
     <div class="card"><h3>Price evidence</h3>
       <div class="ev">${urls}</div>
