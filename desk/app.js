@@ -2,6 +2,7 @@
 const $ = (s) => document.querySelector(s);
 const f2 = (x, d = 2) => x == null ? "—" : (x >= 0 ? "+" : "") + x.toFixed(d);
 const pts = (x) => x == null ? "—" : (x >= 0 ? "+" : "") + (x * 100).toFixed(Math.abs(x * 100) < 1 ? 2 : 1) + " pts";
+const pval = (p) => p == null ? "—" : p < 0.001 ? "< 0.001" : p.toFixed(3);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 let DESK = null, SERIES = null, EVIDENCE = null, MARKET = null;
@@ -173,6 +174,44 @@ function strip(stats) {
     `<div class="stat${hl ? " hl" : ""}"><b>${v}</b><span>${l}</span></div>`).join("")}</div>`;
 }
 
+function robustBand(va) {
+  if (!va?.oos) return "";
+  const oos = va.oos, pl = va.placebo;
+  const holds = oos.meanDeltaR2 > 0;
+  const sep = !!pl && pl.p <= 0.10;
+  return `<section class="robust" aria-label="Robustness">
+    <div class="rb-head"><h2>Does it survive?</h2>
+      <p class="rb-sub">Two checks a sceptical reader asks for before believing a factor. The rotation verdict is tagged at p ≤ 0.10.</p></div>
+    <div class="rb-grid">
+      <div class="rb-test">
+        <div class="rb-k">Out of sample</div>
+        <div class="rb-v ${holds ? "good" : "bad"}">${pts(oos.meanDeltaR2)}</div>
+        <div class="rb-tag ${holds ? "good" : "bad"}">${holds ? "holds" : "does not hold"}</div>
+        <p>Refit on the first ${oos.trainWeeks} weeks, scored on the last ${oos.testWeeks}. Mean ΔR² over market-only on weeks the fit never saw — allowed to be negative, never clamped.</p>
+      </div>
+      <div class="rb-test">
+        <div class="rb-k">Placebo</div>
+        <div class="rb-v ${sep ? "good" : "bad"}">p ${pl ? pval(pl.p) : "—"}</div>
+        <div class="rb-tag ${sep ? "good" : "bad"}">${sep ? "beats rotation" : "not separable"}</div>
+        <p>${pl ? `${pl.draws} circular rotations of the taste baskets, all holdings shifted together. Real ${pts(pl.real)} vs rotations ${pts(pl.placeboMean)}.` : ""}</p>
+      </div>
+    </div>
+  </section>`;
+}
+
+function impactBlock(live) {
+  return `<section class="use" aria-label="How the desk is used">
+    <div class="use-head"><h2>The reading, and what it is for</h2>
+      <p>${live ? "A screen, not a signal service." : "The workflow the keyed run unlocks — steps 2 and 3 need live Qloo data."}</p></div>
+    <ol class="use-steps">
+      <li><b>Screen</b><span>A PM already models market beta. Cultural beta separates the part of that movement that tracks consumer taste — exposure a fundamentals model leaves unnamed.</span></li>
+      <li><b>Read</b><span>A flag marks a name whose taste exposure is negative and distinguishable from zero: a measured headwind, not a forecast.</span></li>
+      <li><b>Re-check</b><span>Re-run the same fixed ${live ? "window" : "106-week window"} after a campaign, a brand shock or an earnings cycle, and see whether the measured exposure moved — or whether the quarter was just market.</span></li>
+    </ol>
+    <p class="use-not"><b>Not</b> sizing, hedging, routing or advice. The desk measures exposure; it does not act on it.</p>
+  </section>`;
+}
+
 function policyBlock() {
   return `<div class="policy">
     <div>
@@ -185,7 +224,7 @@ function policyBlock() {
     </div>
     <dl class="ledger">
       <dt>Live</dt><dd>${MARKET.window.weeks} weekly returns × ${MARKET.rows.length} names<br>${MARKET.window.start} → ${MARKET.window.end}<br>Yahoo Finance · committed fixture</dd>
-      <dt>Withheld</dt><dd>taste series · cultural betas<br>taste-risk flags · ΔR² from taste</dd>
+      <dt>Withheld</dt><dd>taste series · cultural betas<br>taste-risk flags · ΔR² from taste<br>out-of-sample ΔR² · placebo p</dd>
       <dt>Source</dt><dd>Qloo /v2/trending<br>Qloo /v2/insights</dd>
     </dl>
   </div>`;
@@ -272,8 +311,10 @@ function deskView() {
     ${coldTable()}
     <p class="caption">Market beta is a one-regressor fit of weekly return on ${esc(MARKET.index.label)}. It needs no Qloo data,
     so it is shown; the cultural column stays withheld until a live Qloo run fills it.
-    ΔR² from taste and the median |t| of the cultural betas appear with that first keyed run, and the signal
-    column flags a cultural beta that is negative with |t| ≥ 2.</p>
+    That first keyed run also prints ΔR² from taste, the median |t| of the cultural betas,
+    an out-of-sample ΔR² fitted on the first 70 weeks and scored on the last 36, and a circular-rotation
+    placebo p over 400 draws. The signal column flags a cultural beta that is negative with |t| ≥ 2.</p>
+    ${impactBlock(false)}
     ${policyBlock()}`;
   }
   const ok = DESK.rows.filter((r) => r.status === "ok");
@@ -291,7 +332,9 @@ function deskView() {
     ])}
     ${liveTable()}
     <p class="caption">Flag rule: cultural beta negative with |t| ≥ 2 — a measured headwind, not an instruction.
-    Click a holding for its full reading. ${va ? `The taste basket adds ${pts(va.meanDeltaR2)} of in-sample r² on average (market ${va.meanMarketR2.toFixed(3)} → ${va.meanFullR2.toFixed(3)}); the median |t| of the cultural betas is ${va.medianAbsCulturalT.toFixed(2)}, so this is a signal strength, not a guarantee.` : ""}</p>`;
+    Click a holding for its full reading. ${va ? `The taste basket adds ${pts(va.meanDeltaR2)} of in-sample r² on average (market ${va.meanMarketR2.toFixed(3)} → ${va.meanFullR2.toFixed(3)}); the median |t| of the cultural betas is ${va.medianAbsCulturalT.toFixed(2)}, so this is a signal strength, not a guarantee.` : ""}</p>
+    ${robustBand(va)}
+    ${impactBlock(true)}`;
 }
 
 function holdingView(tick) {
@@ -334,6 +377,8 @@ function holdingView(tick) {
     <div class="stat"><b>${pts(r.deltaR2)}</b><small>ΔR² over market only</small></div>
     <div class="stat"><b>${r.r2.toFixed(2)}</b><small>r² · ${r.weeks} weeks</small></div>
   </div>
+  ${r.oos ? `<p class="rb-line">Out of sample: <b>${pts(r.oos.deltaR2)}</b> ΔR² on the last ${r.oos.testWeeks} weeks, refit on the first ${r.oos.trainWeeks}${r.placeboP != null ? ` · placebo <b>p ${pval(r.placeboP)}</b>` : ""}.
+    ${r.oos.deltaR2 < 0 ? "Negative — the basket did not generalise for this name." : "Positive — the basket helped on weeks it was not fitted on."}</p>` : ""}
   <div class="cards">
     <div class="card"><h3>Price and taste, ${r.weeks} weeks — both indexed to 100</h3>${chart1}</div>
     <div class="card"><h3>Taste basket — shared-audience weights (Qloo affinity)</h3>
@@ -378,13 +423,21 @@ function evidenceRows(rows) {
     : `<tr id="ev-${r.ticker}"><td><b>${r.ticker}</b></td><td colspan="4" class="muted">insufficient signal — no beta printed</td></tr>`).join("");
 }
 
-function limitsCard(w) {
+function limitsCard(w, va) {
+  const oos = va?.oos, pl = va?.placebo;
+  const oosTxt = oos
+    ? `Out of sample, the same two-regressor fit is re-estimated on the first ${oos.trainWeeks} weeks and scored on the last ${oos.testWeeks}, where it added ${pts(oos.meanDeltaR2)} on average. That number is reported as computed, including when it is negative.`
+    : "Out of sample, the fit is re-estimated on an early sub-window and scored on the rest; a negative result is reported as negative.";
+  const plTxt = pl
+    ? `The book's mean ΔR² is re-computed against ${pl.draws} circular rotations of the taste baskets, every holding shifted by the same amount so cross-holding alignment survives. Real ${pts(pl.real)} against a rotation mean of ${pts(pl.placeboMean)}, p = ${pval(pl.p)}. A high p means the factor cannot be told apart from a rotation of itself on this book.`
+    : "Rotating the taste series against returns asks whether the real alignment beats a placebo.";
   return `<div class="card wide"><h3>What this desk is, and is not</h3>
     <ul class="limits">
       <li><b>Universe.</b> Seven large-cap US consumer names chosen to span beauty, athletic apparel, restaurants and media — a readable sector spread, not a screen. One index (SPY), one window.</li>
       <li><b>Window.</b> 106 weekly returns ending ${esc(w.end)}, fixed before estimation. No weight, window or threshold was tuned on these returns.</li>
       <li><b>Multiple testing.</b> Seven |t| ≥ 2 tests. If they were independent, the chance of at least one false flag would be about 30% (1 − 0.95⁷); they are not independent. Read the flag as a screen, not a verdict.</li>
-      <li><b>ΔR².</b> In-sample, single-factor. It shows the taste basket adds information inside this window; it does not promise that it will out of sample.</li>
+      <li><b>ΔR², twice.</b> In-sample, it shows the taste basket adds information inside the fitted window. ${oosTxt}</li>
+      <li><b>Placebo.</b> ${plTxt}</li>
       <li><b>No trading.</b> The desk measures exposure. It does not size, weight, route or recommend a position.</li>
     </ul>
   </div>`;
@@ -444,7 +497,7 @@ function evidenceView(tick) {
       <p style="font-size:13.5px">${esc(EVIDENCE.factorConstruction)}</p>
       <p class="muted" style="font-size:12px">Null route: with Qloo responses emptied the desk refuses to print — enforced by tests/nullroute.test.mjs. Sample floor: a holding with fewer than 100 weekly points keeps its row and loses its beta.</p>
     </div>
-    ${limitsCard(EVIDENCE.window)}
+    ${limitsCard(EVIDENCE.window, EVIDENCE.valueAdd)}
   </div>`;
 }
 

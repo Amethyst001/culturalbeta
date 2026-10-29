@@ -49,7 +49,15 @@ const server = createServer((req, res) => {
     const desk = JSON.parse(readFileSync(deskF, "utf8"));
     const dir = process.env.CULTURALBETA_QLOO_DIR ? resolve(process.env.CULTURALBETA_QLOO_DIR) : resolve(ROOT, "fixtures/qloo");
     const files = existsSync(dir) ? readdirSync(dir).filter((n) => n.endsWith(".json")).sort() : [];
-    return send(res, 200, JSON.stringify({ window: desk.window, factorConstruction: desk.factorConstruction, pricesSource: desk.pricesSource, rows: desk.rows.map((r) => ({ ticker: r.ticker, status: r.status, provenance: r.provenance })), fixtures: files }));
+    return send(res, 200, JSON.stringify({
+      window: desk.window,
+      factorConstruction: desk.factorConstruction,
+      pricesSource: desk.pricesSource,
+      valueAdd: desk.valueAdd,
+      sampleFloor: desk.sampleFloor,
+      rows: desk.rows.map((r) => ({ ticker: r.ticker, status: r.status, provenance: r.provenance })),
+      fixtures: files,
+    }));
   }
   if (url.pathname === "/api/recompute" && req.method === "POST") {
     const steps = ["scripts/qloo-map.mjs", "scripts/qloo-trending.mjs", "scripts/qloo-affinity.mjs", "scripts/compute-betas.mjs"];

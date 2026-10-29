@@ -35,6 +35,24 @@ snapshot method (documented in the plan) remains the declared fallback only if a
 name lacks ≥100 weekly trend points — such rows are marked
 **"insufficient signal"** and their betas are not printed.
 
+## Robustness
+
+Two tests answer the question a sceptical reader asks before believing a factor:
+
+1. **Out of sample.** The same nested comparison — market-only vs market + taste basket — is
+   re-estimated on the first 70 weeks and scored on the last 36. The held-out ΔR² is reported
+   as computed, including when it is negative. Nothing is clamped.
+2. **Circular-rotation placebo.** Every taste basket is rotated against returns by the same
+   shift per draw (400 draws, fixed seed), which preserves the series' autocorrelation and the
+   cross-holding alignment and destroys only its alignment with returns. `p` is the share of
+   rotations whose book-mean ΔR² matches or beats the real one.
+
+Both are deterministic (no model in the loop) and covered by `tests/robustness.test.mjs`: a
+planted factor is found, an unrelated one is not, an out-of-sample ΔR² goes negative when the
+factor stops working, and the rotation is reproducible from its seed. `src/robustness.mjs` holds
+the code; `scripts/compute-betas.mjs` writes the book-level results to `valueAdd.oos` and
+`valueAdd.placebo`, and a per-holding `oos` and `placeboP` on every priced row.
+
 ## Provenance
 
 The documented Qloo API response carries **no request-id field** (verified against
@@ -60,7 +78,8 @@ the real price-half value instead.
 
 ## What the desk shows
 
-- **Desk** — the seven names, market beta next to cultural beta, with the flag rule.
+- **Desk** — the seven names, market beta next to cultural beta, with the flag rule, and a
+  robustness band reporting the out-of-sample ΔR² and the placebo p.
 - **Holding** — one name: price vs taste indexed to 100, the leave-one-out basket
   weights, and a residualised scatter whose slope is the cultural beta.
 - **Taste map** — the book placed by market beta against cultural beta.
@@ -81,7 +100,7 @@ node scripts/qloo-trending.mjs  # weekly taste series per brand
 node scripts/qloo-affinity.mjs  # shared-audience affinity matrix
 npm run compute-betas       # refuses to print without Qloo fixtures
 npm run serve               # desk at http://localhost:8787
-npm test                    # ols + null-route + sample-floor + price half
+npm test                    # ols + null-route + sample-floor + price half + robustness
 ```
 
 Auth: `X-Api-Key` header against `https://hackathon.api.qloo.com` only.
