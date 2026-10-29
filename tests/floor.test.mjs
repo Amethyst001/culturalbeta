@@ -62,6 +62,23 @@ test("missing trending signal marks the row insufficient, others still compute",
     const meanDelta = okRows.reduce((a, r) => a + r.deltaR2, 0) / okRows.length;
     assert.ok(Math.abs(desk.valueAdd.meanDeltaR2 - meanDelta) < 1e-12, "valueAdd mean mismatch");
     assert.equal(desk.valueAdd.holdings, okRows.length);
+
+    // out-of-sample: the split covers the whole sample, is never clamped, and averages to the book value
+    const { oos, placebo } = desk.valueAdd;
+    assert.equal(oos.trainWeeks + oos.testWeeks, desk.window.weeks, "OOS split must cover the window");
+    assert.equal(oos.holdings, okRows.length);
+    for (const r of okRows) {
+      assert.equal(r.oos.trainWeeks, oos.trainWeeks);
+      assert.ok(Math.abs(r.oos.deltaR2 - (r.oos.r2 - r.oos.r2Market)) < 1e-12, `${r.ticker} OOS ΔR² mismatch`);
+    }
+    const meanOos = okRows.reduce((a, r) => a + r.oos.deltaR2, 0) / okRows.length;
+    assert.ok(Math.abs(oos.meanDeltaR2 - meanOos) < 1e-12, "valueAdd OOS mean mismatch");
+
+    // placebo: a share of draws, on the same real book, with a per-holding p on every row
+    assert.equal(placebo.draws, 400);
+    assert.ok(Math.abs(placebo.real - desk.valueAdd.meanDeltaR2) < 1e-12, "placebo real must be the in-sample mean");
+    assert.ok(placebo.p > 0 && placebo.p <= 1, `placebo p out of range: ${placebo.p}`);
+    for (const r of okRows) assert.ok(r.placeboP > 0 && r.placeboP <= 1, `${r.ticker} placebo p out of range`);
     // median |t| is the honest strength summary: robust to one strong name
     const ts = okRows.map((r) => Math.abs(r.culturalT)).sort((a, b) => a - b);
     const mid = ts.length >> 1;
