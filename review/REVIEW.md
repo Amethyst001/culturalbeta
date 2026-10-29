@@ -255,6 +255,80 @@ that already has a kicker, "β-Mkt / β-Cult" micro-labels in place of the plain
 desk already prints, and collapsing the method note into a "Method" link (a judge should not have to
 click to learn what the number is — rejected in round 1 for the same reason).
 
-**Net:** no further change from round 3. The panel has nothing left to tell us that is not either
-(a) a symptom of the missing key, or (b) a pattern from a generic dashboard. The next honest signal
-is the first live Qloo run.
+**Net:** no further design change from round 3. The panel has nothing left to tell us that is not
+either (a) a symptom of the missing key, or (b) a pattern from a generic dashboard. The next design
+signal is the first live Qloo run — but the substance question was still open, and §7 below is the
+answer to it.
+
+---
+
+## 7. The upgrade pass — making the number survive being questioned (2026-10-29, later)
+
+The scored assessment put the build at 64/100 and named the weak axis: **potential impact, 12/25**,
+with **quality of idea 18/25** capped by the fact that ΔR² was in-sample only. The criticism is
+specific and it is fair: an in-sample gain in r² is the number every backtest produces, including
+the ones that do not work. Two additions cost no Qloo calls and answer it directly.
+
+### 7.1 Out-of-sample ΔR²
+
+`src/robustness.mjs` refits the same two-regressor model on the first 70 weeks and scores it on the
+last 36. The held-out ΔR² is reported **as computed** — no clamp, no floor. The unit test forces the
+pathological case (a factor that stops working) and asserts the result is negative, so a future hand
+cannot quietly max(0, ·) it.
+
+### 7.2 Circular-rotation placebo
+
+The same file rotates every taste basket against returns by the **same shift per draw** (400 draws,
+seed 20261029, shifts ≥ 20 weeks). Circular rotation rather than a shuffle is deliberate: it keeps
+each taste series' own autocorrelation and the cross-holding alignment intact, and destroys only the
+alignment with returns. `p = (1 + #{rotation mean ΔR² ≥ real}) / (1 + draws)`. The test plants a
+factor (p < 0.05) and checks an unrelated one is not found (p > 0.10), and checks the whole thing is
+reproducible from the seed.
+
+This is the honest way to answer "is it real?" on a seven-name book: not a significance claim on
+seven correlated tests, but "does the real alignment beat a version of itself that has been shifted
+out of alignment, holding the factor's own structure constant."
+
+### 7.3 Where it appears
+
+| Surface | What it shows |
+|---|---|
+| Desk, live | A **"Does it survive?"** band under the table: out-of-sample ΔR² with a holds/does-not-hold tag, placebo p with a beats-rotation/not-separable tag, and the real-vs-rotation comparison |
+| Desk, cold | The caption states exactly what the first keyed run will print, including both tests — the cold page is not silent about method |
+| Holding | A per-name line: that holding's out-of-sample ΔR², its train/test split, and its placebo p |
+| Evidence | The limits card now carries a *ΔR², twice* bullet and a *Placebo* bullet with the book numbers; `valueAdd` is exposed on `/api/evidence.json` |
+| Cold policy ledger | "Withheld" now lists `out-of-sample ΔR² · placebo p`, so the refusal names the whole surface |
+
+### 7.4 The impact gap, addressed in the product rather than the pitch
+
+A **"The reading, and what it is for"** block now sits between the numbers and the policy: Screen →
+Read → Re-check, followed by an explicit *Not sizing, hedging, routing or advice.* It is in both
+states; in the cold state the header says steps 2 and 3 need live Qloo data. That is the honest
+description of what a PM does with an exposure number, and it is the copy the impact axis was
+missing.
+
+### 7.5 Evidence
+
+- **11/11 unit tests** (`npm test`), including four new robustness tests.
+- **165/165** cold-state browser checks at desktop/tablet/phone — the previous 159 plus
+  `cold-explains-robustness` and `impact-block` on all three widths.
+- **141/141** checks in a populated state, run against throwaway fixtures in the OS temp dir
+  (`robustness-band` included: both tests rendered a value, not a dash), then deleted. No simulated
+  Qloo data exists in the repo.
+- The populated run exposed a formatting bug the numbers alone would not: a p of 0.0025 printed as
+  **"p 0.00"**, which reads as a fabricated zero. Fixed to three decimals (`p 0.002`, `< 0.001`) in
+  the band, the holding line and the limits card.
+
+### 7.6 What I did not do, and why
+
+- **Widen the universe.** The brief and the README fix the book at exactly seven holdings, and every
+  added name multiplies keyed Qloo calls that cannot be verified before the key arrives. Breadth is
+  the right upgrade *after* the first live run, not before it.
+- **An information coefficient / cross-sectional IC.** With seven names over 106 weeks an IC is
+  estimated on a tiny cross-section per week and would be noisy to the point of misleading. The
+  placebo p is the defensible version of the same question on this book size.
+- **Tune anything to make the new numbers look good.** The tests pin the negative path; the split
+  and the seed are fixed in code and written into `desk.json` so the run is reproducible.
+
+Still gated on the key: the first live run produces the actual out-of-sample ΔR² and placebo p, and
+both can come back unfavourable. That is the point of printing them.

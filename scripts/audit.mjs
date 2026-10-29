@@ -120,6 +120,17 @@ const AUDIT_JS = String.raw`(async () => {
     const twText = tw ? tw.innerText : "";
     const fakeZero = /(^|\s)[+-]?0\.00(\s|$)/.test(twText);
     add("no-fabricated-zero", !fakeZero, fakeZero ? "0.00 present" : "no zero beta");
+    // the cold desk must name the robustness work that the keyed run will print
+    add("cold-explains-robustness", /out[- ]of[- ]sample/i.test(view.innerText) && /placebo/i.test(view.innerText),
+      "out-of-sample + placebo named");
+    add("impact-block", !!view.querySelector(".use"), view.querySelector(".use") ? "how-it-is-used present" : "missing");
+  }
+  // live state: both robustness tests must render with a value, not a dash
+  if (mode === "live" && (location.hash === "" || location.hash === "#/")) {
+    const tests = [...view.querySelectorAll(".rb-test")];
+    const vals = tests.map((t) => t.querySelector(".rb-v")?.innerText.trim() || "");
+    add("robustness-band", tests.length === 2 && vals.every((v) => v && v !== "—" && v !== "p —"),
+      tests.length + " tests: " + vals.join(" · "));
   }
 
   // contrast of secondary text against its background

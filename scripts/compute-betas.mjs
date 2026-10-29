@@ -6,6 +6,7 @@ import { resolve } from "node:path";
 import { ROOT } from "../src/env.mjs";
 import { ols } from "../src/ols.mjs";
 import { loadCulturalInputs, alignTaste, basketWeights } from "../src/factor.mjs";
+import { outOfSample, bookPlacebo } from "../src/robustness.mjs";
 
 const book = JSON.parse(readFileSync(resolve(ROOT, "config/book.json"), "utf8"));
 const OUT = process.env.CULTURALBETA_OUTPUT_DIR ? resolve(process.env.CULTURALBETA_OUTPUT_DIR) : resolve(ROOT, "output");
@@ -26,6 +27,7 @@ const idxReturns = prices.symbols[book.index.ticker].returns;
 const tickers = book.holdings.map((h) => h.ticker);
 const rows = [];
 const seriesOut = {};
+const fits = [];
 
 for (const h of book.holdings) {
   const base = { ticker: h.ticker, label: h.label, qlooEntityId: cultural.idByTicker[h.ticker] ?? null };
@@ -53,6 +55,8 @@ for (const h of book.holdings) {
   }
   const mkt = ols(prices.symbols[h.ticker].returns, [idxReturns]);
   const reg = ols(prices.symbols[h.ticker].returns, [idxReturns, basket]);
+  const oos = outOfSample({ y: prices.symbols[h.ticker].returns, x: idxReturns, basket });
+  fits.push({ ticker: h.ticker, y: prices.symbols[h.ticker].returns, x: idxReturns, basket });
   seriesOut[h.ticker] = {
     basket,
     weights,
@@ -68,6 +72,7 @@ for (const h of book.holdings) {
     marketBeta: reg.beta[1], marketSE: reg.se[1], marketT: reg.t[1], marketP: reg.p[1],
     culturalBeta: reg.beta[2], culturalSE: reg.se[2], culturalT: reg.t[2], culturalP: reg.p[2],
     r2: reg.r2, r2Market: mkt.r2, deltaR2: reg.r2 - mkt.r2,
+    oos,
     flagged: Math.abs(reg.t[2]) >= book.flagRule.absT && reg.beta[2] < 0,
     basketWeights: weights.map(([t, w]) => ({ ticker: t, weight: w })),
     provenance: {
@@ -93,6 +98,9 @@ const median = (xs) => {
   return s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2;
 };
 
+const placebo = priced.length ? bookPlacebo(fits) : null;
+if (placebo) for (let i = 0; i < priced.length; i++) priced[i].placeboP = placebo.perHolding.p[i];
+
 mkdirSync(OUT, { recursive: true });
 writeFileSync(resolve(OUT, "desk.json"), JSON.stringify({
   window: prices.window,
@@ -106,6 +114,23 @@ writeFileSync(resolve(OUT, "desk.json"), JSON.stringify({
     meanFullR2: mean(priced.map((r) => r.r2)),
     medianAbsCulturalT: median(priced.map((r) => Math.abs(r.culturalT))),
     holdings: priced.length,
+    oos: priced.length ? {
+      note: "same nested comparison, fitted on the first " + priced[0].oos.trainWeeks + " weeks and scored on the last " + priced[0].oos.testWeeks + "; not clamped",
+      trainWeeks: priced[0].oos.trainWeeks,
+      testWeeks: priced[0].oos.testWeeks,
+      meanDeltaR2: mean(priced.map((r) => r.oos.deltaR2)),
+      holdings: priced.length,
+    } : null,
+    placebo: placebo ? {
+      note: "book mean ΔR² against " + placebo.draws + " circular rotations of the taste baskets, all holdings shifted together; p is the share of rotations that match or beat the real alignment",
+      draws: placebo.draws,
+      seed: placebo.seed,
+      minShift: placebo.minShift,
+      real: placebo.real,
+      p: placebo.p,
+      placeboMean: placebo.placeboMean,
+      placeboP95: placebo.placeboP95,
+    } : null,
   },
   sampleFloor: { usable: ok, total: rows.length, floor: 4 },
   pricesSource: prices.source,

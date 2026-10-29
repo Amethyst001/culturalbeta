@@ -175,6 +175,35 @@ svg{display:block;width:100%;height:auto;overflow:visible}
 .limits li{margin-bottom:9px}
 .limits li:last-child{margin-bottom:0}
 .limits b{color:var(--ink)}
+/* robustness: the two asks a sceptic makes before believing a factor */
+.robust{margin-top:28px;border-top:1px solid var(--ink);padding-top:18px}
+.rb-head{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap}
+.rb-head h2{font-size:19px;margin:0}
+.rb-sub{margin:0;font-size:12.5px;color:var(--muted)}
+.rb-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;margin-top:14px}
+.rb-test{padding:0 30px 0 0}
+.rb-test + .rb-test{padding:0 0 0 30px;border-left:1px solid var(--hairline)}
+.rb-k{font:9.5px/1.3 ui-sans-serif,system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.rb-v{font:400 26px/1.15 ui-monospace,Consolas,monospace;letter-spacing:-.02em;margin-top:8px}
+.rb-tag{display:inline-block;margin-top:7px;padding:4px 6px;border:1px solid currentColor;
+  font:9.5px/1 ui-sans-serif,system-ui,sans-serif;letter-spacing:.1em;text-transform:uppercase}
+.rb-v.good,.rb-tag.good{color:var(--good)}
+.rb-v.bad,.rb-tag.bad{color:var(--accent)}
+.rb-test p{font-size:12.5px;line-height:1.55;color:var(--muted);margin:10px 0 0;max-width:430px}
+.rb-line{font:12px/1.5 ui-monospace,Consolas,monospace;color:var(--muted);margin:16px 0 0;max-width:820px}
+.rb-line b{color:var(--ink)}
+/* what the reading is for */
+.use{margin-top:30px;padding:22px 26px;background:var(--card);border:1px solid var(--hairline)}
+.use-head{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap}
+.use-head h2{font-size:19px;margin:0}
+.use-head p{margin:0;font-size:12.5px;color:var(--muted)}
+.use-steps{list-style:none;counter-reset:u;margin:16px 0 0;padding:0;display:grid;gap:13px}
+.use-steps li{counter-increment:u;display:grid;grid-template-columns:26px 96px 1fr;gap:12px;align-items:baseline}
+.use-steps li::before{content:counter(u);font:400 15px/1 ui-monospace,Consolas,monospace;color:var(--accent)}
+.use-steps b{font:9.5px/1.5 ui-sans-serif,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--ink)}
+.use-steps span{font-size:13.5px;line-height:1.55;color:#4a4036}
+.use-not{margin:16px 0 0;padding-top:12px;border-top:1px solid var(--hairline);font-size:12.5px;line-height:1.55;color:var(--muted)}
+.use-not b{color:var(--accent);font:9.5px/1 ui-sans-serif,system-ui,sans-serif;letter-spacing:.1em;text-transform:uppercase;margin-right:7px}
 footer{margin-top:38px;border-top:1px solid var(--hairline);padding-top:16px}
 footer .note{max-width:860px;font-size:12px;color:var(--muted);line-height:1.65}
 footer .note b{color:var(--ink);font-weight:600}
@@ -217,4 +246,11 @@ footer .note code{font:10.5px ui-monospace,Consolas,monospace}
   .notice-link{display:none}
   .policy{padding:20px 20px}
   .big .stat b{font-size:24px}
+  .rb-grid{grid-template-columns:1fr}
+  .rb-test{padding:0}
+  .rb-test + .rb-test{border-left:0;border-top:1px solid var(--hairline);padding:16px 0 0;margin-top:18px}
+  .use{padding:18px 18px}
+  .use-steps li{grid-template-columns:20px 1fr;gap:6px 10px}
+  .use-steps b{grid-column:2}
+  .use-steps span{grid-column:2}
 }
