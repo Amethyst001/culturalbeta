@@ -88,7 +88,7 @@ function render(){
 function provText(r){
   if(r.status!=='ok') return r.provenance??'—';
   const p=r.provenance;
-  return `entity ${p.qlooEntityId??p.qlooRequest?.entity??'—'}<br>
+  return `entity ${p.qlooRequest?.entity??'—'}<br>
    ${p.trending} · ${p.affinity}<br>
    GET ${p.qlooRequest.path} · ${p.qlooRequest.window.join(' → ')}<br>
    prices: ${p.prices}`;
@@ -96,7 +96,6 @@ function provText(r){
 render();
 fetch('/api/desk.json').then(async r=>{
   if(!r.ok){data=null}else{data=await r.json()} render();
-  if(data) fetch('/api/desk.json',{headers:{'x-':'y'}}); // no-op keepalive
 });
 $('#recompute').onclick=async()=>{
   $('#recompute').disabled=true;$('#note').textContent='Recomputing from Qloo…';
