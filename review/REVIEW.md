@@ -309,7 +309,9 @@ missing.
 
 ### 7.5 Evidence
 
-- **11/11 unit tests** (`npm test`), including four new robustness tests.
+- **11/11 unit tests** (`npm test`), including four new robustness tests. The fixture-driven floor
+  test now also pins the OOS split (train + test = the window), the book means, and the per-holding
+  placebo p on every priced row.
 - **165/165** cold-state browser checks at desktop/tablet/phone — the previous 159 plus
   `cold-explains-robustness` and `impact-block` on all three widths.
 - **141/141** checks in a populated state, run against throwaway fixtures in the OS temp dir
