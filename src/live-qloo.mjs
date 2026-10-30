@@ -302,7 +302,7 @@ export async function runFreshnessCheck({ desk, series = null, qloo = {}, budget
   for (let i = 0; i < FRESHNESS.maxAttempts; i++) {
     const end = shiftDays(gridEnd, -7 * i);
     const start = shiftDays(end, -FRESHNESS.lookbackDays);
-    const cacheName = `live-freshness-${ref.id}-${end}.json`;
+    const cacheName = `fresh-${ref.id}-${end}.json`;
     let one;
     try {
       one = await withTimeout(seriesFn([ref.id], ref.type, { start, end, cacheName }), FRESHNESS.timeoutMs, "freshness_timeout");

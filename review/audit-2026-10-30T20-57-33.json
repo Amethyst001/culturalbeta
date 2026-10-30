@@ -922,12 +922,12 @@
     {
      "id": "ask-receipt-correlation-id-is-the-servers",
      "ok": true,
-     "detail": "51AC9AB8-EF60-42AF-878C-D9EB34B50721 exec-1557996b-dbcf-463b-b5b0-3223e21c3a30 live-freshness-51AC9AB8-EF60-42AF-878C-D9"
+     "detail": "51AC9AB8-EF60-42AF-878C-D9EB34B50721 exec-1557996b-dbcf-463b-b5b0-3223e21c3a30 fresh-51AC9AB8-EF60-42AF-878C-D9"
     },
     {
      "id": "ask-receipt-names-response-files",
      "ok": true,
-     "detail": "live-freshness-51AC9AB8-EF60-42AF-878C-D9EB34B50721-2026-11-02.json page-5226b93b744693a0.json"
+     "detail": "fresh-51AC9AB8-EF60-42AF-878C-D9EB34B50721-2026-11-02.json page-5226b93b744693a0.json"
     },
     {
      "id": "ask-receipt-not-invented",
@@ -1903,12 +1903,12 @@
     {
      "id": "ask-receipt-correlation-id-is-the-servers",
      "ok": true,
-     "detail": "51AC9AB8-EF60-42AF-878C-D9EB34B50721 exec-1557996b-dbcf-463b-b5b0-3223e21c3a30 live-freshness-51AC9AB8-EF60-42AF-878C-D9"
+     "detail": "51AC9AB8-EF60-42AF-878C-D9EB34B50721 exec-1557996b-dbcf-463b-b5b0-3223e21c3a30 fresh-51AC9AB8-EF60-42AF-878C-D9"
     },
     {
      "id": "ask-receipt-names-response-files",
      "ok": true,
-     "detail": "live-freshness-51AC9AB8-EF60-42AF-878C-D9EB34B50721-2026-11-02.json page-5226b93b744693a0.json"
+     "detail": "fresh-51AC9AB8-EF60-42AF-878C-D9EB34B50721-2026-11-02.json page-5226b93b744693a0.json"
     },
     {
      "id": "ask-receipt-not-invented",
@@ -2881,12 +2881,12 @@
     {
      "id": "ask-receipt-correlation-id-is-the-servers",
      "ok": true,
-     "detail": "51AC9AB8-EF60-42AF-878C-D9EB34B50721 exec-1557996b-dbcf-463b-b5b0-3223e21c3a30 live-freshness-51AC9AB8-EF60-42AF-878C-D9"
+     "detail": "51AC9AB8-EF60-42AF-878C-D9EB34B50721 exec-1557996b-dbcf-463b-b5b0-3223e21c3a30 fresh-51AC9AB8-EF60-42AF-878C-D9"
     },
     {
      "id": "ask-receipt-names-response-files",
      "ok": true,
-     "detail": "live-freshness-51AC9AB8-EF60-42AF-878C-D9EB34B50721-2026-11-02.json page-5226b93b744693a0.json"
+     "detail": "fresh-51AC9AB8-EF60-42AF-878C-D9EB34B50721-2026-11-02.json page-5226b93b744693a0.json"
     },
     {
      "id": "ask-receipt-not-invented",
