@@ -108,6 +108,28 @@ const AUDIT_JS = (EXPECT, ASKQ) => String.raw`(async () => {
   const chips = [...view.querySelectorAll(".filters .fchip")];
   const isBookRoute = location.hash === "" || location.hash === "#/" || location.hash.startsWith("#/holding/");
   add("sector-filter", !isBookRoute || rows === 0 || (chips.length >= 3 && !!view.querySelector(".fchip.on")), chips.length + " sector chips");
+  // The filter is an interaction, so it is typed into rather than read: narrow the
+  // book to one name, clear it, and check the whole book came back and kept focus.
+  if (isBookRoute && rows > 0) {
+    const q0 = view.querySelector("#book-q");
+    const live = () => view.querySelectorAll('table[data-audit="holdings"] tbody tr').length;
+    const before = live();
+    let narrowed = -1, cleared = -1;
+    if (q0) {
+      q0.value = "disney";
+      q0.dispatchEvent(new Event("input", { bubbles: true }));
+      await new Promise((r) => setTimeout(r, 150));
+      narrowed = live();
+      const q1 = view.querySelector("#book-q");
+      q1.value = "";
+      q1.dispatchEvent(new Event("input", { bubbles: true }));
+      await new Promise((r) => setTimeout(r, 150));
+      cleared = live();
+    }
+    add("book-filter-narrows", !!q0 && narrowed >= 1 && narrowed < before, "typed disney: " + narrowed + " of " + before);
+    add("book-filter-clears", !!q0 && cleared === before, "cleared: " + cleared + " of " + before);
+    add("book-filter-keeps-focus", !!q0 && document.activeElement === view.querySelector("#book-q"), "focus survives the re-render");
+  }
   const urlCells = [...view.querySelectorAll("td.url")];
   add("cached-response-wraps", urlCells.every((td) => td.scrollWidth <= td.clientWidth + 1),
     urlCells.map((td) => td.scrollWidth + "/" + td.clientWidth).join(" "));
@@ -166,6 +188,17 @@ const AUDIT_JS = (EXPECT, ASKQ) => String.raw`(async () => {
       const basis = view.querySelector('[data-audit="basis"]')?.innerText.trim() || "";
       add("basis-on-landing", /scored weeks/i.test(basis) && /in sample|in-sample/i.test(basis) && /of \d+ weeks/i.test(basis),
         basis ? basis.slice(0, 60) + "…" : "missing");
+      // The lay sentence divides a points figure by a fraction of variance if the
+      // units are not converted, and printed 2033× where the truth is 20.3×. Grade
+      // the arithmetic the reader sees, not just the presence of a sentence.
+      const ratioM = basis.match(/about ([\d.,]+)× larger/i);
+      const measuredM = basis.match(/against the ([\d.,]+) measured/i);
+      const ratio = ratioM ? Number(ratioM[1].replace(/,/g, "")) : null;
+      const measured = measuredM ? Number(measuredM[1].replace(/,/g, "")) : null;
+      add("basis-effect-ratio-plausible", ratio == null ? true : ratio > 1 && ratio < 100,
+        ratio == null ? "no ratio sentence on this build" : "states " + ratio + "× larger");
+      add("basis-measured-in-points", measured == null ? true : measured >= 0.1 && measured <= 5,
+        measured == null ? "no measured value printed" : "measured " + measured + " ΔR² points");
     }
     // a name the factor could not reach must say why it was not reached, and how
     // hard the resolver looked — an unexplained gap reads as a broken pipeline

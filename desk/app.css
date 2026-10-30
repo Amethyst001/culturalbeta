@@ -315,6 +315,25 @@ footer .verify code{font:10px ui-monospace,Consolas,monospace}
 
 /* Sub-sector filter: the book is 100+ names, so the reading is a slice of the
    factor, never a scroll. */
+.fsearch{display:flex;align-items:center;gap:10px;margin:18px 0 0;flex-wrap:wrap}
+.fsearch input{
+  flex:1 1 260px;max-width:360px;min-height:34px;padding:7px 10px;border:1px solid var(--hairline);border-radius:2px;
+  background:var(--card);color:var(--ink);font:400 13px/1.4 ui-sans-serif,system-ui,sans-serif;
+}
+.fsearch input::placeholder{color:#8a7f6c}
+.fsearch input:hover{border-color:#c9bda6}
+.fsearch input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.fsearch input::-webkit-search-cancel-button{-webkit-appearance:none}
+.fclear{
+  min-height:30px;padding:5px 10px;border:1px solid var(--hairline);border-radius:2px;background:none;color:var(--muted);
+  cursor:pointer;font:9.5px/1.2 ui-sans-serif,system-ui,sans-serif;letter-spacing:.09em;text-transform:uppercase;
+}
+.fclear:hover{border-color:var(--ink);color:var(--ink)}
+.fcount{font:10.5px/1 ui-monospace,Consolas,monospace;color:var(--muted);letter-spacing:.02em}
+tr.empty td{padding:24px 0;text-align:left;color:var(--muted);
+  font:400 13.5px/1.7 ui-sans-serif,system-ui,sans-serif}
+tr.empty .fclear{display:inline-block;margin-left:6px;vertical-align:-8px}
+.fsearch + .filters{margin-top:12px}
 .filters{display:flex;flex-wrap:wrap;gap:6px;margin:18px 0 2px}
 .fchip{
   display:inline-flex;align-items:center;gap:6px;min-height:30px;border:1px solid var(--hairline);background:transparent;
@@ -442,6 +461,11 @@ footer .verify code{font:10px ui-monospace,Consolas,monospace}
 .att-pass code{color:var(--ink)}
 .att-moved{background:#f6e4d8;border-left:3px solid #a8442a;color:#6b2a18}
 .att-none{background:#f2efe4;border-left:3px solid #8a7f6a;color:#4a4436}
+/* The three states only help if a first-time reader can tell them apart, so the
+   legend is printed under whichever state fired, in one quieter line. */
+.att-legend{display:block;margin-top:6px;font:10px/1.6 ui-sans-serif,system-ui,sans-serif;
+  letter-spacing:.01em;color:#7a7060;max-width:78ch}
+.att-pass .att-legend{margin-top:3px}
 .receipts{margin-top:16px;border-top:1px solid var(--hairline);padding-top:11px}
 .rc-head{font:10.5px/1.4 ui-sans-serif,system-ui,sans-serif;letter-spacing:.1em;
   text-transform:uppercase;color:var(--muted)}
