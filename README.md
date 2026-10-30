@@ -252,8 +252,16 @@ decline:
   is newer than the panel's frozen tail, Qloo's own correlation id and the cached
   response file name. This runs outside the tool loop, so the model can neither skip
   it nor substitute a claim of its own. If it cannot run, the answer says why.
-- **A receipt** naming the panel file and revision, the attested entities and every
-  tool call with the request that produced it and the cached response behind it.
+- **A gate the answer has to pass.** The check is not decorative: if any attested
+  entity reports a Qloo revision after the panel's last revision, the answer carries
+  a warning above its own text saying the numbers below predate the feed; a check
+  that could not run is stamped unattested in the same place, so it can never read
+  as a pass. Each reading is stamped `att-<12 hex>`, a hash of exactly the fields
+  printed in the receipt, so the line above the answer and the receipt can be shown
+  to be the same claim.
+- **A receipt** naming the panel file and revision, the attested entities, the gate
+  state and stamp, and every tool call with the request that produced it and the
+  cached response behind it.
 
 A live tool (`live_brand_trends`, `live_cultural_beta`) may spend one further
 bounded request per answer from a persisted daily budget. Nothing in the desk, and

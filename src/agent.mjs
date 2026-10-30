@@ -497,7 +497,7 @@ function committedReceipt(row, tool) {
   };
 }
 
-export function collectReceipts({ desk, revision = null, trace = [], freshness = null } = {}) {
+export function collectReceipts({ desk, revision = null, trace = [], freshness = null, attestation = null } = {}) {
   const receipts = [];
   if (freshness) {
     const receipt = {
@@ -530,6 +530,13 @@ export function collectReceipts({ desk, revision = null, trace = [], freshness =
       fromAttestationCache: Boolean(freshness.fromCache),
       attestationCacheSeconds: freshness.cachedSeconds ?? null,
     };
+    // The stamp is over the fields printed above it, so a reader can recompute it and
+    // see that the line above the answer and this receipt are the same claim.
+    if (attestation) {
+      receipt.stamp = attestation.stamp ?? null;
+      receipt.gate = attestation.state ?? null;
+      receipt.gateNote = attestation.note ?? null;
+    }
     // A reading only exists if a Qloo page actually answered, so a failed check cannot
     // even put a null-shaped date field in front of a renderer to guess at.
     if (receipt.checked) {

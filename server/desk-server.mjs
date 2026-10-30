@@ -23,7 +23,7 @@ import { ols } from "../src/ols.mjs";
 import { loadUniverse } from "../src/universe.mjs";
 import { computeBudget, spentFromCache } from "../src/budget.mjs";
 import { createDeskTools, readProviders, askQuestion, collectReceipts, LIMITS } from "../src/agent.mjs";
-import { withLiveTools, liveStatus, createFreshnessChecker, freshnessGateReason, FRESHNESS, LIVE, entitiesFor, tickersInQuestion } from "../src/live-qloo.mjs";
+import { withLiveTools, liveStatus, createFreshnessChecker, freshnessGateReason, attestationGate, FRESHNESS, LIVE, entitiesFor, tickersInQuestion } from "../src/live-qloo.mjs";
 
 const PORT = Number(process.env.PORT || 8811);
 const OUT = process.env.CULTURALBETA_OUTPUT_DIR ? resolve(process.env.CULTURALBETA_OUTPUT_DIR) : resolve(ROOT, "output");
@@ -460,11 +460,13 @@ const server = createServer(async (req, res) => {
       // is still re-attested, and the checker's own book cache means that costs a
       // request at most once every cacheMinutes, not once per click.
       const freshness = await attestation(checker, entitiesFor(loaded.desk, tickersInQuestion(question, loaded.desk)));
+      const gate = attestationGate(freshness);
       return send(res, 200, JSON.stringify({
         ...hit,
         cached: true,
         freshness,
-        receipts: collectReceipts({ desk: loaded.desk, revision: loaded.revision, trace: hit.trace, freshness }),
+        attestation: gate,
+        receipts: collectReceipts({ desk: loaded.desk, revision: loaded.revision, trace: hit.trace, freshness, attestation: gate }),
       }));
     }
     const limit = askAllowed(clientIp(req), Date.now());
@@ -486,11 +488,15 @@ const server = createServer(async (req, res) => {
       const freshness = await freshP;
       const { failures, ...clean } = out;
       if (failures?.length) console.log(`agent: provider fallbacks — ${failures.join(" | ")}`);
-      const receipts = collectReceipts({ desk: loaded.desk, revision: loaded.revision, trace: clean.trace, freshness });
-      const payload = { ...clean, freshness, receipts, ms: Date.now() - started, cached: false, readOnly: true, live: liveStatus().enabled, limits: agentStatus().limits };
+      // The gate is what makes the check load-bearing: a revision it detects changes
+      // the answer's status, and a check it could not run is stamped as unattested
+      // rather than left to look like a pass.
+      const gate = attestationGate(freshness);
+      const receipts = collectReceipts({ desk: loaded.desk, revision: loaded.revision, trace: clean.trace, freshness, attestation: gate });
+      const payload = { ...clean, freshness, attestation: gate, receipts, ms: Date.now() - started, cached: false, readOnly: true, live: liveStatus().enabled, limits: agentStatus().limits };
       // What is cached is the text and its trace, never the attestation: the next
       // answer must carry one asked after it, not one from the first.
-      const { freshness: _omitF, receipts: _omitR, ...storable } = payload;
+      const { freshness: _omitF, receipts: _omitR, attestation: _omitA, ...storable } = payload;
       if (askCache.size >= ASK_CACHE_MAX) askCache.delete(askCache.keys().next().value);
       askCache.set(key, storable);
       console.log(`agent: ${question.length} chars, ${clean.toolCalls} tools, ${clean.rounds} rounds, ${clean.provider}, ${payload.ms}ms, freshness ${freshness.checked ? `checked ${freshness.verdict} (${freshness.requests} qloo reqs)` : `not checked: ${freshness.why}`}`);

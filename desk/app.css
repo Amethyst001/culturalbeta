@@ -198,6 +198,18 @@ svg{display:block;width:100%;height:auto;overflow:visible}
 .rb-head h2{font-size:19px;margin:0}
 .rb-sub{margin:0;font-size:12.5px;color:var(--muted)}
 .rb-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;margin-top:14px}
+.flip{margin-top:14px;display:grid;gap:0}
+.fl{display:grid;grid-template-columns:34px 1fr;gap:12px;padding:11px 0;border-top:1px solid var(--hairline)}
+.fl:first-child{border-top:0;padding-top:0}
+.fl-n{font:400 19px/1.2 ui-monospace,Consolas,monospace;color:var(--muted)}
+.fl-b{display:grid;gap:3px}
+.fl-b b{font-size:14px;font-weight:600}
+.fl-now,.fl-take,.fl-who{font-size:12.5px;line-height:1.55;color:var(--ink)}
+.fl-take,.fl-who{color:var(--muted)}
+.fl-k{display:inline-block;min-width:82px;font:9px/1.3 ui-sans-serif,system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-right:8px}
+/* An inline link in a paragraph is 14px tall on its own; the padding buys the
+   tap target without moving the baseline or the line box. */
+.fl-who a{color:var(--ink);display:inline-block;padding:7px 0;line-height:14px;text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:1px}
 .rb-test{padding:0 30px 0 0}
 .rb-test + .rb-test{padding:0 0 0 30px;border-left:1px solid var(--hairline)}
 .rb-k{font:9.5px/1.3 ui-sans-serif,system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
@@ -424,6 +436,12 @@ footer .verify code{font:10px ui-monospace,Consolas,monospace}
   font:10.5px/1.6 ui-monospace,Consolas,monospace;color:var(--muted)}
 .fresh-set li{white-space:nowrap}
 .fresh-set b{color:var(--ink);font-weight:600}
+.att{margin:0 0 10px;font:12px/1.55 ui-monospace,Consolas,monospace;border-radius:3px;padding:7px 9px}
+.att code{font-size:11px;opacity:.85}
+.att-pass{margin:0 0 8px;color:var(--muted);font-size:10.5px;line-height:1.6;padding:0}
+.att-pass code{color:var(--ink)}
+.att-moved{background:#f6e4d8;border-left:3px solid #a8442a;color:#6b2a18}
+.att-none{background:#f2efe4;border-left:3px solid #8a7f6a;color:#4a4436}
 .receipts{margin-top:16px;border-top:1px solid var(--hairline);padding-top:11px}
 .rc-head{font:10.5px/1.4 ui-sans-serif,system-ui,sans-serif;letter-spacing:.1em;
   text-transform:uppercase;color:var(--muted)}

@@ -14,6 +14,7 @@
 // refuses, or the budget is gone, the tool returns an error object and the model
 // is instructed to say live Qloo is unavailable.
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { resolve } from "node:path";
 import { ROOT } from "./env.mjs";
 import { qlooSearch, qlooSeries, qlooTrendPage, readCache, searchResults, seriesPlan } from "./qloo.mjs";
@@ -526,6 +527,43 @@ export function createFreshnessChecker(options = {}) {
       return { ...entry.value, fromCache: true, stale: clock() - entry.at >= holdMs(entry.value), ageSeconds: Math.round((clock() - entry.at) / 1000) };
     },
   };
+}
+
+// The attestation is only load-bearing if the answer carries it and the desk acts
+// on it, so these two functions are the difference between a receipt beside an
+// answer and a receipt in front of one. The stamp is a hash of exactly the fields
+// a reader can see in the receipt, so anyone can recompute it and check that the
+// sentence above the answer and the numbers in the receipt are the same claim.
+export function attestationStamp(value = {}) {
+  const visible = {
+    checked: Boolean(value.checked),
+    why: value.checked ? null : value.why ?? null,
+    verdict: value.checked ? value.verdict ?? null : null,
+    latestWeek: value.checked ? value.latestWeek ?? null : null,
+    entities: (value.entities ?? []).map((e) => ({ id: e.entity?.id ?? null, latestWeek: e.checked ? e.latestWeek ?? null : null, verdict: e.checked ? e.verdict ?? null : null })),
+    correlationIds: value.correlationIds ?? [],
+  };
+  return `att-${createHash("sha256").update(JSON.stringify(visible)).digest("hex").slice(0, 12)}`;
+}
+
+// What the answer does with it. A moved entity is the only case where the panel's
+// own numbers are known to be behind the feed, so that case changes the answer
+// rather than decorating it; an unattested answer still returns, and says so in
+// the same place a passing one carries its stamp, so silence is never read as a pass.
+export function attestationGate(value = {}) {
+  const stamp = attestationStamp(value);
+  if (!value.checked) {
+    return { state: "unattested", stamp, note: `Not attested: ${value.why ?? "the check did not run"}. The numbers below are the committed panel and nothing on this page has confirmed them against Qloo today.` };
+  }
+  const moved = (value.entities ?? []).filter((e) => e.checked && e.verdict === "qloo_has_a_newer_revision");
+  if (moved.length) {
+    const names = moved.map((e) => `${e.entity?.ticker ?? e.entity?.id}${e.entity?.name ? ` (${e.entity.name})` : ""}${e.latestRevision ? ` on ${e.latestRevision}` : ""}`).join(", ");
+    return { state: "moved", stamp, note: `Qloo has revised since this panel was built: ${names}. The panel's last revision is ${value.panel?.lastRevision ?? "—"}, so the numbers below predate the revision and the held-out slice frozen at that date no longer matches the feed.` };
+  }
+  const at = String(value.answeredAt ?? value.at ?? "");
+  const count = value.entities?.length ?? 1;
+  const what = value.verdict === "newer_weeks_no_change" ? "has newer weeks with no newer signal" : "has nothing newer than the panel tail";
+  return { state: "pass", stamp, note: `Attested${at ? ` at ${at.slice(11, 19)}Z` : ""}: Qloo was read for ${count} ${count === 1 ? "entity" : "entities"} and ${what} at this vintage.` };
 }
 
 /* ---------- pure math reused for the live read ---------- */
