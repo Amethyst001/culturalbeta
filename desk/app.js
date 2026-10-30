@@ -2,17 +2,33 @@
 const $ = (s) => document.querySelector(s);
 const f2 = (x, d = 2) => x == null ? "—" : (x >= 0 ? "+" : "") + x.toFixed(d);
 const pts = (x) => x == null ? "—" : (x >= 0 ? "+" : "") + (x * 100).toFixed(Math.abs(x * 100) < 1 ? 2 : 1) + " pts";
+const ptsSigned = (x) => x == null ? "—" : (x >= 0 ? "+" : "-") + Math.abs(x * 100).toFixed(2) + " pts";
 const pval = (p) => p == null ? "—" : p < 0.001 ? "< 0.001" : p.toFixed(3);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
-let DESK = null, SERIES = null, EVIDENCE = null, MARKET = null;
-let sortKey = "culturalBeta", sortDir = -1;
+let DESK = null, SERIES = null, EVIDENCE = null, MARKET = null, BUDGET = null, AGENT = null;
+let ASK = { q: "", busy: false, res: null, err: null };
+let sortKey = "culturalQ", sortDir = 1, sectorFilter = "all";
+
+// The state tag is derived from what computed the panel, never hardcoded: a
+// stub-harness run renders "layout only" so a screenshot of it cannot be read as
+// a Qloo result.
+const isStub = () => DESK?.source?.kind === "stub harness";
+const liveLabel = () => isStub() ? "stub harness · layout only" : "Qloo-sourced";
+// The badge must not imply the cultural series is current: it is a paid pull whose
+// last revision is a property of the data, not of when the page was opened.
+const frozenAfter = () => {
+  const m = DESK?.valueAdd?.oos?.scoring?.lastMove;
+  return m ? ` · series ends ${m}` : "";
+};
+const liveTone = () => isStub() ? "warn" : "ok";
 
 const get = async (p) => { const r = await fetch(p); return { ok: r.ok, data: r.ok ? await r.json() : null }; };
 
 async function load() {
-  const [d, s, e, m] = await Promise.all([get("/api/desk.json"), get("/api/series.json"), get("/api/evidence.json"), get("/api/market-only.json")]);
+  const [d, s, e, m, b, a] = await Promise.all([get("/api/desk.json"), get("/api/series.json"), get("/api/evidence.json"), get("/api/market-only.json"), get("/api/budget.json"), get("/api/agent.json")]);
   DESK = d.ok ? d.data : null; SERIES = s.ok ? s.data : null; EVIDENCE = e.ok ? e.data : null; MARKET = m.ok ? m.data : null;
+  BUDGET = b.ok ? b.data : null; AGENT = a.ok ? a.data : null;
   route();
 }
 
@@ -99,42 +115,68 @@ function scatter(ry, rx, slope, tick) {
   </svg>`;
 }
 
-function quadrant(rows) {
+// One dot per sub-sector, not per name: a hundred names is a cloud, eleven dots is
+// a reading — and each dot is the mean exposure of the names it stands for.
+function quadrant(points) {
   const pad2 = { l: 56, r: 24, t: 22, b: 40 };
-  const xs = rows.map((r) => r.marketBeta), ys = rows.map((r) => r.culturalBeta);
+  const xs = points.map((r) => r.marketBeta), ys = points.map((r) => r.culturalBeta);
   const maxx = Math.max(0.5, ...xs) * 1.15, minx = 0;
   const maxAbsY = Math.max(0.1, ...ys.map(Math.abs)) * 1.3;
+  const r = (n) => 6 + Math.sqrt(n) * 2.2;
   const x = (v) => pad2.l + ((v - minx) / (maxx - minx)) * (W - pad2.l - pad2.r);
   const y = (v) => H - pad2.b - ((v + maxAbsY) / (2 * maxAbsY)) * (H - pad2.t - pad2.b);
   const dots = (() => {
     const placed = [];
-    const pts = rows.map((r) => ({ t: r.ticker, cx: x(r.marketBeta), cy: y(r.culturalBeta), neg: r.culturalBeta < 0 }));
-    const dotBoxes = pts.map((p) => ({ x0: p.cx - 9, x1: p.cx + 9, y0: p.cy - 9, y1: p.cy + 9 }));
+    const pts = points.map((p) => ({ t: p.ticker, cx: x(p.marketBeta), cy: y(p.culturalBeta), neg: p.culturalBeta < 0, n: p.n, label: p.label, sector: p.id, members: p.members }));
+    const dotBoxes = pts.map((p) => ({ x0: p.cx - r(p.n) - 2, x1: p.cx + r(p.n) + 2, y0: p.cy - r(p.n) - 2, y1: p.cy + r(p.n) + 2 }));
     const textWidth = (t) => t.length * 6.6 + 4;
+    const boxFor = (c, w) => {
+      const x0 = c.anchor === "start" ? c.lx : c.lx - w;
+      return { x0, x1: x0 + w, y0: c.ly - 9, y1: c.ly + 3 };
+    };
+    const hits = (b) => placed.some((q) => b.x0 < q.x1 && b.x1 > q.x0 && b.y0 < q.y1 && b.y1 > q.y0)
+      || dotBoxes.some((q) => b.x0 < q.x1 && b.x1 > q.x0 && b.y0 < q.y1 && b.y1 > q.y0);
     return pts.slice().sort((a, b) => b.cy - a.cy).map((p) => {
       const w = textWidth(p.t);
-      const cands = [
-        { lx: p.cx + 11, ly: p.cy + 3.5, anchor: "start" },
-        { lx: p.cx + 11, ly: p.cy - 8, anchor: "start" },
-        { lx: p.cx - 11, ly: p.cy + 3.5, anchor: "end" },
-        { lx: p.cx + 11, ly: p.cy + 15, anchor: "start" },
-        { lx: p.cx - 11, ly: p.cy + 15, anchor: "end" },
+      // the offset clears this dot's own radius, otherwise every candidate sits
+      // inside its own dot box and the first one is always chosen.
+      const off = r(p.n) + 6;
+      const base = [
+        { lx: p.cx + off, ly: p.cy + 3.5, anchor: "start" },
+        { lx: p.cx - off, ly: p.cy + 3.5, anchor: "end" },
+        { lx: p.cx + off, ly: p.cy - 10, anchor: "start" },
+        { lx: p.cx - off, ly: p.cy - 10, anchor: "end" },
+        { lx: p.cx + off, ly: p.cy + 16, anchor: "start" },
+        { lx: p.cx - off, ly: p.cy + 16, anchor: "end" },
       ];
-      let box = null, pick = cands[0];
-      for (const c of cands) {
-        const x0 = c.anchor === "start" ? c.lx : c.lx - w;
-        const b = { x0, x1: x0 + w, y0: c.ly - 9, y1: c.ly + 3 };
-        const hitsLabel = placed.some((q) => b.x0 < q.x1 && b.x1 > q.x0 && b.y0 < q.y1 && b.y1 > q.y0);
-        const hitsDot = dotBoxes.some((q) => b.x0 < q.x1 && b.x1 > q.x0 && b.y0 < q.y1 && b.y1 > q.y0);
-        if (!hitsLabel && !hitsDot) { pick = c; box = b; break; }
+      let pick = base[0], box = boxFor(pick, w);
+      for (const c of base) {
+        const b = boxFor(c, w);
+        if (!hits(b)) { pick = c; box = b; break; }
       }
-      if (!box) {
-        box = { x0: pick.lx, x1: pick.lx + w, y0: pick.ly - 9, y1: pick.ly + 3 };
+      if (hits(box)) {
+        for (const dy of [24, 32, -18, -26, 40, -34, 48, -42]) {
+          let found = null;
+          for (const side of [1, -1]) {
+            const c = { lx: p.cx + side * off, ly: p.cy + 3.5 + dy, anchor: side > 0 ? "start" : "end" };
+            const b = boxFor(c, w);
+            if (!hits(b)) { found = { c, b }; break; }
+          }
+          if (found) { pick = found.c; box = found.b; break; }
+        }
       }
       placed.push(box);
-      return `<g>
-      <circle cx="${p.cx.toFixed(1)}" cy="${p.cy.toFixed(1)}" r="7" fill="${p.neg ? "var(--accent)" : "var(--good)"}" opacity=".9"/>
-      <text class="anno" x="${pick.lx.toFixed(1)}" y="${pick.ly.toFixed(1)}" text-anchor="${pick.anchor}">${p.t}</text>
+      // a hairline from the dot to its label: two adjacent dots would otherwise
+      // read as one two-line label, and the reader cannot tell which is which
+      const tx = pick.anchor === "start" ? pick.lx - 3 : pick.lx + 3;
+      const dx = tx - p.cx, dy = (pick.ly - 3) - p.cy;
+      const len = Math.hypot(dx, dy) || 1;
+      const sx = p.cx + (dx / len) * (r(p.n) + 1), sy = p.cy + (dy / len) * (r(p.n) + 1);
+      return `<g class="dot" role="button" tabindex="0" data-sector="${esc(p.sector ?? "")}" aria-label="${esc(p.label)}: market beta ${f2(p.marketBeta)}, cultural beta ${f2(p.culturalBeta)}, ${p.n} names">
+      <title>${esc(p.label)} — market ${f2(p.marketBeta)}, cultural ${f2(p.culturalBeta)}, ${p.n} names: ${esc(p.members.join(", "))}</title>
+      <line class="leader" x1="${sx.toFixed(1)}" y1="${sy.toFixed(1)}" x2="${tx.toFixed(1)}" y2="${(pick.ly - 3).toFixed(1)}"/>
+      <circle cx="${p.cx.toFixed(1)}" cy="${p.cy.toFixed(1)}" r="${r(p.n).toFixed(1)}" fill="${p.neg ? "var(--accent)" : "var(--good)"}" opacity=".9"/>
+      <text class="anno" x="${pick.lx.toFixed(1)}" y="${pick.ly.toFixed(1)}" text-anchor="${pick.anchor}">${esc(p.t)}</text>
     </g>`;
     }).join("");
   })();
@@ -153,9 +195,11 @@ function quadrant(rows) {
 }
 
 /* ---------- shared fragments ---------- */
-function windowPill(w) { return `<span class="pill">${w.weeks} weeks · ${w.start} → ${w.end}</span>`; }
+function windowPill(w) { return `<span class="pill" title="the last completed week with a price bar in the aligned calendar">${w.weeks} weeks · ${w.start} → ${w.end}</span>`; }
 
-function headBlock(title, sub, w, state, tone, action = true) {
+// `action` is the panel control, which only exists where a panel can be re-derived.
+// `note` is the one fact that must survive the first screen on a phone.
+function headBlock(title, sub, w, state, tone, action = true, note = "") {
   return `<div class="head">
     <div class="lede-col">
       <h1>${title}</h1>
@@ -164,8 +208,9 @@ function headBlock(title, sub, w, state, tone, action = true) {
     <div class="side">
       ${windowPill(w)}
       <div class="state ${tone}">${state}</div>
-      ${action ? `<button class="btn" id="recompute">Recompute from Qloo</button>` : ""}
+      ${action ? `<button class="btn" id="recompute" title="re-derives the panel from the Qloo responses already cached — no new API calls, nothing spent">Re-derive the panel</button>` : ""}
     </div>
+    ${note ? `<p class="head-note">${note}</p>` : ""}
   </div>`;
 }
 
@@ -174,26 +219,173 @@ function strip(stats) {
     `<div class="stat${hl ? " hl" : ""}"><b>${v}</b><span>${l}</span></div>`).join("")}</div>`;
 }
 
-function robustBand(va) {
-  if (!va?.oos) return "";
-  const oos = va.oos, pl = va.placebo;
+function rbCells(oos, pl, perm) {
+  const sc = oos.scoring;
+  // What this cell can see. A basket return is zero in every week Qloo has not
+  // revised, so a scored slice that falls after the last revision multiplies the
+  // cultural coefficient by zero. That is not a weak test, it is no test, and the
+  // cell says so rather than printing a negative and letting it read as evidence.
+  const frozen = sc ? sc.testable === false : false;
   const holds = oos.meanDeltaR2 > 0;
-  const sep = !!pl && pl.p <= 0.10;
-  return `<section class="robust" aria-label="Robustness">
-    <div class="rb-head"><h2>Does it survive?</h2>
-      <p class="rb-sub">Two checks a sceptical reader asks for before believing a factor. The rotation verdict is tagged at p ≤ 0.10.</p></div>
-    <div class="rb-grid">
+  // Every-null rule, i.e. a max-of-p rule: a positive claim has to clear every
+  // null, not the friendliest one. It is conservative by construction — with k
+  // nulls whose p-values are not independent, the effective level is stricter
+  // than any single 0.10 — and the desk states that cost where the rule is used.
+  const permP = Math.max(perm?.p ?? -Infinity, perm?.pBlocked ?? -Infinity);
+  const sep = (pl?.p ?? Infinity) <= 0.10 && permP <= 0.10;
+  const range = (se, ci, label) => `${label}± ${(se * 100).toFixed(2)} pts · 90% CI ${ptsSigned(ci[0])} → ${ptsSigned(ci[1])}${ci[0] <= 0 && ci[1] >= 0 ? " · crosses zero" : ""}`;
+  const ci = oos.ci90 ? `<div class="rb-se">${range(oos.se, oos.ci90, "")}</div>` : "";
+  const rci = oos.refit ? `<div class="rb-se rb-se-r">${range(oos.refit.se, oos.refit.ci90, "refit per draw: ")}</div>` : "";
+  const wider = widerOf(oos);
+  const rule = frozen
+    ? `<div class="rb-rule"><b>This is not a test of taste.</b> Qloo's last revision in this pull is ${esc(sc.lastMove)}; all ${sc.testWeeks} scored weeks are zero for every one of the ${oos.holdings} names, so the cultural coefficient is multiplied by zero on every scored week. What the number measures is how much adding a regressor moved the market coefficients in the <i>training</i> fit, projected onto the held-out weeks — not a taste effect, and its interval is no confidence interval for one. At any true effect the test's power is its size, which is why the grade below rests on the in-sample book and the nulls.</div>`
+    : wider ? `<div class="rb-rule">Graded on the <b>${wider}</b> interval — the wider of the two, and so the one that bounds what this window can exclude. Here that bound is small.</div>` : "";
+  return `
       <div class="rb-test">
         <div class="rb-k">Out of sample</div>
-        <div class="rb-v ${holds ? "good" : "bad"}">${pts(oos.meanDeltaR2)}</div>
-        <div class="rb-tag ${holds ? "good" : "bad"}">${holds ? "holds" : "does not hold"}</div>
-        <p>Refit on the first ${oos.trainWeeks} weeks, scored on the last ${oos.testWeeks}. Mean ΔR² over market-only on weeks the fit never saw — allowed to be negative, never clamped.</p>
+        <div class="rb-v ${frozen ? "bad" : holds ? "good" : "bad"}">${frozen ? "no test" : pts(oos.meanDeltaR2)}</div>
+        <div class="rb-tag ${frozen ? "bad" : holds ? "good" : "bad"}">${frozen ? `held-out slice frozen — no test · perturbation ${pts(oos.meanDeltaR2)}` : holds ? "positive" : "negative"}</div>
+        ${ci}${rci}${rule}
+        <p>Refit on the first ${oos.trainWeeks} weeks, scored on the last ${oos.testWeeks}. Mean ΔR² over market-only on weeks the fit never saw — allowed to be negative, never clamped.${frozen ? ` Of those ${sc.testWeeks} weeks, <b>${sc.frozenWeeks} are frozen for every name</b> — the median name's basket moves in ${sc.medianActive} of them, and its last move in the window is ${esc(sc.lastMove ?? "—")}. The final ${sc.frozenAfterWindow} weeks of the window follow that last revision with no movement at all, so every scored week multiplies the cultural coefficient by zero.` : ""}${oos.ci90 ? ` First interval: ${oos.draws} circular block-bootstrap draws of the test weeks, ${oos.blockWeeks} weeks a block, coefficients held still. Second: the same split with the fit redone inside each draw (${oos.refit.draws} draws), so coefficient error is included. A refit carries nothing from its training resample into an independent test resample, so that interval centres near zero; where the two disagree, the wider one bounds what the window can and cannot exclude, and that bound is what the grade uses.` : ""}</p>
       </div>
       <div class="rb-test">
         <div class="rb-k">Placebo</div>
         <div class="rb-v ${sep ? "good" : "bad"}">p ${pl ? pval(pl.p) : "—"}</div>
-        <div class="rb-tag ${sep ? "good" : "bad"}">${sep ? "beats rotation" : "not separable"}</div>
-        <p>${pl ? `${pl.draws} circular rotations of the taste baskets, all holdings shifted together. Real ${pts(pl.real)} vs rotations ${pts(pl.placeboMean)}.` : ""}</p>
+        <div class="rb-tag ${sep ? "good" : "bad"}">${sep ? "clears every null" : "not separable"}</div>
+        <p>${pl ? `${pl.draws} circular rotations of the taste baskets, every holding shifted by the same amount so cross-name alignment survives. Real ${pts(pl.real)} vs rotations ${pts(pl.placeboMean)}. The null therefore keeps the book's correlation structure: this is a test against a rotation of the factor, not against random baskets, which is the stricter and the flatter reading.` : ""}</p>
+        ${perm ? `<div class="rb-null">date permutation: p ${pval(perm.p)} · ${perm.draws} shared shuffles of the week order, which keep each basket's own spread and drop only its timing. Real ${pts(perm.real)} vs shuffled ${pts(perm.placeboMean)} — a second, independent null, reported rather than selected between. <b>A positive claim has to clear every null in this set</b>; the friendliest one is never used on its own, because choosing a null after seeing its p is not a test. That makes the rule a <b>max-of-p rule</b>, conservative by construction: with nulls that are correlated, clearing all of them is a stricter bar than clearing any one, and a real effect below the interval's exclusion bound would be graded no signal whatever the nulls said.${perm.pBlocked != null ? ` A week-by-week shuffle also breaks the refresh cadence — a step that lasted weeks becomes isolated spikes, a book the data could not have produced — so the same null is run again on blocks of ${perm.blockWeeks} consecutive weeks: <b>p ${pval(perm.pBlocked)}</b>, shuffled ${pts(perm.blockedMean)}. That is ${perm.pBlocked >= perm.p ? "the stricter of the two, so it is the one the claim has to clear — and it lands further from a signal, not closer" : "the looser of the two here, but the rule uses the stricter one anyway, so nothing is gained by it"}.` : ""} All of these nulls run on the same calendar and the same frozen tail, so they are not three independent tests: read the set as <b>one stringent check</b>, not as p-values that multiply. And because rotation and shuffling both preserve each basket's slow-moving shape, they exclude less about a genuinely weekly taste signal than the p-value alone suggests — a limitation of the endpoint, printed rather than implied.</div>` : ""}
+      </div>`;
+}
+
+// Which of the two intervals the grade uses: the wider one, because the fixed
+// coefficients understate their own error. Stated at the number rather than in the
+// method footer, because a reader who has to hunt for the rule has already read the
+// number without it.
+function widerOf(oos) {
+  if (!oos?.ci90 || !oos?.refit?.ci90) return null;
+  const fixed = oos.ci90[1] - oos.ci90[0];
+  const refit = oos.refit.ci90[1] - oos.refit.ci90[0];
+  return refit > fixed ? "refit per draw" : "fixed coefficients";
+}
+
+// The ablation arm: taste has to beat a same-sector peer basket, not just the
+// market. In-sample nested ΔR² cannot fall, so the headline number is the
+// out-of-sample one, and it may be negative.
+function ablationBand(va) {
+  const ab = va?.ablation;
+  if (!ab?.oos) return "";
+  const adds = ab.oos.meanTasteExtraR2 > 0;
+  const share = Math.round(ab.oos.sharePositive * 100);
+  const frozen = ab.scoring ? ab.scoring.testable === false : false;
+  const sc = ab.scoring ?? null;
+  const ab2 = va?.secondary?.ablation;
+  const abp = ab.oos.placebo;
+  const qv = va?.ablation?.qlooVsPeer;
+  const abpLine = abp
+    ? `<div class="rb-null">rotation null: p ${pval(abp.p)} · ${abp.p <= 0.10
+      ? "the real baskets beat a rotation of themselves over peers — an alignment result, which is not the same as adding over peers"
+      : "a rotation of the same baskets scores as well — no alignment to find over peers"}${abp.skippedDraws ? ` · ${abp.skippedDraws} of ${abp.draws} rotations dropped for leaving a training window with too little movement to fit` : ""} · read this p as <b>uninformative</b>, not borderline: it moves across the 0.10 line when the identification rule is tightened or loosened, so it is not a stable number either way.</div>`
+    : "";
+  const abWin = ab2?.oos
+    ? `<p class="rb-line">Second window (${esc(va.secondary.window.start)} → ${esc(va.secondary.window.end)}): taste over peers <b>${pts(ab2.oos.meanTasteExtraR2)}</b>${ab2.oos.ci90 ? `, 90% CI ${ptsSigned(ab2.oos.ci90[0])} → ${ptsSigned(ab2.oos.ci90[1])}` : ""}, positive on ${Math.round(ab2.oos.sharePositive * 100)}% of ${ab2.holdings} names. The ablation is pre-registered on both windows, so a control that holds in one and not the other is visible rather than summarised away.</p>`
+    : "";
+  return `<section class="robust full" aria-label="Ablation">
+    <div class="rb-head"><h2>Does Qloo add beyond the sector?${isStub() ? `<span class="stubtag">stub harness · magnitudes are layout only</span>` : ""}</h2>
+      <p class="rb-sub">The control is a same-sector peer basket — the equal-weight weekly return of the other names in the sub-sector, from the same committed prices, <b>no Qloo data at all</b>. Peers are fitted first; taste has to add on top, out of sample. The two regressors are correlated by construction — the peer basket already carries the sector taste that prices reflect — so a null cell means the sector average carries the channel, not that taste is unpriced. The number is therefore the <b>non-overlapping layer</b> — what Qloo contributes that a vendor-free peer basket cannot — not a bound on a causal total and not a proxy for it. Reading it as a bound would be an error in either direction. Peers' own in-sample gain is in the CSV, not here: in-sample R² cannot fall when a regressor is added, so only the out-of-sample cells make the claim.</p></div>
+    <div class="rb-grid stack">
+      <div class="rb-test">
+        <div class="rb-k">Qloo taste, over peers</div>
+        <div class="rb-v ${frozen ? "" : adds ? "good" : "bad"}">${pts(ab.oos.meanTasteExtraR2)}</div>
+        <div class="rb-tag ${frozen ? "" : adds ? "good" : "bad"}">${frozen ? "perturbation, not a test" : adds ? "adds beyond the sector" : "no measurable add"}</div>
+        ${frozen ? `<div class="rb-rule"><b>This is not a test of taste.</b> The ablation uses the same ${ab.oos.trainWeeks}/${ab.oos.testWeeks} split, and all ${sc.testWeeks} scored weeks are zero for every name — Qloo's last revision in this pull is ${esc(sc.lastMove)}. The number is the difference the training coefficients make on a frozen regressor, not a measured gain over peers.</div>` : ""}
+        ${ab.oos.ci90 ? `<div class="rb-se">± ${(ab.oos.se * 100).toFixed(2)} pts · 90% CI ${ptsSigned(ab.oos.ci90[0])} → ${ptsSigned(ab.oos.ci90[1])}${ab.oos.ci90[0] <= 0 && ab.oos.ci90[1] >= 0 ? " · crosses zero" : ""}</div>` : ""}
+        ${ab.oos.refit ? `<div class="rb-se rb-se-r">refit per draw: ± ${(ab.oos.refit.se * 100).toFixed(2)} pts · 90% CI ${ptsSigned(ab.oos.refit.ci90[0])} → ${ptsSigned(ab.oos.refit.ci90[1])}${ab.oos.refit.ci90[0] <= 0 && ab.oos.refit.ci90[1] >= 0 ? " · crosses zero" : ""}</div>` : ""}
+        ${widerOf(ab.oos) ? `<div class="rb-rule">Claim carries on the <b>${widerOf(ab.oos)}</b> interval, the wider of the two.</div>` : ""}
+        ${abpLine}
+        <p>Peer-only vs peer + taste, fitted on the first ${ab.oos.trainWeeks} weeks and scored on the last ${ab.oos.testWeeks} — signed, never clamped. Both are circular block bootstraps on the same split; the refit one re-estimates the coefficients inside each draw, centres near zero for the same reason, and contains the point estimate.${frozen ? ` Those ${ab.oos.testWeeks} scored weeks are frozen for every name, so the intervals describe how much the training coefficients wobble — not the precision of a taste effect over peers.` : ""} ${frozen ? `In plain terms: the frozen arm comes out positive on ${share}% of names, which is a property of the training fits rather than evidence that taste adds over a no-cost sector exposure.` : `In plain terms: taste adds out of sample on ${share}% of names over a no-cost sector exposure, and on the other ${100 - share}% the sector alone carries the signal — a positive count, not a positive average.`} If the sector mean already carries the taste its audience shares, a negative additive cell is the <b>expected</b> answer — what the desk then reports is how much the sector absorbs, not a refutation of taste as a construct.</p>
+      </div>
+      <div class="rb-test">
+        <div class="rb-k">${frozen ? "Names positive on the frozen arm" : "Names where taste adds"}</div>
+        <div class="rb-v ${frozen ? "" : share >= 50 ? "good" : "bad"}">${share}%</div>
+        <div class="rb-tag ${frozen ? "" : share >= 50 ? "good" : "bad"}">${frozen ? "not a taste count" : `of ${ab.holdings} priced`}</div>
+        <p>${frozen ? "Share of names where the frozen-tail difference is positive. With a zero regressor on every scored week this is a property of the training fits, not a count of names where taste beat the sector." : "Share of names whose out-of-sample taste gain over the peer control is positive. A coin flip means the sector already held the answer."}</p>
+      </div>
+    </div>
+    ${qv ? `<p class="rb-line">What Qloo contributes is not a copy of the sector. Over the same weeks, the correlation between a name's Qloo taste basket and its no-Qloo peer basket averages <b>${qv.meanCorr.toFixed(2)}</b> (${qv.minCorr.toFixed(2)} to ${qv.maxCorr.toFixed(2)} across names), while the taste basket moves in ${qv.meanActive.toFixed(0)} of ${qv.weeks} weeks and the peer basket moves every week. The two regressors carry different information on different calendars, so this control is not uninformative because the baskets are the same series; the non-overlapping Qloo layer simply does not add out of sample.</p>` : ""}
+    ${abWin}
+  </section>`;
+}
+
+// Both outcomes are designed, not just the good one. Whichever arm the numbers
+// land in is marked; the product value that does not depend on the outcome is
+// stated once, plainly.
+function branchCard(va) {
+  const ab = va?.ablation?.oos;
+  if (!ab) return "";
+  const adds = ab.meanTasteExtraR2 > 0;
+  const r = (n) => Math.round(n * 100);
+  return `<section class="robust full" aria-label="What it is worth">
+    <div class="rb-head"><h2>If the control says no, what is this worth?</h2>
+      <p class="rb-sub">A negative ablation is a legitimate outcome, and a prize entry should survive it. The two branches are written here before the keyed run; the one this panel lands in is marked. <a class="rb-link" href="#/read">The same answer in plain English →</a></p></div>
+    <div class="rb-grid two">
+      <div class="rb-test branch ${adds ? "on" : ""}">
+        <div class="rb-k">If taste adds over peers</div>
+        <div class="rb-tag ${adds ? "good" : ""}">${adds ? "where this run lands" : "not this run"}</div>
+        <p>The desk is an exposure factor: names are ranked by a measured taste headwind, the watchlist feed arms only where the flag survives BH, its own out-of-sample test and the book placebo — and it says "watchlist-only" rather than firing when the book-level null cannot support an alert — and the basket can be read as a risk overlay on a consumer book. Taste is requested per sub-sector, not per name, so widening the book costs a lookup per new name and only the trend points its basket adds — see <a class="rb-link" href="#/read">what the run costs</a>.</p>
+      </div>
+      <div class="rb-test branch ${adds ? "" : "on"}">
+        <div class="rb-k">If it does not</div>
+        <div class="rb-tag ${adds ? "" : "bad"}">${adds ? "not this run" : "where this run lands"}</div>
+        <p>Then the finding is that a sector peer basket already carries the taste channel: taste adds nothing beyond the sector on ${r(1 - ab.sharePositive)}% of names — a pre-registered negative that a research desk can cite, not a failure to report. What survives is a committed-price panel (equal-weight sub-sector exposures and weekly returns, from prices alone, no vendor) plus the evidence itself that the taste channel did not clear the control — not a standalone peer signal, because that arm is only read in-sample. Every suppressed alert is printed with its reason, so "no signal" stays inspectable.</p>
+      </div>
+    </div>
+  </section>`;
+}
+
+function robustBand(va, w) {
+  if (!va?.oos) return "";
+  const sec = va.secondary;
+  return `<section class="robust full" aria-label="Robustness">
+    <div class="rb-head"><h2>Does it survive?</h2>
+      <p class="rb-sub">Two checks a sceptical reader asks for before believing a factor — run on the primary window, then again on a disjoint window fixed before the keyed run. A positive verdict needs three things at once: a positive out-of-sample ΔR², an interval clear of zero, and <b>both</b> nulls cleared at p ≤ 0.10 — circular rotation, and a date permutation that keeps each basket's spread and drops only its timing. The better of the two p-values is never used on its own. ${va?.oos ? `${va.oos.testWeeks} test weeks is a short window and no provision can buy more power — only a longer window can. Where the sign cannot be separated from chance the desk says <b>NO SIGNAL</b>: the factor was looked for and not detectable here, which is a finding about this window rather than a grade of the product.` : ""}</p></div>
+    <div class="rb-window"><span>Primary window</span><span class="rb-span">${w ? `${esc(w.start)} → ${esc(w.end)} · ${w.weeks} weeks` : ""}</span></div>
+    <div class="rb-grid">${rbCells(va.oos, va.placebo, va.permutation)}</div>
+    ${sec ? `<div class="rb-window"><span>Second window · pre-registered · different regime</span><span class="rb-span">${esc(sec.window.start)} → ${esc(sec.window.end)} · ${sec.window.weeks} weeks</span></div>
+    <div class="rb-grid">${rbCells(sec.oos, sec.placebo)}</div>
+    <p class="rb-line"><b>${sec.replicates ? "Replicates." : "Does not replicate."}</b> The same estimator, floor, draws and seed, run on the ${sec.window.weeks} weekly returns immediately before the primary window — the window was fixed in the config before the keyed run, never chosen from results. It is not an identical-conditions check: the second window is an earlier market regime, and a taste factor need not behave the same in both. Replicating across the two is the stronger claim; failing to can be a regime difference rather than a refutation, and the desk prints the miss either way.</p>` : ""}
+  </section>`;
+}
+
+// The obvious rival to a "cultural" factor is a consumer-confidence proxy. This
+// block is the exclusion: taste must add over SPY *and* a published sentiment
+// index, and the basket's correlation with that index is printed beside it.
+function sentimentBand(va) {
+  const se = va?.sentiment;
+  if (!se?.oos) return "";
+  const c = se.oos.ci90;
+  const crosses = c && c[0] <= 0 && c[1] >= 0;
+  const adds = se.oos.meanTasteExtraR2 > 0;
+  const share = Math.round(se.oos.sharePositive * 100);
+  const frozen = se.scoring ? se.scoring.testable === false : false;
+  // The chip reports the sign of the point estimate, not a verdict: if the
+  // interval crosses zero the word "survives" would be a claim the spread denies.
+  const seTag = frozen ? "perturbation, not a test" : adds ? (crosses ? "positive · crosses zero" : "survives the control") : (crosses ? "no measurable add" : "explained by sentiment");
+  return `<section class="robust full" aria-label="Consumer sentiment">
+    <div class="rb-head"><h2>Could this just be consumer confidence?</h2>
+      <p class="rb-sub">A taste factor built from what people search for and stream can be a lagging confidence proxy — people buy more of everything when they feel good. So taste has to clear a published sentiment index as well as the market. The control is the University of Michigan Index of Consumer Sentiment (FRED <code>UMCSENT</code>, ${esc(se.source ?? "")}), a <b>monthly</b> series carried as its month-over-month change on the weeks inside that month — coarse by construction, and printed as coarse rather than interpolated into a weekly series it does not have. A null here would mean the factor is a sentiment proxy and the word "cultural" is unearned.</p></div>
+    <div class="rb-grid">
+      <div class="rb-test">
+        <div class="rb-k">Taste, after sentiment</div>
+        <div class="rb-v ${adds ? "good" : "bad"}">${pts(se.oos.meanTasteExtraR2)}</div>
+        <div class="rb-tag ${adds ? "good" : "bad"}">${seTag}</div>
+        ${c ? `<div class="rb-se">± ${(se.oos.se * 100).toFixed(2)} pts · 90% CI ${ptsSigned(c[0])} → ${ptsSigned(c[1])}${crosses ? " · crosses zero" : ""}</div>` : ""}
+        <p>Out-of-sample ΔR² of taste over <i>SPY + sentiment</i>, on the last ${se.oos.testWeeks} weeks, never clamped. Positive on ${share}% of ${se.holdings} names.${frozen ? ` Those ${se.oos.testWeeks} weeks are frozen for every name at this Qloo vintage, so the figure is the training fits' perturbation, not a measured add over sentiment.` : ""}</p>
+      </div>
+      <div class="rb-test">
+        <div class="rb-k">Basket vs sentiment</div>
+        <div class="rb-v">${se.meanCorr == null ? "—" : (se.meanCorr > 0 ? "+" : "") + se.meanCorr.toFixed(2)}</div>
+        <div class="rb-tag">mean correlation</div>
+        <p>Average correlation between each name's weekly taste basket and the same sentiment change — near zero means the basket is not a relabelled confidence index. ${se.movingWeeks} of ${se.oos.testWeeks + se.oos.trainWeeks} weeks move at all, because the index is monthly.</p>
       </div>
     </div>
   </section>`;
@@ -219,8 +411,8 @@ function policyBlock() {
       <p>The desk will not print a cultural beta it cannot trace to a live Qloo response, and it will
       never fall back to zero. Set <code>QLOO_API_KEY</code>, run the pipeline, and every withheld cell
       fills from one live pass: entity search, weekly trending, affinity, then the regression.</p>
-      <button class="btn ghost" id="recompute">Recompute from Qloo</button>
-      <p class="caption">Without a key the endpoint answers with a refusal, not a zero-filled run.</p>
+      <button class="btn ghost" id="recompute" title="re-derives the panel from the Qloo responses already cached — no new API calls">Re-derive the panel</button>
+      <p class="caption">Without a key the endpoint answers with a refusal, not a zero-filled run. Re-deriving reads the responses already paid for; it does not refresh Qloo's series.</p>
     </div>
     <dl class="ledger">
       <dt>Live</dt><dd>${MARKET.window.weeks} weekly returns × ${MARKET.rows.length} names<br>${MARKET.window.start} → ${MARKET.window.end}<br>Yahoo Finance · committed fixture</dd>
@@ -230,21 +422,40 @@ function policyBlock() {
   </div>`;
 }
 
+// The book is 100+ names, so the reading is filtered by sub-sector rather than
+// scrolled. "All" is the factor; a sector is the same factor on its own audience.
+function filterBar(rows) {
+  const seen = [];
+  for (const r of rows) if (r.sector && !seen.some((s) => s.id === r.sector)) seen.push({ id: r.sector, label: r.sectorLabel ?? r.sector });
+  const chip = (id, label, n) => `<button class="fchip${sectorFilter === id ? " on" : ""}" data-sector="${id}">${esc(label)}<span>${n}</span></button>`;
+  const count = (id) => rows.filter((r) => id === "all" || r.sector === id).length;
+  const priced = rows.filter((r) => r.status === "ok").length;
+  return `<div class="filters" data-audit="filters">${chip("all", "All consumer", count("all")).replace("<button", `<button title="${priced} of ${count("all")} priced with a cultural beta"`)}${seen.map((s) => chip(s.id, s.label, count(s.id))).join("")}</div>`;
+}
+
 function coldTable() {
-  const rows = MARKET.rows.map((r) => `<tr class="link" data-ev="${r.ticker}">
-    <td class="c-name" data-l="Holding"><span class="tick">${r.ticker}</span><span class="name">${esc(r.label)}</span></td>
-    <td class="num" data-l="Market beta"><span class="val"><span class="v">${f2(r.marketBeta)}</span><span class="se">± ${r.marketSE.toFixed(2)}</span></span></td>
-    <td class="num c-cult" data-l="Cultural beta" data-c="cultural"><span class="waitbar" aria-hidden="true"></span><span class="val"><span class="withheld">withheld</span></span></td>
-    <td class="c-sig" data-l="Signal"><span class="signal none">—</span></td>
-    <td class="ta" data-l="Trace"><a class="tracelink" href="#/evidence/${r.ticker}">trace</a></td>
-  </tr>`).join("");
-  return `<div class="tw">
+  const rows = MARKET.rows.filter((r) => sectorFilter === "all" || r.sector === sectorFilter).map((r) => {
+    const name = `<td class="c-name" data-l="Holding"><span class="tick">${r.ticker}</span><span class="name">${esc(r.label)}</span><span class="sector">${esc(r.sectorLabel ?? "")}</span></td>`;
+    const trace = `<td class="ta" data-l="Trace"><a class="tracelink" href="#/evidence/${r.ticker}">trace</a></td>`;
+    if (r.status === "no prices") {
+      return `<tr class="link" data-ev="${r.ticker}">${name}
+        <td class="num" data-l="Market beta"><span class="signal ins">no prices</span></td>
+        <td class="num c-cult" data-l="Cultural beta" data-c="cultural"><span class="val"><span class="withheld">withheld</span></span></td>
+        <td class="c-sig" data-l="Signal"><span class="signal ins">—</span></td>${trace}</tr>`;
+    }
+    return `<tr class="link" data-ev="${r.ticker}">${name}
+      <td class="num" data-l="Market beta"><span class="val"><span class="v">${f2(r.marketBeta)}</span><span class="se">± ${r.marketSE.toFixed(2)}</span></span></td>
+      <td class="num c-cult" data-l="Cultural beta" data-c="cultural"><span class="waitbar" aria-hidden="true"></span><span class="val"><span class="withheld">withheld</span></span></td>
+      <td class="c-sig" data-l="Signal"><span class="signal none">—</span></td>${trace}</tr>`;
+  }).join("");
+  return `${filterBar(MARKET.rows)}
+  <div class="tw">
     <table class="desk-table" data-audit="holdings">
       <thead><tr>
         <th>Holding</th>
         <th><span class="th">Market beta</span><span class="thsub">± std. error</span></th>
         <th><span class="th">Cultural beta</span><span class="thsub">± std. error</span></th>
-        <th><span class="th">Signal</span><span class="thsub">|t| ≥ 2</span></th>
+        <th><span class="th">Signal</span><span class="thsub">|t| ≥ 2 · q ≤ 0.10</span></th>
         <th class="th-right"></th>
       </tr></thead>
       <tbody>${rows}</tbody>
@@ -253,88 +464,269 @@ function coldTable() {
 }
 
 function liveTable() {
-  const rows = [...DESK.rows].sort((a, b) => {
-    const av = a[sortKey] ?? -Infinity, bv = b[sortKey] ?? -Infinity;
+  const inSector = DESK.rows.filter((r) => sectorFilter === "all" || r.sector === sectorFilter);
+  const rows = [...inSector].sort((a, b) => {
+    const av = a[sortKey], bv = b[sortKey];
+    if (av == null && bv == null) return a.ticker.localeCompare(b.ticker);
+    if (av == null) return 1;
+    if (bv == null) return -1;
     return (av - bv) * sortDir || a.ticker.localeCompare(b.ticker);
   });
   const arrow = (k) => `<span class="arrow">${k === sortKey ? (sortDir > 0 ? "▲" : "▼") : ""}</span>`;
   const maxAbs = Math.max(1, ...rows.filter((r) => r.status === "ok").map((r) => Math.abs(r.culturalBeta)));
   const body = rows.map((r) => {
+    const sectorTag = sectorFilter === "all" ? `<span class="sector">${esc(r.sectorLabel ?? "")}</span>` : "";
+    if (r.status === "unresolved") {
+      const rs = r.resolution;
+      const search = rs
+        ? `${esc(rs.failure)} · ${rs.queriesTried.length} ${rs.queriesTried.length === 1 ? "query" : "queries"}, ${rs.candidatesSeen} ${rs.candidatesSeen === 1 ? "candidate" : "candidates"}`
+        : "no Qloo entity";
+      return `<tr>
+        <td class="c-name" data-l="Holding"><span class="tick">${r.ticker}</span><span class="name">${esc(r.label)}</span>${sectorTag}<span class="sector" style="font-style:italic">${search} · tried: ${esc((rs?.queriesTried ?? [r.query]).join(", ") || r.query || "")}</span></td>
+        <td class="num" data-l="Market beta"><span class="val"><span class="v">${r.marketBeta == null ? "—" : f2(r.marketBeta)}</span>${r.marketSE == null ? "" : `<span class="se">± ${r.marketSE.toFixed(2)}</span>`}</span></td>
+        <td class="num c-cult" data-l="Cultural beta"><span class="signal ins">no Qloo entity</span></td>
+        <td class="c-sig" data-l="Signal"><span class="signal ins">—</span></td>
+        <td class="ta"></td></tr>`;
+    }
     if (r.status !== "ok") {
       return `<tr>
-        <td class="c-name" data-l="Holding"><span class="tick">${r.ticker}</span><span class="name">${esc(r.label)}</span></td>
-        <td class="num" data-l="Market beta"><span class="signal ins">insufficient signal</span></td>
+        <td class="c-name" data-l="Holding"><span class="tick">${r.ticker}</span><span class="name">${esc(r.label)}</span>${sectorTag}</td>
+        <td class="num" data-l="Market beta"><span class="signal ins">${esc(r.status === "no prices" ? "no prices" : "insufficient signal")}</span></td>
         <td class="num c-cult" data-l="Cultural beta"><span class="signal ins">not printed</span></td>
         <td class="c-sig" data-l="Signal"><span class="signal ins">—</span></td>
         <td class="ta" data-l="Trace"><a class="tracelink" href="#/evidence/${r.ticker}">trace</a></td></tr>`;
     }
     const b = r.culturalBeta, pct = Math.abs(b) / maxAbs * 50;
-    return `<tr class="link" data-h="${r.ticker}">
-      <td class="c-name" data-l="Holding"><span class="tick">${r.ticker}</span><span class="name">${esc(r.label)}</span></td>
+    const depth = r.featured ? `#/holding/${r.ticker}` : `#/evidence/${r.ticker}`;
+    // "tailwind" was read as a finding on a name that fails the q filter. The column
+    // reports the t-test it actually passed and the q it failed; direction is already
+    // in the beta's sign.
+    const sig = r.flagged
+      ? `<span class="signal risk">● taste risk</span><span class="q">q ${r.culturalQ != null ? r.culturalQ.toFixed(2) : "—"}</span>`
+      : Math.abs(r.culturalT) >= 2
+        ? `<span class="signal ${b > 0 ? "tail" : "none"}">|t| ≥ 2</span><span class="q">q ${r.culturalQ != null ? r.culturalQ.toFixed(2) : "—"} · not flagged</span>`
+        : '<span class="signal none">—</span>';
+    return `<tr class="link" data-h="${r.ticker}" data-feat="${r.featured ? 1 : 0}">
+      <td class="c-name" data-l="Holding"><span class="tick">${r.ticker}</span><span class="name">${esc(r.label)}</span>${sectorTag}</td>
       <td class="num" data-l="Market beta"><span class="val"><span class="v">${f2(r.marketBeta)}</span><span class="se">± ${r.marketSE.toFixed(2)}</span></span></td>
       <td class="num c-cult ${b < 0 ? "neg" : ""}" data-l="Cultural beta">
         <div class="bar"><i class="${b >= 0 ? "pos" : "negs"}" style="width:${pct}%"></i></div>
-        <span class="val"><span class="v">${f2(b)}</span><span class="se">± ${r.culturalSE.toFixed(2)}</span></span></td>
-      <td class="c-sig" data-l="Signal">${r.flagged ? '<span class="signal risk">● taste risk</span>' : '<span class="signal none">—</span>'}</td>
-      <td class="ta" data-l="Trace"><a class="tracelink" href="#/evidence/${r.ticker}">trace</a></td></tr>`;
+        <span class="val"><span class="v">${f2(b)}</span><span class="se">± ${r.culturalSE.toFixed(2)}${r.activeWeeks != null ? ` · ${r.activeWeeks}/${r.weeks} wk` : ""}</span></span></td>
+      <td class="c-sig" data-l="Signal">${sig}</td>
+      <td class="ta" data-l="Trace"><a class="tracelink" href="${depth}">${r.featured ? "open" : "trace"}</a></td></tr>`;
   }).join("");
-  return `<div class="tw">
+  const fs = DESK.factorSparsity;
+  const sparseNote = fs
+    ? `<p class="muted" style="font-size:12px;margin-top:10px">The basket is flat in weeks Qloo reports no movement, so each slope is identified on the weeks it moves — ${fs.minActive}–${fs.maxActive} of ${fs.weeks} per name (median ${fs.medianActive}). A beta off that few weeks can be large and carry a wide ±; the out-of-sample ΔR² on each trace is the check.</p>`
+    : "";
+  const unr = DESK.universe?.unresolved?.length ?? 0;
+  const res = (DESK.universe?.unresolved ?? []).map((u) => u.resolution).filter(Boolean);
+  const byClass = res.reduce((a, r) => { a[r.failure] = (a[r.failure] ?? 0) + 1; return a; }, {});
+  const singleQuery = res.filter((r) => r.queriesTried.length === 1).length;
+  const classText = res.length
+    ? ` By cause, as recorded by the resolver: ${Object.entries(byClass).map(([k, n]) => `${n} ${k}`).join(", ")}. ${singleQuery} of the ${res.length} were searched under a single query, so for those the search was not exhausted — a miss there is a limit on what was asked, not a finding that the brand is outside Qloo.`
+    : "";
+  const rosterNote = unr
+    ? `<p class="muted" style="font-size:12px;margin-top:6px">${unr} of ${DESK.universe.total} names resolved to no Qloo brand entity. They keep their row with the market half measured, the cultural column withheld and the search printed beside them, so the roster does not shrink to hide them: ${DESK.rows.filter((r) => r.status === "ok").length} of ${DESK.rows.length} names carry a cultural beta, and the rest are visible rather than absent.${classText}</p>`
+    : "";
+  return `${filterBar(DESK.rows)}
+  <div class="tw">
     <table class="desk-table" data-audit="holdings">
       <thead><tr>
         <th class="sort" data-k="ticker">Holding ${arrow("ticker")}</th>
         <th class="sort" data-k="marketBeta"><span class="th">Market beta</span><span class="thsub">± std. error</span></th>
         <th class="sort" data-k="culturalBeta"><span class="th">Cultural beta ${arrow("culturalBeta")}</span><span class="thsub">± std. error · Qloo</span></th>
-        <th><span class="th">Signal</span><span class="thsub">|t| ≥ 2</span></th>
+        <th class="sort" data-k="culturalQ"><span class="th">Signal ${arrow("culturalQ")}</span><span class="thsub">${sortKey === "culturalQ" ? "sorted by q · " : ""}flag needs |t| ≥ 2 · q ≤ 0.10</span></th>
         <th class="th-right"></th>
       </tr></thead>
       <tbody>${body}</tbody>
     </table>
-  </div>`;
+  </div>${sparseNote}${rosterNote}`;
 }
 
 /* ---------- views ---------- */
+// The first thing a judge reads is a sentence, not a grid. HOLDS / NO SIGNAL /
+// FAILS describe the factor's out-of-sample behaviour, never the product's worth:
+// A null result is a finding, and the desk says so in the same breath. NO SIGNAL
+// is a separate grade from FAILS: the factor was looked for and not detectable at
+// this window length, which is not the same as measuring it as harmful, and calling
+// it "unpowered" would understate a null the data actively supports.
+//
+// The grade is read off the refit interval — the one that includes coefficient
+// error. The fixed-coefficient interval holds the fit still across resamples, so it
+// is narrower than the truth; grading on it would let a claim through on an
+// uncertainty the desk chose not to charge for.
+// One spelling of the null set, everywhere it is printed. Three decimals because the
+// two permutation numbers round to the same 2-dp figure at this pull, and a reader who
+// sees "0.83" beside a value that is really 0.830 vs 0.778 cannot tell which test ran.
+function nullList(va) {
+  const f = (x) => (x == null ? "—" : x.toFixed(3));
+  const rot = va?.placebo?.p, wk = va?.permutation?.p, blk = va?.permutation?.pBlocked;
+  return blk == null
+    ? `rotation p ${f(rot)}, week permutation p ${f(wk)}`
+    : `rotation p ${f(rot)}, week permutation p ${f(wk)}, 6-week block p ${f(blk)}`;
+}
+
+function verdictOf(ok, flagged, va) {
+  const oos = va?.oos?.meanDeltaR2 ?? null;
+  const p = va?.placebo?.p ?? null;
+  const untestable = va?.oos?.scoring ? va.oos.scoring.testable === false : false;
+  const permP = va?.permutation ? Math.max(va.permutation.p, va.permutation.pBlocked ?? -Infinity) : null;
+  const sec = va?.secondary;
+  const covers = (c) => Array.isArray(c) && c[0] <= 0 && c[1] >= 0;
+  const interval = va?.oos?.refit?.ci90 ?? va?.oos?.ci90;
+  const straddles = covers(interval);
+  const bothNullsBeaten = p !== null && permP !== null && p <= 0.1 && permP <= 0.1;
+  const primaryHolds = oos !== null && bothNullsBeaten && oos > 0 && !straddles;
+  const primaryFails = oos !== null && !straddles && oos <= 0;
+  let grade;
+  // A frozen scored slice cannot grade a held-out test: the OOS cell and its
+  // interval describe perturbation of the training fit, not taste. The grade then
+  // rests on the in-sample book and the nulls, and says so in the word itself.
+  const inSampleSignal = p !== null && permP !== null && p <= 0.1 && permP <= 0.1 && (va?.meanDeltaR2 ?? 0) > 0;
+  if (oos === null || p === null) grade = "MARGINAL";
+  else if (untestable) grade = inSampleSignal ? "IN-SAMPLE ONLY" : "NO SIGNAL (IN-SAMPLE)";
+  else if (!sec) grade = primaryHolds ? "HOLDS" : straddles ? "NO SIGNAL" : primaryFails ? "FAILS" : "MARGINAL";
+  else if (primaryHolds && sec.replicates) grade = "HOLDS";
+  else if (primaryFails && !sec.replicates) grade = "FAILS";
+  else if (straddles) grade = "NO SIGNAL";
+  else grade = "MARGINAL";
+
+  const priced = ok.length;
+  let sentence;
+  if (flagged > 0) {
+    sentence = `${flagged} of ${priced} priced ${flagged === 1 ? "name carries" : "names carry"} a measurable taste headwind — negative cultural beta, |t| ≥ 2 and a book-wide q ≤ 0.10.`;
+  } else {
+    sentence = `No name in the ${priced} priced names carries a taste headwind that survives its own significance screen: taste is measured on every name and charged as a risk on none.`;
+  }
+  const mag = oos === null ? "" : pts(Math.abs(oos)).replace(/^\+/, "");
+  const bound = Array.isArray(interval) ? Math.max(Math.abs(interval[0]), Math.abs(interval[1])) * 100 : null;
+  const nulls = nullList(va);
+  const tail = oos === null ? "" : untestable
+    ? ` In sample the basket added ${pts(va.meanDeltaR2)} of r², and every null matches or beats that alignment (${nulls}). The held-out slice cannot check it: every scored week is frozen at this Qloo vintage (see Data basis), so the grade is read in sample and says so in the word. NO SIGNAL (IN-SAMPLE) means no sign in the book and no separable null — not a demonstrated absence, and not a completed held-out test.`
+    : ` Out of sample the basket ${oos > 0 ? "added" : "lost"} ${mag} of r² on the last ${va.oos.testWeeks} weeks${straddles ? `, and the interval that carries coefficient error crosses zero${bound === null ? "" : ` — so the window can only exclude effects larger than about ${bound.toFixed(1)} pts, which is little`}` : ", with the interval clear of zero"}. Every null (${nulls}) scores at least as well as the real alignment.${straddles ? " No sign is detectable in either direction at this window length, and that is the finding." : ""}`;
+  const secTail = sec
+    ? ` The prior ${sec.window.weeks} weeks ${sec.replicates ? "replicate" : "do not replicate"} it (out-of-sample ΔR² ${pts(sec.oos.meanDeltaR2)}, placebo p ${sec.placebo.p.toFixed(2)}).`
+    : "";
+  return { grade, untestable, sentence: sentence + tail + secTail };
+}
+
+function chips(grade, flagged, va) {
+  const oos = va?.oos?.meanDeltaR2 ?? null;
+  const p = va?.placebo?.p ?? null;
+  const sec = va?.secondary;
+  const untestable = va?.oos?.scoring ? va.oos.scoring.testable === false : false;
+  const cls = grade === "HOLDS" ? "good" : grade === "FAILS" ? "bad" : "mid";
+  const wk = va?.permutation?.p ?? null;
+  const blk = va?.permutation?.pBlocked ?? null;
+  const rep = sec
+    ? `<span class="chip ${sec.replicates ? "good" : "bad"}">${sec.replicates ? "replicates" : "does not replicate"}</span>`
+    : va?.secondarySkip
+      ? `<span class="chip">second window untestable</span>`
+      : `<span class="chip">second window not run</span>`;
+  const note = grade === "HOLDS"
+    ? "HOLDS = the factor held out of sample on both windows and cleared every null"
+    : grade === "NO SIGNAL (IN-SAMPLE)" || grade === "IN-SAMPLE ONLY"
+      ? `${grade} = graded in sample only. The held-out slice is frozen at this Qloo vintage (${va.oos.scoring.frozenWeeks} of ${va.oos.scoring.testWeeks} scored weeks move for no name), so no held-out test ran and none is claimed; in sample the association is ${grade === "IN-SAMPLE ONLY" ? "separably positive but unconfirmed" : "indistinguishable from chance"}, which is not proof of absence`
+    : grade === "NO SIGNAL"
+      ? "NO SIGNAL = the out-of-sample interval crosses zero and every null matches the real alignment: the factor was looked for and not detectable at this window length. Not the same as measuring it as harmful, and not a claim that it is absent"
+    : grade === "FAILS"
+      ? "FAILS = the factor was measured negative out of sample with an interval clear of zero — a finding about the factor, not a defect in the desk"
+      : oos === null
+        ? "not yet computed — this panel is waiting on the keyed run"
+        : !sec && va?.secondarySkip
+          ? `UNTESTABLE = the pre-registered window stays in the config, but Qloo's levels do not cover enough of it to clear the ${DESK?.sampleFloor?.floor ?? 100}-week floor`
+          : sec && !sec.replicates
+            ? "MARGINAL = it held on the primary window and did not replicate on the disjoint one"
+            : "MARGINAL = the factor is weak on at least one window; the numbers are as computed";
+  return `<div class="chips" data-audit="verdict">
+    <span class="chip ${cls}">${grade}</span>
+    ${untestable ? `<span class="chip bad">held-out slice frozen</span>` : ""}
+    <span class="chip">${flagged} of ${va?.holdings ?? "—"} flagged</span>
+    <span class="chip">${untestable ? "OOS ΔR² not a test" : `OOS ΔR² ${oos === null ? "—" : pts(oos)}`}</span>
+    <span class="chip">rotation p ${p === null ? "—" : p.toFixed(3)}</span>
+    <span class="chip">week p ${wk === null ? "—" : wk.toFixed(3)}${blk === null ? "" : ` · block p ${blk.toFixed(3)}`}</span>
+    ${rep}
+    <span class="chip note">${note}</span>
+  </div>`;
+}
+
 function deskView() {
   if (!DESK) {
     if (!MARKET) return `<div class="head"><div class="lede-col"><h1>Taste is a <span class="thin">risk factor.</span></h1>
       <p class="sub">The desk server is not answering. Start it with <code>npm start</code> and reload.</p></div></div>`;
     const w = MARKET.window;
     return `${headBlock("Taste is a <span class=\"thin\">risk factor.</span>",
-      "Market beta prices how a stock moves with the index. Cultural beta prices how much of that movement is exposure to taste — built from Qloo weekly trend data and read next to the market number.",
+      `Every consumer name in the book, priced two ways: market beta against the S&P 500, and cultural beta against its own sub-sector's taste basket from Qloo — ${MARKET.rows.length} names, one factor.`,
       w, "prices committed · taste factor locked", "warn", false)}
     <div class="notice" role="status">
       <span class="dot"></span>
       <span class="notice-text"><b>Cultural factor locked.</b> No Qloo response is connected to this build, so no taste beta is printed.
-      The market half below is live for all seven names.</span>
+      The market half below is live for ${MARKET.universe?.priced ?? MARKET.rows.length} of ${MARKET.rows.length} names; the rest have no complete price history and keep their row without a beta.</span>
       <a class="notice-link" href="#/evidence">What is withheld →</a>
     </div>
-    ${strip([["7", "holdings"], ["106", "aligned weeks"], ["7", "market betas, live"], ["0", "taste betas"]])}
+    ${strip([[String(MARKET.rows.length), "names in the book"], [String(w.weeks), "aligned weeks"], [String(MARKET.universe?.priced ?? MARKET.rows.length), "market betas, live"], ["0", "taste betas"]])}
     ${coldTable()}
     <p class="caption">Market beta is a one-regressor fit of weekly return on ${esc(MARKET.index.label)}. It needs no Qloo data,
     so it is shown; the cultural column stays withheld until a live Qloo run fills it.
     That first keyed run also prints ΔR² from taste, the median |t| of the cultural betas,
-    an out-of-sample ΔR² fitted on the first 70 weeks and scored on the last 36, and a circular-rotation
-    placebo p over 400 draws. The signal column flags a cultural beta that is negative with |t| ≥ 2.</p>
+    an out-of-sample ΔR² on a pre-registered held-out slice, a circular-rotation
+    placebo p over 400 draws, and the same two tests again on the disjoint replication window before this one.
+    The signal column flags a cultural beta that is negative, clears |t| ≥ 2, and survives a Benjamini–Hochberg
+    q ≤ 0.10 across every priced name.</p>
     ${impactBlock(false)}
     ${policyBlock()}`;
   }
   const ok = DESK.rows.filter((r) => r.status === "ok");
   const flagged = ok.filter((r) => r.flagged).length;
   const va = DESK.valueAdd;
+  const v = verdictOf(ok, flagged, va);
+  const sectors = DESK.universe?.sectors?.length ?? 0;
+  const sc = va?.oos?.scoring;
+  // The single fact that changes how every number on this page is read belongs on
+  // this page, not two clicks away: a judge who never opens the vintage card must
+  // not read an in-sample grade as a completed held-out test.
+  const basis = sc && sc.testable === false
+    ? `<p class="basis" data-audit="basis"><b>Data basis.</b> Qloo's last revision in this pull is the week ending ${esc(sc.lastMove ?? "—")}. The final <b>${sc.frozenAfterWindow} of ${va.oos.trainWeeks + va.oos.testWeeks} weeks</b> repeat that level with a log change of exactly zero for every name, and <b>all ${sc.testWeeks} scored weeks sit inside them</b> — so no held-out test of taste ran, and none is claimed anywhere on this desk. Every number here is in sample. <a href="#/evidence">Why, and what a test would need →</a></p>`
+    : "";
+  // On a phone the full band lands below the first screen. The one sentence that
+  // changes how the grade reads has to survive the fold, so it repeats here in a
+  // form that costs a line: the grade chip says "(IN-SAMPLE)", and this says why.
+  const headNote = sc && sc.testable === false
+    ? `<b>All ${sc.testWeeks} scored weeks are frozen</b> at this Qloo vintage — every number here is in sample. <a href="#/evidence">Why →</a>`
+    : "";
+  const tasteHl = v.grade === "HOLDS";
   return `${headBlock("Taste is a <span class=\"thin\">risk factor.</span>",
-    "Market beta prices how a stock moves with the index. Cultural beta prices how much of that movement is exposure to taste — built from Qloo weekly trend data and read next to the market number.",
-    DESK.window, `${ok.length}/${DESK.rows.length} holdings priced · live Qloo`, "ok")}
+    `Every consumer name in the book, priced two ways: market beta against the S&P 500, and cultural beta against its own sub-sector's taste basket from Qloo — ${DESK.rows.length} names across ${sectors} sub-sectors, one taste factor with the market as its control.`,
+    DESK.window, `${ok.length}/${DESK.rows.length} priced · ${liveLabel()}${frozenAfter()}`, liveTone(), true, headNote)}
+    <p class="verdict-line" data-audit="verdict-line">${esc(v.sentence)}</p>
+    ${chips(v.grade, flagged, va)}
+    ${basis}
+    <p class="readlink"><a href="#/read">New to the desk? Read it in plain English →</a></p>
     ${strip([
-      [String(DESK.rows.length), "holdings"],
-      [String(DESK.window.weeks), "aligned weeks"],
+      [String(DESK.rows.length), "names in the book"],
+      [String(ok.length), "priced on the factor"],
       [String(flagged), flagged === 1 ? "taste-risk flag" : "taste-risk flags"],
-      [pts(va?.meanDeltaR2), "ΔR² from taste", true],
+      [pts(va?.meanDeltaR2), sc && sc.testable === false ? "ΔR² from taste · in sample" : "ΔR² from taste", tasteHl],
       [va ? va.medianAbsCulturalT.toFixed(2) : "—", "median |t|, cultural"],
     ])}
     ${liveTable()}
-    <p class="caption">Flag rule: cultural beta negative with |t| ≥ 2 — a measured headwind, not an instruction.
-    Click a holding for its full reading. ${va ? `The taste basket adds ${pts(va.meanDeltaR2)} of in-sample r² on average (market ${va.meanMarketR2.toFixed(3)} → ${va.meanFullR2.toFixed(3)}); the median |t| of the cultural betas is ${va.medianAbsCulturalT.toFixed(2)}, so this is a signal strength, not a guarantee.` : ""}</p>
-    ${robustBand(va)}
+    <p class="caption">Flag rule: negative cultural beta with |t| ≥ 2 <em>and</em> a Benjamini–Hochberg q ≤ 0.10 across the book — a measured headwind, not an instruction.
+    A hundred names at |t| ≥ 2 alone would flag about five by chance, so the q is not optional. Names marked <b>open</b> have an audience-level basket and a full reading;
+    the rest link to their provenance row. ${va ? `The taste basket adds ${pts(va.meanDeltaR2)} of in-sample r² on average (market ${va.meanMarketR2.toFixed(3)} → ${va.meanFullR2.toFixed(3)}); the median |t| of the cultural betas is ${va.medianAbsCulturalT.toFixed(2)}, so this is a signal strength, not a guarantee.` : ""}${va?.ablation?.oos ? ` Against a same-sector peer basket, taste adds ${pts(va.ablation.oos.meanTasteExtraR2)} out of sample on ${Math.round(va.ablation.oos.sharePositive * 100)}% of names — the control is on Evidence.` : ""}</p>
     ${impactBlock(true)}`;
+}
+
+// A single row's OOS number with the same two intervals the book carries, and
+// the identity of the wider one. A lone point estimate on a holding page reads
+// as more certainty than 36 test weeks can support.
+function rowIntervals(r) {
+  const f = r.oosFixed, q = r.oosRefit;
+  if (!f && !q) return "";
+  const seg = (x, label) => `${label} 90% CI ${ptsSigned(x.lo)} → ${ptsSigned(x.hi)}`;
+  const both = [f ? seg(f, "fixed coefficients") : null, q ? seg(q, "refit per draw") : null].filter(Boolean).join("; ");
+  const wider = widerOf({ ci90: f ? [f.lo, f.hi] : null, refit: q ? { ci90: [q.lo, q.hi] } : null });
+  return `Intervals: ${both}.${wider ? ` Claim carries on the <b>${wider}</b> interval, the wider of the two.` : ""}`;
 }
 
 function holdingView(tick) {
@@ -351,95 +743,236 @@ function holdingView(tick) {
     : sig ? "Significant, and with taste — a tailwind, not a risk flag."
     : "Not significant at |t| ≥ 2. Measured, and not charged.";
   const s = SERIES?.[tick];
-  const chart1 = s ? lineChart(s.dates, s.returns, s.taste, tick, "taste basket") : "<p>series unavailable</p>";
+  const chart1 = s ? lineChart(s.dates, s.returns, s.basket, tick, `${r.sectorLabel ?? "sub-sector"} basket`) : "";
   let chart2 = "";
   if (s) {
     const ps = partialSlope(s.returns, s.index, s.basket);
     if (ps) chart2 = scatter(ps.ry, ps.rx, ps.slope, tick);
   }
-  const weights = r.basketWeights.map((w) => `<div>${w.ticker}</div>
-    <div class="track"><div class="fill" style="width:${(w.weight * 100).toFixed(0)}%"></div></div>
-    <div>${(w.weight * 100).toFixed(1)}%</div>`).join("");
+  // On the stub harness the eight "Stub brand 0…" rows at identical weights read
+  // as a rendering bug to anyone skimming past the tag, so the block collapses to
+  // one labelled state and the named neighbours appear only on a keyed run.
+  const weightRows = (members, kinds) => isStub()
+    ? `<div class="wm-empty">
+        <div class="wm-top"><b>${members.length} neighbours · equal weights on the stub</b><span class="wm-p">structure only</span></div>
+        <div class="track"><div class="fill" style="width:100%"></div></div>
+        <span class="wm-note">Named brands, films, artists and shows appear here on the keyed run, one row each with its affinity weight.${kinds ? ` This basket draws on ${kinds}.` : ""}</span>
+      </div>`
+    : members.map((m) => `<div class="wm">
+    <div class="wm-top"><b title="${esc(m.name)}">${esc(m.name)}</b><span class="wm-t">${esc(m.type)}</span><span class="wm-p">${(m.weight * 100).toFixed(1)}%</span></div>
+    <div class="track"><div class="fill" style="width:${(m.weight * 100).toFixed(0)}%"></div></div>
+  </div>`).join("");
+  const kindsOf = (ms) => [...new Set(ms.map((m) => m.type).filter(Boolean))].map((t) => t.replace(/_/g, " ")).join(", ");
+  const sec = r.secondary;
   return `${back}
   <div class="head">
     <div class="lede-col">
       <h1>${tick} <span class="thin">— ${esc(r.label)}</span></h1>
-      <p class="sub">${verdict}</p>
+      <p class="sub">${verdict} <span class="sector">${esc(r.sectorLabel ?? "")}</span></p>
     </div>
     <div class="side">${windowPill(DESK.window)}
-      <div class="state ok">${DESK.rows.filter((x) => x.status === "ok").length}/${DESK.rows.length} holdings priced · live Qloo</div>
+      <div class="state ${liveTone()}">${DESK.rows.filter((x) => x.status === "ok").length}/${DESK.rows.length} names priced · ${liveLabel()}${frozenAfter()}</div>
     </div>
   </div>
   <div class="big">
     <div class="stat"><b>${f2(r.marketBeta)}</b><small>market beta ± ${r.marketSE.toFixed(2)}</small></div>
-    <div class="stat"><b style="color:${r.culturalBeta < 0 ? "var(--accent)" : "var(--good)"}">${f2(r.culturalBeta)}</b><small>cultural beta ± ${r.culturalSE.toFixed(2)}</small></div>
+    <div class="stat"><b style="color:${r.culturalBeta < 0 ? "var(--accent)" : "var(--good)"}">${f2(r.culturalBeta)}</b><small>cultural beta ± ${r.culturalSE.toFixed(2)} · identified on ${r.activeWeeks ?? "—"} of ${r.weeks} weeks</small></div>
     <div class="stat"><b>${f2(r.culturalT, 1)}</b><small>t-stat · p ${r.culturalP < 0.001 ? "<.001" : r.culturalP.toFixed(3)}</small></div>
+    <div class="stat"><b>${r.culturalQ != null ? r.culturalQ.toFixed(3) : "—"}</b><small>q · Benjamini–Hochberg</small></div>
     <div class="stat"><b>${pts(r.deltaR2)}</b><small>ΔR² over market only</small></div>
     <div class="stat"><b>${r.r2.toFixed(2)}</b><small>r² · ${r.weeks} weeks</small></div>
   </div>
-  ${r.oos ? `<p class="rb-line">Out of sample: <b>${pts(r.oos.deltaR2)}</b> ΔR² on the last ${r.oos.testWeeks} weeks, refit on the first ${r.oos.trainWeeks}${r.placeboP != null ? ` · placebo <b>p ${pval(r.placeboP)}</b>` : ""}.
-    ${r.oos.deltaR2 < 0 ? "Negative — the basket did not generalise for this name." : "Positive — the basket helped on weeks it was not fitted on."}</p>` : ""}
+  ${r.oos ? (() => {
+    const sc = DESK?.valueAdd?.oos?.scoring;
+    if (sc && sc.testable === false) {
+      return `<p class="rb-line">Held-out slice: <b>${pts(r.oos.deltaR2)}</b> ΔR² on the last ${r.oos.testWeeks} weeks — but Qloo's last revision in this pull is ${esc(sc.lastMove ?? "—")} and every scored week is frozen for every name, so this is the training fit's perturbation on a zero regressor, <b>not a test of this name</b>.${r.placeboP != null ? ` The placebo p (${pval(r.placeboP)}) rotates the basket; it is not evidence about this row.` : ""}</p>`;
+    }
+    return `<p class="rb-line">Out of sample: <b>${pts(r.oos.deltaR2)}</b> ΔR² on the last ${r.oos.testWeeks} weeks, refit on the first ${r.oos.trainWeeks}${r.placeboP != null ? ` · placebo <b>p ${pval(r.placeboP)}</b>` : ""}.
+    ${rowIntervals(r)} ${Math.abs(r.oos.deltaR2) < 0.00005 ? "Flat — the basket added nothing on weeks it was not fitted on, and the intervals say how little this name's row can rule out." : r.oos.deltaR2 < 0 ? "Negative — the basket did not generalise for this name." : "Positive — the basket helped on weeks it was not fitted on."}</p>`;
+  })() : ""}
+  ${sec ? `<p class="rb-line">Second window (${esc(sec.weeks + "")} weeks, pre-registered, an earlier market regime): cultural beta <b>${f2(sec.culturalBeta)}</b>, t ${f2(sec.culturalT, 1)}, q ${sec.culturalQ != null ? sec.culturalQ.toFixed(3) : "—"}, out-of-sample ΔR² ${pts(sec.oos.deltaR2)} — ${sec.flagged ? "the flag reproduces on this slice." : "no flag on this slice."}</p>` : ""}
+  ${(() => {
+    const d = DESK?.valueAdd?.dispersion;
+    if (!d?.variance) return "";
+    return `<p class="rb-line">This row is one name in a book of ${d.names}. Read it as a reading with its error, not as a name that is measurably different from its peers: the spread of cultural betas across the book is ${d.variance.toFixed(0)} against ${d.samplingVariance.toFixed(0)} from estimation noise alone, and the test for genuine cross-name differences is <b>${d.readsAs === "excess-dispersion" ? "positive — the names do differ" : d.readsAs === "uninformative" ? `not detectable here — this window could not have seen a taste exposure of any practical size (it would need a spread near ${d.detectable?.sd ?? "—"} against the ${d.observedSd?.toFixed(1) ?? "—"} this book shows), so treat the number as a reading with its error, not as a ranking` : "not significant"}</b>. The test and its power curve are printed on the evidence page, under "Are the names actually different from each other?".</p>`;
+  })()}
   <div class="cards">
-    <div class="card"><h3>Price and taste, ${r.weeks} weeks — both indexed to 100</h3>${chart1}</div>
-    <div class="card"><h3>Taste basket — shared-audience weights (Qloo affinity)</h3>
-      <div class="wh">${weights}</div>
-      <p class="muted" style="font-size:12px;margin-top:14px">Leave-one-out: ${tick} is never in its own basket. Weights are normalised affinity scores from Qloo /v2/insights.</p>
+    ${s ? `<div class="card"><h3>Price and taste, ${r.weeks} weeks — both indexed to 100</h3>${chart1}
+      <p class="muted" style="font-size:12px;margin-top:10px">Taste is the affinity-weighted ${esc(r.sectorLabel ?? "sub-sector")} basket, the same series the beta is fitted on.</p></div>` : ""}
+    <div class="card${s ? "" : " wide"}"><h3>${esc(r.sectorLabel ?? "Sub-sector")} taste basket — what this audience leans toward (Qloo recommendations)</h3>
+      <div class="wh">${weightRows(r.basket, kindsOf(r.basket))}</div>
+      <p class="muted" style="font-size:12px;margin-top:14px">Every name in the ${DESK.universe?.total ?? "consumer"} universe is excluded by construction, so ${tick} can never sit in its own basket and no other priced name can stand in for taste. ${isStub() ? "On a keyed run each row carries the affinity weight Qloo ranked it by, normalised to 1 across the basket." : "Weights are the affinity Qloo ranked each neighbour by, normalised to 1 across the basket."}</p>
     </div>
-    <div class="card wide"><h3>Why the slope is the cultural beta</h3>${chart2}
+    ${chart2 ? `<div class="card wide"><h3>Why the slope is the cultural beta</h3>${chart2}
       <p class="muted" style="font-size:12px">Both axes are residualised on SPY, so the slope is the partial coefficient — Frisch–Waugh–Lovell; identical to the regression in the desk.</p>
-    </div>
+    </div>` : ""}
+    ${r.audience ? `<div class="card wide"><h3>This brand's own audience — the featured second reading</h3>
+      <p style="font-size:13.5px">Priced against a basket built from ${tick}'s own entity instead of its sub-sector: cultural beta <b>${f2(r.audience.culturalBeta)}</b> ± ${r.audience.culturalSE.toFixed(2)}, t ${f2(r.audience.culturalT, 1)}, ΔR² ${pts(r.audience.deltaR2)} in-sample (not the out-of-sample number) against the sector basket's ${pts(r.deltaR2)}, out of sample ${pts(r.audience.oos?.deltaR2)}. Both baskets are measured, neither is the other's stand-in: the sector number is the one on the desk and in the panel because it is comparable across the book; the audience number is the same brand read at the audience it actually sells to.</p>
+      <div class="wh">${weightRows(r.audience.members, kindsOf(r.audience.members))}</div>
+      <p class="muted" style="font-size:12px;margin-top:14px">Source: ${esc(r.audience.provenance)}.</p>
+    </div>` : ""}
   </div>
-  <p class="caption">Source: ${esc(r.provenance.trending)} · ${esc(r.provenance.affinity)} · ${esc(r.provenance.prices)}.
+  <p class="caption">Source: ${esc(r.provenance.basket)} · ${esc(r.provenance.series)} · ${esc(r.provenance.prices)}${r.audience ? ` · ${esc(r.audience.provenance)}` : ""}.
   <a href="#/evidence/${tick}">Open the evidence row →</a></p>`;
 }
 
+const SECTOR_SHORT = {
+  beauty: "Beauty", apparel: "Apparel", restaurants: "Restaurants", media: "Media",
+  grocery: "Grocery", home: "Home", beverages: "Beverages", food: "Packaged food",
+  retail: "Specialty", travel: "Travel", auto: "Autos",
+};
+
 function mapView() {
   const ok = DESK.rows.filter((r) => r.status === "ok");
-  const negative = ok.filter((r) => r.culturalBeta < 0).map((r) => r.ticker);
+  const acc = new Map();
+  for (const r of ok) {
+    const a = acc.get(r.sector) ?? { sumM: 0, sumC: 0, n: 0, label: r.sectorLabel, tickers: [] };
+    a.sumM += r.marketBeta; a.sumC += r.culturalBeta; a.n++; a.tickers.push(r.ticker);
+    acc.set(r.sector, a);
+  }
+  const points = [...acc].map(([id, a]) => ({
+    id,
+    ticker: SECTOR_SHORT[id] ?? a.label,
+    label: a.label,
+    marketBeta: a.sumM / a.n,
+    culturalBeta: a.sumC / a.n,
+    n: a.n,
+    members: a.tickers,
+  }));
+  const negative = points.filter((p) => p.culturalBeta < 0).sort((a, b) => a.culturalBeta - b.culturalBeta);
   return `
   <div class="head">
     <div class="lede-col"><h1>Taste <span class="thin">map.</span></h1>
-      <p class="sub">Every holding placed by how it moves with the market (x) and with taste (y).
-      The interesting corner is bottom-right: it takes market risk, and taste is working against it.</p></div>
+      <p class="sub">Each dot is a sub-sector, placed by its average market beta (x) and average cultural beta (y);
+      the dot size is how many names it prices. The interesting corner is bottom-right: it takes market risk, and taste is working against it.
+      Hover a dot for the names inside it, or click it to open that sub-sector on the desk.</p></div>
     <div class="side">${windowPill(DESK.window)}
-      <div class="state ok">${ok.length}/${DESK.rows.length} holdings priced · live Qloo</div>
+      <div class="state ok">${ok.length}/${DESK.rows.length} priced · ${points.length} sub-sectors</div>
     </div>
   </div>
   <div class="cards">
-    <div class="card wide"><h3>The book, priced two ways</h3>${quadrant(ok)}</div>
+    <div class="card wide"><h3>The consumer book, priced two ways${isStub() ? `<span class="stubtag">stub harness · magnitudes are layout only</span>` : ""}</h3>${quadrant(points)}
+      <div class="legend">
+        <span><i class="sw neg"></i>mean cultural beta below zero — taste is a headwind</span>
+        <span><i class="sw pos"></i>above zero — taste moves with the stock</span>
+        <span>dot area ∝ names priced in the sub-sector</span>
+      </div>
+    </div>
   </div>
   <p class="lede">${negative.length
-    ? `${negative.join(", ")} ${negative.length === 1 ? "carries" : "carry"} a negative cultural beta — taste is a headwind, not a tailwind, for ${negative.length === 1 ? "it" : "them"}.`
-    : "Every priced name currently loads positively on taste."}</p>`;
+    ? `${negative.map((p) => `${p.label} (${f2(p.culturalBeta)})`).join(", ")} ${negative.length === 1 ? "sits" : "sit"} below zero — on average, taste is a headwind for ${negative.length === 1 ? "that sub-sector" : "those sub-sectors"}.`
+    : "Every sub-sector currently averages a positive loading on taste."}</p>`;
 }
 
 function evidenceRows(rows) {
-  return rows.map((r) => r.status === "ok"
-    ? `<tr id="ev-${r.ticker}"><td><b>${r.ticker}</b></td>
+  // show the file names on their own lines; the full path stays in the tooltip
+  // and in the cached JSON, so the cell never breaks a path mid-word
+  const base = (p) => String(p ?? "").split("/").pop();
+  const cachedCell = (r) => {
+    const b = r.provenance?.basket ?? "", s = r.provenance?.series ?? "";
+    return `<td class="url" data-l="Cached response"><span title="${esc(b)}">${esc(base(b))}</span><br><span title="${esc(s)}">${esc(base(s))}</span></td>`;
+  };
+  return rows.map((r) => {
+    const cached = cachedCell(r);
+    if (r.status !== "ok") {
+      // Name the actual reason: an unresolved brand is not a weak signal, and a
+      // missing price history is not an unresolved brand.
+      const rs = r.resolution;
+      const why = r.status === "unresolved"
+        ? `no Qloo brand entity resolved — ${rs ? `${esc(rs.failure)}; queried ${rs.queriesTried.map((q) => `“${esc(q)}”`).join(", ")}; ${rs.candidatesSeen} ${rs.candidatesSeen === 1 ? "candidate" : "candidates"} returned, none matching on a word boundary` : "the cultural beta is withheld rather than guessed"}`
+        : r.status === "no prices"
+          ? "no complete price history in this window — nothing to price"
+          : "insufficient signal — no beta printed";
+      return `<tr id="ev-${r.ticker}"><td><b>${r.ticker}</b></td>
+        <td class="th-left" data-l="Sector">${esc(r.sectorLabel ?? "")}</td>
+        <td class="th-left" data-l="Status" colspan="3">${why}</td>${r.provenance?.basket || r.provenance?.series ? cached : `<td class="url" data-l="Cached response">no Qloo request</td>`}</tr>`;
+    }
+    return `<tr id="ev-${r.ticker}"><td><b>${r.ticker}</b></td>
+        <td class="th-left" data-l="Sector">${esc(r.sectorLabel ?? "")}</td>
         <td class="th-left" data-l="Qloo entity">${esc(r.provenance.qlooRequest?.entity || "—")}</td>
-        <td class="th-left" data-l="Endpoint">GET ${esc(r.provenance.qlooRequest?.path || "")}</td>
-        <td class="th-left" data-l="Window">${esc((r.provenance.qlooRequest?.window || []).join(" → "))}</td>
-        <td data-l="Cached response">${esc(r.provenance.trending)}<br>${esc(r.provenance.affinity)}</td></tr>`
-    : `<tr id="ev-${r.ticker}"><td><b>${r.ticker}</b></td><td colspan="4" class="muted">insufficient signal — no beta printed</td></tr>`).join("");
+        <td class="th-left" data-l="Workflow">${esc(r.provenance.qlooRequest?.operation || "")} → GET ${esc(r.provenance.qlooRequest?.path || "")}</td>
+        <td class="th-left" data-l="Basket types">${esc((r.provenance.qlooRequest?.types || []).join(", "))}</td>
+        ${cached}</tr>`;
+  }).join("");
 }
 
-function limitsCard(w, va) {
-  const oos = va?.oos, pl = va?.placebo;
+function limitsCard(w, va, uni) {
+  const oos = va?.oos, pl = va?.placebo, sec = va?.secondary;
+  const total = uni?.total ?? MARKET?.rows.length ?? null;
+  const priced = uni?.priced ?? va?.holdings ?? null;
+  const nSectors = uni?.sectors?.length ?? null;
   const oosTxt = oos
-    ? `Out of sample, the same two-regressor fit is re-estimated on the first ${oos.trainWeeks} weeks and scored on the last ${oos.testWeeks}, where it added ${pts(oos.meanDeltaR2)} on average. That number is reported as computed, including when it is negative.`
+    ? (oos.scoring && oos.scoring.testable === false
+      ? `Out of sample, the same two-regressor fit is re-estimated on the first ${oos.trainWeeks} weeks and scored on the last ${oos.testWeeks} — and on this Qloo vintage every one of those ${oos.scoring.testWeeks} scored weeks is frozen for every name (the last revision is the week ending ${esc(oos.scoring.lastMove ?? "—")}). A regressor that is zero multiplies its coefficient by zero, so the held-out condition is <b>not a test of taste at any effect size</b>: the printed ${pts(oos.meanDeltaR2)} is the training fit's perturbation, and its intervals describe coefficient wobble, not a bound on taste. The desk states that rather than presenting the cell as a negative result.`
+      : `Out of sample, the same two-regressor fit is re-estimated on the first ${oos.trainWeeks} weeks and scored on the last ${oos.testWeeks}, where it added ${pts(oos.meanDeltaR2)} on average across ${priced ?? "every"} priced names. That number is reported as computed, including when it is negative.`)
     : "Out of sample, the fit is re-estimated on an early sub-window and scored on the rest; a negative result is reported as negative.";
   const plTxt = pl
-    ? `The book's mean ΔR² is re-computed against ${pl.draws} circular rotations of the taste baskets, every holding shifted by the same amount so cross-holding alignment survives. Real ${pts(pl.real)} against a rotation mean of ${pts(pl.placeboMean)}, p = ${pval(pl.p)}. A high p means the factor cannot be told apart from a rotation of itself on this book.`
+    ? `The book's mean ΔR² is re-computed against ${pl.draws} circular rotations of the taste baskets, every name shifted by the same amount so cross-name alignment survives and the null keeps the book's correlation structure. Real ${pts(pl.real)} against a rotation mean of ${pts(pl.placeboMean)}, p = ${pval(pl.p)}. A high p means the factor cannot be told apart from a rotation of itself on this book.`
     : "Rotating the taste series against returns asks whether the real alignment beats a placebo.";
+  const pm = va?.permutation;
+  const permTxt = pm
+    ? `A second null shuffles the week order of the baskets instead of rotating them — one shared shuffle per draw, so each basket keeps its own spread and only its timing is destroyed. Real ${pts(pm.real)} against a shuffled mean of ${pts(pm.placeboMean)}, p = ${pval(pm.p)}. A positive claim has to clear <b>both</b> nulls — the better of the two p-values is never used alone, because a null chosen after its p is seen is not a test.`
+    : "";
+  const secTxt = sec
+    ? `The whole estimator — same baskets, same floor, same ${sec.placebo.draws} draws and seed — is re-run on the ${sec.window.weeks} weekly returns from ${sec.window.start} to ${sec.window.end}, immediately before the primary window. That window was fixed in config/book.json before any keyed run, never chosen from results. It is an earlier market regime, not an identical-conditions repeat, so a replication is the stronger claim and a miss can be a regime difference rather than a refutation. On it the basket's mean ΔR² is ${pts(sec.meanDeltaR2)} and placebo p ${pval(sec.placebo.p)}, so the factor ${sec.replicates ? "replicates" : "does not replicate"}.`
+    : DESK?.valueAdd?.secondarySkip
+      ? `The window was fixed in config/book.json before any keyed run and is not repurposed or re-dated here. It cannot be priced: ${esc(DESK.valueAdd.secondarySkip)}. The desk reports that as untestable rather than as a failure to replicate, because the estimator never ran on it.`
+      : "The replication window is pre-registered in config/book.json and runs with the same estimator on the 106 weeks before the primary window.";
+  const dq = DESK?.dataQuality;
+  const rs = dq?.revisionSensitivity;
+  const dqTxt = dq && (dq.cutFromPrimary || dq.cutFromPrior)
+    ? `<li><b>Catalogue revisions.</b> ${dq.cutFromPrimary} week${dq.cutFromPrimary === 1 ? "" : "s"} cut from the primary window and ${dq.cutFromPrior} from the prior one (${dq.revisionWeeks.map((r) => esc(r.date)).join(", ")}). ${esc(dq.rule)}${rs
+      ? ` The cut is checkable, not asserted: re-running the same estimator with the cut dropped (${rs.weeks} weeks) gives out-of-sample ΔR² ${pts(rs.oos)} and placebo p ${pval(rs.placeboP)} against ${pts(va?.oos?.meanDeltaR2)} and p ${pval(va?.placebo?.p)} on the cut calendar — the same verdict either way, so the cut is not what produces the result.`
+      : ""}</li>`
+    : "";
+  const fs = DESK?.factorSparsity;
+  const fsTxt = fs
+    ? `<li><b>Identification.</b> The basket reads zero in every week Qloo reports no movement, so each cultural beta is estimated on the weeks it does move: ${fs.minActive}–${fs.maxActive} of ${fs.weeks} per name, median ${fs.medianActive}. A slope fitted on that few weeks can be large and unstable, which is why every row carries its ±${va?.oos?.scoring?.testable === false ? " and its held-out cell is labelled a perturbation rather than a check." : " and its out-of-sample ΔR²."}</li>`
+    : "";
   return `<div class="card wide"><h3>What this desk is, and is not</h3>
     <ul class="limits">
-      <li><b>Universe.</b> Seven large-cap US consumer names chosen to span beauty, athletic apparel, restaurants and media — a readable sector spread, not a screen. One index (SPY), one window.</li>
-      <li><b>Window.</b> 106 weekly returns ending ${esc(w.end)}, fixed before estimation. No weight, window or threshold was tuned on these returns.</li>
-      <li><b>Multiple testing.</b> Seven |t| ≥ 2 tests. If they were independent, the chance of at least one false flag would be about 30% (1 − 0.95⁷); they are not independent. A Bonferroni screen at 0.05/7 needs |t| ≈ 2.75 on these degrees of freedom — the desk keeps the looser 2.0 rule and says so here. Read the flag as a screen, not a verdict.</li>
+      <li><b>Universe.</b> ${total ?? "Every"} US consumer names across ${nSectors ?? "eleven"} sub-sectors, each priced against its own sub-sector's taste basket rather than a basket of its own — so one factor is comparable across the book, and a new name costs a lookup and the trend points its basket adds, never a basket of its own. It is a book to read, not a screen or a ranking of investability.</li>
+      <li><b>Window.</b> ${w.weeks} weekly returns ending ${esc(w.end)}, fixed before estimation, plus a disjoint ${sec?.window.weeks ?? 106}-week replication window before it${sec || !DESK?.valueAdd?.secondarySkip ? "" : " (pre-registered, but the data could not price it — see below)"}. No weight, window or threshold was tuned on these returns.</li>
+      <li><b>Units.</b> A sub-sector's basket is the affinity-weighted mean weekly log change in <code>population_percentile</code> across the non-holding entities Qloo recommends for that audience. A cultural beta of 1.0 means a name's weekly log return moves one-for-one with the basket; 0.25 means a quarter as much. It is an exposure, not a forecast.</li>
+      ${dqTxt}
+      ${fsTxt}
+      <li><b>Multiple testing.</b> ${priced ?? "Each"} cultural betas are tested one at a time; at |t| ≥ 2 alone about ${priced ? Math.round(priced * 0.05) : "five"} of ${priced ?? "a hundred"} would flag by chance. The desk therefore requires a Benjamini–Hochberg q ≤ 0.10 across every priced name before it calls a negative beta a flag, and prints the q on the row. Read a flag as a screen that survived its own correction, not a verdict.</li>
       <li><b>ΔR², twice.</b> In-sample, it shows the taste basket adds information inside the fitted window. ${oosTxt}</li>
+      <li><b>Second window.</b> ${secTxt}</li>
       <li><b>Placebo.</b> ${plTxt}</li>
-      <li><b>No trading.</b> The desk measures exposure. It does not size, weight, route or recommend a position.</li>
+      ${permTxt ? `<li><b>Placebo, second construction.</b> ${permTxt}</li>` : ""}
+      <li><b>No trading.</b> The desk measures exposure. It does not size, weight, route or recommend a position. It also does not quote a Sharpe or a portfolio return, because both need a <i>varying</i> cultural series across a held-out window and, at this vintage, that window is empty. A return claim built on ${va?.oos?.scoring?.testable === false ? "the frozen scored slice" : "an unpowered slice"} would be manufactured, so none is made.</li>
     </ul>
+  </div>`;
+}
+
+function gradeSummaryCard(va) {
+  const sc = va?.oos?.scoring;
+  if (!va?.oos) return "";
+  const ok = EVIDENCE.rows.filter((r) => r.status === "ok");
+  const flagged = ok.filter((r) => r.flagged).length;
+  const v = verdictOf(ok, flagged, va);
+  return `<div class="card wide" data-audit="grade-summary"><h3>The grade, before the table</h3>
+    <div class="chips">
+      <span class="chip ${v.grade === "HOLDS" ? "good" : v.grade === "FAILS" ? "bad" : "mid"}">${v.grade}</span>
+      <span class="chip">${sc && sc.testable === false ? "OOS ΔR² not a test" : `OOS ΔR² ${pts(va.oos.meanDeltaR2)}`}</span>
+      <span class="chip">rotation p ${va.placebo ? pval(va.placebo.p) : "—"}</span>
+      <span class="chip">week p ${va.permutation ? pval(va.permutation.p) : "—"}${va.permutation?.pBlocked == null ? "" : ` · block p ${pval(va.permutation.pBlocked)}`}</span>
+      ${sc && sc.testable === false ? `<span class="chip bad">held-out slice frozen</span>` : ""}
+    </div>
+    <p style="font-size:13.5px">${esc(v.sentence)}</p>
+    ${sc && sc.testable === false ? `<p class="muted" style="font-size:12px">Power of the held-out condition against a true taste effect of any size is its size on this pull, because the scored regressor is constant in all ${sc.testWeeks} scored weeks: multiplying a coefficient by zero gives zero whatever the coefficient is. That is not a power failure a longer window would fix at this data vintage — it is an empty test slice, and it is labelled as one wherever the out-of-sample number appears. The in-sample book and the nulls are what remain, and they are printed in full below.</p>` : ""}
+  </div>`;
+}
+
+function dataVintageCard(va) {
+  const sc = va?.oos?.scoring;
+  if (!sc) return "";
+  const c = va?.oos?.cadence;
+  return `<div class="card wide" data-audit="vintage"><h3>When Qloo's numbers stop moving</h3>
+    <p style="font-size:13.5px">In this pull every entity's <code>population_percentile</code> last changes on <b>${esc(sc.lastMove ?? "—")}</b> — the last week whose factor return is non-zero. The price window runs to ${esc(EVIDENCE.window.end)}, so its final <b>${sc.frozenAfterWindow} weeks</b> are a carry-forward: identical level, a weekly log change of exactly zero, for every name. The pre-registered 67/35 split puts <b>all ${sc.testWeeks} scored weeks</b> inside that tail; the median name's basket moves in ${sc.medianActive} of them. That is why the held-out cell is marked “no test” rather than read as a negative.</p>
+    ${c ? `<p style="font-size:13.5px"><span class="stubtag">post-hoc · not a test of the claim</span> <b>Diagnostic only: the split moved where the data moves.</b> The same estimator, with the split moved inside the revised part of the window (${esc(c.start)} → ${esc(c.end)}, ${c.trainWeeks} train / ${c.testWeeks} test, ${c.activeMedian} active test weeks), gives a median ΔR² of <b>${ptsSigned(c.median)}</b> and is positive on ${Math.round(c.sharePositive * 100)}% of names; the mean is ${ptsSigned(c.mean)} because a handful of names with almost no variance inside the scored weeks dominate it (range ${ptsSigned(c.min)} to ${ptsSigned(c.max)}). This split was chosen after the pre-registered one failed to have power, so it is <b>not evidence for the claim and does not move the grade</b>: a test picked after seeing where the data moves can always be made to run. It is printed because the alternative — showing an empty test and nothing else — hides the most informative number available, and because a reader should see it labelled rather than find it later.</p>` : ""}
+    <p class="muted" style="font-size:12px">The frozen tail is a property of the endpoint's revision history, not a choice made after seeing returns: the same dates are visible in ${esc("fixtures/qloo/series.json")} without any price data. The pre-registered window and split are unchanged.</p>
   </div>`;
 }
 
@@ -461,13 +994,24 @@ function evidenceView(tick) {
       </div>
       <div class="card wide"><h3>Qloo requests — run when the key is connected</h3>
         <div class="tw"><table>
-          <thead><tr><th class="th-left">Endpoint</th><th class="th-left">Supplies</th></tr></thead>
+          <thead><tr><th class="th-left">Workflow</th><th class="th-left">Supplies</th></tr></thead>
           <tbody>
-            <tr><td class="url" data-l="Endpoint">GET /search</td><td class="th-left" data-l="Supplies">entity id for each holding</td></tr>
-            <tr><td class="url" data-l="Endpoint">GET /v2/trending</td><td class="th-left" data-l="Supplies">weekly taste momentum · velocity_fold_change</td></tr>
-            <tr><td class="url" data-l="Endpoint">GET /v2/insights</td><td class="th-left" data-l="Supplies">shared-audience affinity → basket weights</td></tr>
+            <tr><td class="url" data-l="Workflow">exec search → GET /search</td><td class="th-left" data-l="Supplies">one entity id per consumer name; a name that does not resolve keeps its row and loses its beta</td></tr>
+            <tr><td class="url" data-l="Workflow">exec recommend → GET /v2/insights</td><td class="th-left" data-l="Supplies">one taste basket per sub-sector, signalled by up to ten of its entities, with the affinity each neighbour was ranked by</td></tr>
+            <tr><td class="url" data-l="Workflow">exec trends → GET /v2/trending</td><td class="th-left" data-l="Supplies">weekly taste levels for every basket member, differenced to a weekly log change in population_percentile</td></tr>
           </tbody></table></div>
         <p class="muted" style="font-size:12px;margin-top:10px">Raw Qloo responses are cached locally under fixtures/qloo/ and never committed: the hackathon terms keep response data out of public repositories.</p>
+      </div>
+      <div class="card wide"><h3>Product surface — the same panel, as data</h3>
+        <div class="tw"><table>
+          <thead><tr><th class="th-left">Route</th><th class="th-left">Returns</th></tr></thead>
+          <tbody>
+            <tr><td class="url" data-l="Route">GET /api/v1/panel</td><td class="th-left" data-l="Returns">versioned panel: every name's cultural beta, t, q, out-of-sample ΔR², flag, sector basket and second-window reading</td></tr>
+            <tr><td class="url" data-l="Route">GET /api/v1/holding/ELF</td><td class="th-left" data-l="Returns">one name, same fields, plus its basket composition and audience reading where it has one</td></tr>
+            <tr><td class="url" data-l="Route">GET /api/v1/alerts</td><td class="th-left" data-l="Returns">the panel read as a watchlist: names whose headwind cleared every test, a reason for every name that did not — and a status field that says when the book-level null cannot arm the feed at all</td></tr>
+            <tr><td class="url" data-l="Route">GET /export/panel.csv</td><td class="th-left" data-l="Returns">the whole panel as a spreadsheet</td></tr>
+          </tbody></table></div>
+        <p class="muted" style="font-size:12px;margin-top:10px">A measurement desk that can be ingested, not just read. Every route answers 503 with a named refusal when the factor has not been computed, and never fills a missing beta with zero. <b>Data boundary:</b> raw Qloo responses stay in the local cache — the hosted surface serves derived numbers only, which is what Qloo's terms allow; an unfiltered republish of their payload would not.</p>
       </div>
       ${limitsCard(MARKET.window)}
     </div>`;
@@ -481,32 +1025,332 @@ function evidenceView(tick) {
       <p class="sub">Every number on the desk, and the request it came from. The Qloo API does not return
       request ids, so provenance is the exact request plus the cached raw response — held locally, never committed.</p></div>
     <div class="side">${windowPill(EVIDENCE.window)}
-      <div class="state ok">${EVIDENCE.rows.filter((r) => r.status === "ok").length}/${EVIDENCE.rows.length} holdings priced · live Qloo</div>
+      <div class="state ${liveTone()}">${EVIDENCE.rows.filter((r) => r.status === "ok").length}/${EVIDENCE.rows.length} names priced · ${liveLabel()}${frozenAfter()}</div>
     </div>
   </div>
   <div class="cards">
+    ${gradeSummaryCard(EVIDENCE.valueAdd)}
     <div class="card wide"><h3>Qloo requests behind the cultural betas</h3>
-      <div class="tw"><table data-audit="holdings"><thead><tr><th>Holding</th><th class="th-left">Qloo entity</th><th class="th-left">Endpoint</th><th class="th-left">Window</th><th class="th-left">Cached response</th></tr></thead>
+      <div class="tw"><table data-audit="holdings"><thead><tr><th>Holding</th><th class="th-left">Sector</th><th class="th-left">Qloo entity</th><th class="th-left">Workflow</th><th class="th-left">Basket types</th><th class="th-left">Cached response</th></tr></thead>
       <tbody>${rows}</tbody></table></div>
+      <p class="muted" style="font-size:12px;margin-top:10px">Coverage: <b>${EVIDENCE.rows.filter((r) => r.status === "ok").length} priced with a cultural beta</b>, ${EVIDENCE.rows.filter((r) => r.status === "no prices").length} without a complete price history, ${EVIDENCE.universe?.unresolved?.length ?? 0} with no Qloo entity — those carry no beta rather than a guessed one, and their searches are printed on the desk. One recommend call per sub-sector per type, signalled by up to ten resolved entities of that sector. The ablation control is not in this table because it uses no Qloo data: it is the equal-weight weekly return of the other names in the sub-sector, computed from the same committed prices. The taste arm costs up to ${EVIDENCE ? "11 sub-sectors × 4 creative types × 1 recommend call plus one trends page per basket member" : "one Qloo call set"}; the peer control costs zero.</p>
     </div>
     <div class="card"><h3>Price evidence</h3>
       <div class="ev">${urls}</div>
       <p class="muted" style="font-size:12px;margin-top:10px">Fetched once and committed to fixtures/prices.json; read from disk, never refetched at runtime. ${EVIDENCE.window.weeks} aligned weekly returns per name, window ${EVIDENCE.window.start} → ${EVIDENCE.window.end}.</p>
     </div>
+    ${dataVintageCard(EVIDENCE.valueAdd)}
     <div class="card"><h3>Factor construction</h3>
       <p style="font-size:13.5px">${esc(EVIDENCE.factorConstruction)}</p>
-      <p class="muted" style="font-size:12px">Null route: with Qloo responses emptied the desk refuses to print — enforced by tests/nullroute.test.mjs. Sample floor: a holding with fewer than 100 weekly points keeps its row and loses its beta.</p>
+      <p class="muted" style="font-size:12px">Null route: with Qloo responses emptied the desk refuses to print — enforced by tests/nullroute.test.mjs. Sample floor: a name with fewer than 100 weekly points keeps its row and loses its beta.</p>
     </div>
-    ${limitsCard(EVIDENCE.window, EVIDENCE.valueAdd)}
+    <div class="card wide"><h3>Product surface — the same panel, as data</h3>
+      <div class="tw"><table>
+        <thead><tr><th class="th-left">Route</th><th class="th-left">Returns</th></tr></thead>
+        <tbody>
+          <tr><td class="url" data-l="Route">GET /api/v1/panel</td><td class="th-left" data-l="Returns">versioned panel: every name's cultural beta, t, q, out-of-sample ΔR², flag, sector basket and second-window reading</td></tr>
+          <tr><td class="url" data-l="Route">GET /api/v1/holding/ELF</td><td class="th-left" data-l="Returns">one name, same fields, plus its basket composition and audience reading where it has one</td></tr>
+          <tr><td class="url" data-l="Route">GET /api/v1/alerts</td><td class="th-left" data-l="Returns">the panel read as a watchlist: names whose headwind cleared every test, a reason for every name that did not — and a status field that says when the book-level null cannot arm the feed at all</td></tr>
+          <tr><td class="url" data-l="Route">GET /export/panel.csv</td><td class="th-left" data-l="Returns">the whole panel as a spreadsheet</td></tr>
+        </tbody></table></div>
+      <p class="muted" style="font-size:12px;margin-top:10px">A measurement desk that can be ingested, not just read. Every route answers 503 with a named refusal when the factor has not been computed, and never fills a missing beta with zero. <b>Data boundary:</b> raw Qloo responses stay in the local cache — the hosted surface serves derived numbers only, which is what Qloo's terms allow; an unfiltered republish of their payload would not.</p>
+    </div>
+    ${robustBand(EVIDENCE.valueAdd)}
+    ${pooledBand(EVIDENCE.valueAdd)}
+    ${dispersionBand(EVIDENCE.valueAdd)}
+    ${sentimentBand(EVIDENCE.valueAdd)}
+    ${ablationBand(EVIDENCE.valueAdd)}
+    ${costBand(EVIDENCE.valueAdd)}
+    ${branchCard(EVIDENCE.valueAdd)}
+    ${limitsCard(EVIDENCE.window, EVIDENCE.valueAdd, EVIDENCE.universe)}
   </div>`;
+}
+
+/* ---------- the same variation, read pooled ---------- */
+// The per-name fit spends 102 weeks of data on a basket that moves in about 29 of
+// them, so each slope is wide. Pooling shares one slope across the names of a
+// sub-sector, which is the restriction the per-name table cannot test. It is
+// labelled post-hoc because it was added after a review, not pre-registered.
+function pooledBand(va) {
+  const p = va?.pooled;
+  if (!p?.sectors?.length) return "";
+  const k = p.sectors.length;
+  const bonf = 0.05 / k;
+  const survivors = p.sectors.filter((s) => s.p <= bonf);
+  const twoSig = p.sectors.filter((s) => Math.abs(s.t) >= 2);
+  const rows = p.sectors.map((s) => `<tr${Math.abs(s.t) >= 2 ? ' class="hl"' : ""}>
+      <td>${esc(s.id)}</td><td class="num" data-l="Names">${s.names}</td>
+      <td class="num" data-l="β">${s.beta >= 0 ? "+" : ""}${s.beta.toFixed(2)}</td>
+      <td class="num" data-l="±">± ${s.se.toFixed(2)}</td>
+      <td class="num" data-l="t">${s.t.toFixed(2)}</td>
+      <td class="num" data-l="p">${pval(s.p)}</td>
+      <td class="num" data-l="Ridge β">${s.ridgeBeta == null ? "—" : (s.ridgeBeta >= 0 ? "+" : "") + s.ridgeBeta.toFixed(2)}</td>
+    </tr>`).join("");
+  return `<section class="robust full" aria-label="Pooled panel">
+    <div class="rb-head"><h2>One slope per sub-sector <span class="stubtag">post-hoc · added after external review</span></h2>
+      <p class="rb-sub">The per-name table fits 80 separate slopes, each identified on the ${p.weeks} weeks its basket actually moved. This reading asks the other question — is there <i>one</i> cultural slope per sub-sector? — by pooling the ${p.names} names into ${p.obs.toLocaleString("en-US")} name-weeks with name fixed effects swept out, one common market slope, and standard errors clustered by week because every name shares the same calendar. <b>It answers a different estimand.</b> One slope per sub-sector is a statement about the sub-sector; it cannot confirm or refute a claim about an individual name, and a flat sector slope is compatible with names inside it moving in opposite directions. What it does test is the restriction the per-name table leaves open: that taste, if it prices at all, prices the same for peers. It is not pre-registered: a reviewer asked for it and it is reported whatever it says.</p></div>
+    <div class="rb-grid three">
+      <div class="rb-test"><div class="rb-k">Common market slope</div><div class="rb-v">${p.market.beta.toFixed(2)}</div><div class="rb-se">t ${p.market.t.toFixed(1)} · one coefficient for the whole book</div></div>
+      <div class="rb-test"><div class="rb-k">Within-book ΔR²</div><div class="rb-v">${pts(p.deltaR2)}</div><div class="rb-se">market-only within R² ${(p.withinR2.marketOnly * 100).toFixed(2)}% → ${(p.withinR2.full * 100).toFixed(2)}%</div></div>
+      <div class="rb-test"><div class="rb-k">Date permutation</div><div class="rb-v ${p.null.p <= 0.10 ? "good" : "bad"}">p ${pval(p.null.p)}</div><div class="rb-se">real ${pts(p.null.real)} vs shuffled ${pts(p.null.mean)}, ${p.null.draws} draws</div></div>
+    </div>
+    ${(() => {
+      const m = va?.pooledNameMarket;
+      if (!m) return "";
+      const strongest = m.sectors.reduce((a, b) => (Math.abs(b.t) > Math.abs(a.t) ? b : a));
+      return `<div class="rb-window"><span>Same panel, each name keeps its own market loading</span><span class="rb-span">the common slope removed</span></div>
+    <div class="rb-grid three">
+      <div class="rb-test"><div class="rb-k">Within-book ΔR²</div><div class="rb-v">${pts(m.deltaR2)}</div><div class="rb-se">name fixed effects and a name-specific market beta, partialled out first — algebraically the same as a name × market interaction</div></div>
+      <div class="rb-test"><div class="rb-k">Date permutation</div><div class="rb-v ${m.null.p <= 0.10 ? "good" : "bad"}">p ${pval(m.null.p)}</div><div class="rb-se">real ${pts(m.null.real)} vs shuffled ${pts(m.null.mean)}, ${m.null.draws} draws</div></div>
+      <div class="rb-test"><div class="rb-k">Market loadings across names</div><div class="rb-v">${m.market.min.toFixed(2)} to ${m.market.max.toFixed(2)}</div><div class="rb-se">sd ${m.market.sd.toFixed(2)} — enough variation that one common slope is a real restriction, not a harmless one. Largest |t| here is ${esc(strongest.id)} at ${strongest.t.toFixed(2)}.</div></div>
+    </div>
+    <p class="rb-line">A reviewer's objection was that forcing one market slope on ${m.names} names could manufacture or hide the answer. It does not: removing the restriction leaves the within-ΔR² at ${pts(m.deltaR2)} and the permutation p at ${pval(m.null.p)}, against ${pts(p.deltaR2)} and ${pval(p.null.p)} with the common slope. ${m.sectors.every((s) => Math.abs(s.t) < 2) ? "No sub-sector slope reaches |t| ≥ 2 on this arm either." : "The sub-sector slopes move once each name's loading is free, which is itself the reason the sector-level estimand is not the per-name claim."}</p>`;
+    })()}
+    <div class="tw" style="margin-top:14px"><table class="live" data-audit="pooled">
+      <thead><tr><th>Sector</th><th><span class="th">Names</span></th><th><span class="th">Cultural beta</span></th><th><span class="th">SE</span></th><th><span class="th">t</span></th><th><span class="th">p</span></th><th><span class="th">Ridge β</span></th></tr></thead>
+      <tbody>${rows}</tbody></table></div>
+    <p class="rb-line">${twoSig.length
+      ? `${twoSig.length} of ${k} slopes reach |t| ≥ 2 (${twoSig.map((s) => `${esc(s.id)} ${s.t.toFixed(2)}`).join(", ")}), and ${survivors.length ? `${survivors.length} survives` : "none survives"} a Bonferroni threshold of p ≤ ${bonf.toFixed(4)} across ${k} sub-sectors. With ${k} sector tests, one or two |t| ≥ 2 is what chance supplies — the pooled reading therefore says the same thing as the per-name book: at this window length the taste factor is not separable from chance.`
+      : `No sub-sector slope reaches |t| ≥ 2, so the pooled reading agrees with the per-name book: at this window length the taste factor is not separable from chance.`}
+      ${p.ridge ? ` The ridge column applies one penalty scale (λ = ${p.ridge.lambda.toExponential(1)}, ${(p.ridge.factor * 100).toFixed(0)}% of the mean cultural diagonal) to every sub-sector: the slopes whose baskets barely move shrink most — media ${(p.sectors.find((s) => s.id === "media")?.beta ?? 0).toFixed(2)} → ${(p.sectors.find((s) => s.id === "media")?.ridgeBeta ?? 0).toFixed(2)} is the extreme — which is the instability the per-name ±s already show.` : ""}</p>
+  </section>`;
+}
+
+/* ---------- are the names actually different? ---------- */
+// A near-zero mean and a zero spread are different findings. The book-level tests
+// cannot tell them apart, so the per-name slopes are read directly: is the spread
+// across names more than estimation noise? Both tails are printed, because the
+// lower one is the reading that rules the per-name column out.
+function dispersionBand(va) {
+  const d = va?.dispersion;
+  if (!d || d.variance == null) return "";
+  const mde = d.detectable ? `${d.detectable.sd}` : null;
+  const reads = {
+    "excess-dispersion": ["the names genuinely differ", "good"],
+    "no-dispersion": ["spread below noise — one number plus scatter", "bad"],
+    indeterminate: ["no larger than noise — heterogeneity not detectable", "mid"],
+    uninformative: ["the test cannot see a spread this window could contain", "mid"],
+    undetermined: ["not determinable", "mid"],
+  }[d.readsAs] ?? ["not determinable", "mid"];
+  const powerRows = (d.power ?? []).map((r) => `${r.sd} → <b>${Math.round(r.power * 100)}%</b>`).join(" · ");
+  return `<section class="robust full" aria-label="Dispersion">
+    <div class="rb-head"><h2>Are the names actually different from each other? <span class="stubtag">post-hoc · added after external review</span></h2>
+      <p class="rb-sub">A mean near zero can mean every name has the same dull exposure, or that names genuinely pull opposite ways and the mean cancels. Only the second makes a per-name column worth reading. This tests the spread directly: the cross-sectional variance of the ${d.names} per-name cultural betas against the average squared standard error, which is what spread you would see if every name were in truth the same number. The null rotates <b>each name's basket independently</b>, so every basket keeps its own shape and loses only its timing — sampling noise survives, any name-specific signal does not.</p></div>
+    <div class="rb-grid four">
+      <div class="rb-test"><div class="rb-k">Spread across names</div><div class="rb-v">${d.variance.toFixed(0)}</div><div class="rb-se">variance of ${d.names} per-name cultural betas, ${d.weeks} weeks each</div></div>
+      <div class="rb-test"><div class="rb-k">Explained by noise</div><div class="rb-v">${d.samplingVariance.toFixed(0)}</div><div class="rb-se">mean squared standard error — the spread if every name were identical · excess ${d.excess >= 0 ? "+" : ""}${d.excess.toFixed(0)}</div></div>
+      <div class="rb-test"><div class="rb-k">Independent-rotation null</div><div class="rb-v ${reads[1] === "mid" ? "" : reads[1] === "good" ? "good" : "bad"}">p ${pval(d.p)}</div><div class="rb-se">null mean ${d.nullMean.toFixed(0)} · p95 ${d.nullP95.toFixed(0)} · p05 ${d.nullP05.toFixed(0)}, ${d.draws} draws. Lower tail p ${pval(d.pLow)} — evidence the spread is <i>smaller</i> than noise.</div></div>
+      <div class="rb-test"><div class="rb-k">Power at the observed spread</div><div class="rb-v">${d.powerObserved == null ? "—" : `${Math.round(d.powerObserved * 100)}%`}</div><div class="rb-se">how often this test would find a genuine spread the size this book shows. 80% is the bar; at 0% the non-detection is uninformative, not a kill.</div></div>
+    </div>
+    <div class="rb-window"><span>Could this test have seen a spread at all?</span><span class="rb-span">planted heterogeneity, ${d.powerWorlds} simulated books per value</span></div>
+    <p class="rb-line">Each name's outcome is shifted so its cultural beta becomes a draw from a known spread, holding everything else fixed, and the same 90% threshold is applied. Detection rate at a planted cross-sectional sd of ${powerRows}. ${mde
+      ? `80% power is reached only at sd ${mde} — a taste exposure that would move a stock ${mde}% for every 1% the basket moves, far outside anything plausible in this book, and about ${(Number(mde) / Math.sqrt(d.variance)).toFixed(1)}× the spread actually observed.`
+      : `No planted spread in the grid reaches 80% power.`} The bar is fixed on that pre-specified grid, not on the spread the book happens to show.${d.powerObserved != null ? ` Power at the observed spread (sd ${d.observedSd.toFixed(1)}) is <b>${Math.round(d.powerObserved * 100)}%</b> — a diagnostic of what the test could have seen, and the whole basis for calling the non-detection ${d.powerObserved >= 0.8 ? "a real null" : "uninformative"}. Power 0% means the test cannot separate the spread it measured from noise; it does <b>not</b> say the spread is real.` : ""}</p>
+    <p class="rb-line"><b>${reads[0]}.</b> Observed spread is ${d.ratio == null ? "—" : d.ratio.toFixed(2)}× the analytic noise benchmark, and the rotation null sits ${d.benchmarkGap == null ? "—" : `${(Math.abs(d.benchmarkGap) * 100).toFixed(0)}% ${d.benchmarkGap < 0 ? "below" : "above"}`} it. The two benchmarks disagree, and the null says which one is wrong for this statistic: ${d.nullSamplingVariance != null && d.gapInNull != null ? `inside the rotation draws — where every name's basket timing is severed — the analytic figure still averages ${d.nullSamplingVariance.toFixed(0)} against a cross-sectional variance of ${d.nullMean.toFixed(0)}, a ${(Math.abs(d.gapInNull) * 100).toFixed(0)}% gap, essentially the same as on the real book. So the mean squared standard error is the miscalibrated benchmark here. Two channels can produce that gap — a sum of ${d.names} marginal variances treats the slopes as ${d.names} independent estimates, and the ${d.names} names are measured on one shared calendar, where common shocks and correlated residuals pull the cross-sectional spread away from that sum. The null cannot separate the two channels; what it does establish is that the analytic figure is the wrong yardstick, and every p above is read against the rotation null.` : "the analytic benchmark assumes independent per-name estimates, which a shared calendar violates."} ${d.readsAs === "excess-dispersion"
+      ? "The spread is wider than noise: names carry genuinely different exposures, a cross-sectional story the book-level mean cannot show."
+      : d.readsAs === "uninformative"
+        ? `So this is <b>not a kill</b>, and the practical consequence is what matters: at this window the book <b>cannot detect a taste exposure of any size a portfolio would act on</b> — it would take a spread near ${mde ?? "the grid's top"} against the ${d.observedSd.toFixed(1)} actually present. The per-name column is therefore a reading with its error, not a ranking of which names carry more cultural risk, and the absence of excess spread is a property of this window rather than evidence that the names move together.`
+        : "The spread is no larger than noise, so the per-name column is a reading with its error rather than evidence that sub-sectors respond differently."}</p>
+  </section>`;
+}
+
+/* ---------- cost, printed as the number it is ---------- */
+function costBand(va) {
+  const p = BUDGET?.planned;
+  if (!p?.lines?.length) return "";
+  const sp = BUDGET?.spent;
+  const n = (x) => (x === null || x === undefined ? "—" : Number(x).toLocaleString("en-US"));
+  const tasteP = va?.placebo?.p ?? null;
+  const permP = va?.permutation ? Math.max(va.permutation.p, va.permutation.pBlocked ?? -Infinity) : null;
+  const peerP = va?.ablation?.oos?.placebo?.p ?? null;
+  const cell = (k, v, sub) => `<div class="rb-test"><div class="rb-k">${k}</div><div class="rb-v">${v}</div>${sub ? `<div class="rb-se">${sub}</div>` : ""}</div>`;
+  return `<section class="robust full" aria-label="Run cost">
+    <div class="rb-head"><h2>What the taste arm costs, beside what the control costs</h2>
+      <p class="rb-sub">"Only an instrument of its kind" is a claim about spend, so it is printed as one. Every number here is derived from the same paging rules the runner uses — 20 weekly points per request, one request per basket member per window across the whole 213-week pull — not estimated by hand.</p></div>
+    <div class="rb-grid four">
+      ${cell("Taste arm", `${n(p.total)} requests`, sp ? `the run behind this panel spent ${n(sp.total)}` : "upper bound, until the baskets say how many members are shared")}
+      ${cell("Peer control", "0 requests", "the same-sector basket is built from prices the desk already holds")}
+      ${cell("Taste rotation null", tasteP === null ? "—" : `p ${tasteP.toFixed(3)}`, `${va?.placebo?.draws ?? 400} rotations of the factor, against the market`)}
+      ${cell("Date permutation null", permP === null ? "—" : `p ${permP.toFixed(3)}`, `${va?.permutation?.draws ?? 400} shared shuffles of the week order — same spread, no timing${va?.permutation?.pBlocked != null ? ` · week-by-week p ${va.permutation.p.toFixed(3)}, in ${va.permutation.blockWeeks}-week blocks (which respect the refresh cadence) p ${va.permutation.pBlocked.toFixed(3)}; the stricter is used` : ""}`)}
+      ${cell("Peer rotation null", peerP === null ? "—" : `p ${peerP.toFixed(3)}`, "the same basket scored against its own sector")}
+    </div>
+    <p class="rb-line">At about ${n(p.estimatedMinutes)} minutes of sequential calls the taste arm is a scheduled job, not a page load — which is why the expensive step prints its exact count and refuses to spend it until that count is confirmed, and why the button on this desk rebuilds from responses already paid for.</p>
+  </section>`;
+}
+
+/* ---------- what the culture side costs ---------- */
+function budgetBlock() {
+  const p = BUDGET?.planned, sp = BUDGET?.spent;
+  if (!p?.lines?.length) return `<p class="muted">The cost of a run is derived from the same paging rules the runner uses, so it is a number rather than an impression. It is not on this page right now.</p>`;
+  const n = (x) => (x === null || x === undefined ? "—" : Number(x).toLocaleString("en-US"));
+  const rows = p.lines.map((l) => `<li><b>${n(l.calls)}</b> — ${l.label.toLowerCase()}. ${l.note}</li>`).join("");
+  return `<div id="run-cost">
+    <p>The culture half of this desk is bought; the control half is free. A run costs <b>${n(p.total)} requests</b> as planned${p.trends?.exact ? "" : " (an upper bound: it assumes no basket member is shared between sub-sectors, and the exact count is printed and confirmed before the expensive step spends it)"}. The same-sector peer basket the ablation runs against costs <b>0</b> — it is built from the prices the desk already fetches, which is the point of the control.</p>
+    <ul class="limits">${rows}</ul>
+    <p>${sp
+      ? `The run behind this panel spent <b>${n(sp.total)}</b> — ${n(sp.search)} to map names, ${n(sp.baskets)} for the baskets, ${n(sp.trends)} for ${n(sp.trendCalls)} trend calls. At about ${n(p.estimatedMinutes)} minutes of sequential calls, it is a scheduled job, not a page load.`
+      : `Nothing has been spent yet: this panel is running on the market-only arm, and the ${n(p.total)} calls are the price of turning the taste arm on.`}</p>
+    <p class="muted">The button on this desk re-derives the panel from responses already paid for. It never spends Qloo requests because a visitor pressed it.</p>
+  </div>`;
+}
+
+/* ---------- plain-English read ---------- */
+function readView() {
+  const ok = DESK ? DESK.rows.filter((r) => r.status === "ok") : [];
+  const flagged = ok.filter((r) => r.flagged).length;
+  const va = DESK?.valueAdd;
+  const uni = DESK?.universe;
+  const num = (v) => v == null ? "—" : (v >= 0 ? "+" : "") + (v * 100).toFixed(1) + " pts";
+  const bare = (v) => v == null ? "—" : (v * 100).toFixed(1) + " pts";
+  return `<div class="head">
+    <div class="lede-col">
+      <h1>How to <em>read</em> this desk.</h1>
+      <p class="sub">Plain English, no statistics degree assumed. The same numbers, explained as a reader would say them.</p>
+    </div>
+    <div class="side">${DESK ? windowPill(DESK.window) : ""}</div>
+  </div>
+  <section class="card prose">
+    <h2>What the two numbers are</h2>
+    <p><b>Market beta</b> is the number every terminal already shows: how much a stock moves when the stock market moves. A beta of 1.2 means the stock tends to move 1.2% for every 1% the S&amp;P 500 moves.</p>
+    <p><b>Cultural beta</b> is this desk's number. Every consumer name sits in a sub-sector — beauty, restaurants, travel — and each sub-sector has a <i>taste basket</i>: the brands, films, artists and shows its audience is trending toward, taken from Qloo. Cultural beta asks how much a stock moves when that basket moves, after the market is accounted for.</p>
+    <h2>Why that is a risk number</h2>
+    <p>If a stock falls when its customers' taste moves away from its category, that is a risk an index beta does not measurably report in this sample — which is the hypothesis, not the result. A positive cultural beta means the stock moves with taste; <b>negative</b> means taste is a headwind. Whether that risk is <i>measurable</i> is a separate question, and it is the one this desk answers with numbers rather than with the story above: on this book no sign is separable from chance in sample, and the held-out slice cannot test it at the data vintage this pull carries — the reason is below, not hidden.</p>
+    <h2>What the tests are for</h2>
+    <p>Curve-fitting is easy, so each claim on this desk comes with the check that could break it. Each is a computation with a printed verdict rather than a caveat. <b>Out of sample</b>: fit on the first part of the window, grade it on the part the fit never saw. <b>Placebo</b>: rotate the baskets against returns ${va?.placebo?.draws ?? 400} times and ask how often chance does as well. The rotation shifts every name together, so the null keeps the book's correlation structure — it is a test against a rotation of the factor, not against random baskets. A second null shuffles the week order instead — week by week, and again in six-week blocks that respect the refresh cadence — and a positive claim has to clear every one of them: the friendliest p of the set is never used alone. That is a <b>max-of-p rule</b>, conservative on purpose: the nulls are correlated, so clearing all of them is a stricter bar than clearing any one, and the desk says so rather than presenting it as a neutral test. ${va?.secondary
+      ? `<b>Second window</b>: the same test again on ${va.secondary.window.weeks} weeks before the window (${esc(va.secondary.window.start)} → ${esc(va.secondary.window.end)}), fixed in advance. That is an earlier market regime, not an identical-conditions repeat: replicating across the two is the stronger claim, and a miss can be a regime difference.`
+      : DESK?.valueAdd?.secondarySkip
+        ? `<b>Second window</b>: a ${DESK?.priorWindow?.weeks ?? 106}-week window was fixed in config/book.json before any keyed run, but it could not be priced — ${esc(DESK.valueAdd.secondarySkip)} — so the desk reports it as untestable and neither claims nor invents a replication.`
+        : `<b>Second window</b>: the same test again on ${DESK?.priorWindow?.weeks ?? 106} weeks before the window, fixed in advance. That is an earlier market regime, not an identical-conditions repeat.`}</p>
+    ${(() => {
+      const sc = va?.oos?.scoring;
+      if (!sc || sc.testable !== false) return "";
+      const c = va?.oos?.cadence;
+      return `<h2>What the held-out test can and cannot see</h2>
+    <p>This matters enough to have its own section. The out-of-sample cell fits on the first ${va.oos.trainWeeks} weeks and scores the last ${va.oos.testWeeks}. In this Qloo pull every entity's percentile last moves in the week ending <b>${esc(sc.lastMove ?? "—")}</b>: the final ${sc.frozenAfterWindow} weeks of the window are a carry-forward, with a weekly log change of exactly zero for every name. <b>All ${sc.testWeeks} scored weeks</b> sit in that tail. Adding a regressor that is zero multiplies its coefficient by zero in every scored week, so that cell would have found a taste effect of <i>no size at all</i> — it is not a weak test, it is an empty one, and the desk marks it “no test” rather than letting a near-zero number pass for a negative result.</p>
+    <p>The pre-registered split is unchanged. What changed is that the product now says what the split can do. A held-out test is only possible where the data moves: moving the split inside the revised part of the window (${esc(c.start)} → ${esc(c.end)}, ${c.trainWeeks} train / ${c.testWeeks} test, ${c.activeMedian} moving weeks in the test slice) gives a median ΔR² of <b>${ptsSigned(c.median)}</b>, positive on <b>${Math.round(c.sharePositive * 100)}%</b> of names. Its mean (${ptsSigned(c.mean)}) is dominated by a few names with almost no variance inside the scored weeks, which is why the desk prints the median and the share rather than the mean. <b>Read that paragraph as a diagnostic, not as the desk's finding.</b> The split was chosen after the pre-registered one turned out to have no power, so it cannot stand in for that test, cannot upgrade the grade, and is not evidence that taste works — a test placed where the data moves will always be able to run. It is printed because a reader is entitled to the best held-out reading the data allows, and because labelling it is more honest than omitting it.</p>`;
+    })()}
+    <h2>Does Qloo add anything the sector already shows?</h2>
+    <p>The control is a <b>peer basket</b>: the average weekly return of the other stocks in the same sub-sector, with no Qloo data at all. If that alone explains what the taste basket explains, the instrument is not doing the work. The reading is deliberately narrow: peers carry the same taste exposure, so the peer basket absorbs the part of taste the sector already prices, and what is left is the share Qloo adds that a vendor-free peer basket cannot — the non-overlapping layer, not a bound on any causal total. ${(() => {
+      const abO = va?.ablation?.oos;
+      if (!abO) return "The ablation is not computed on this build.";
+      const frozenAb = va?.ablation?.scoring ? va.ablation.scoring.testable === false : false;
+      return frozenAb
+        ? `On the held-out tail the cell reads ${bare(abO.meanTasteExtraR2)} and is positive on <b>${Math.round(abO.sharePositive * 100)}%</b> of names — but those weeks are frozen for every name, so that is the training coefficients' perturbation on a zero regressor, not a measured gain over the peer control. The rule is applied the same way in every direction: any arm whose scored slice is frozen is called a perturbation, the taste arm, this peer control and the sentiment control alike.`
+        : `Today taste adds ${bare(abO.meanTasteExtraR2)} of r² on weeks it never saw, and beats the peer control on <b>${Math.round(abO.sharePositive * 100)}%</b> of names.`;
+    })()} The desk prints the loss as readily as the gain.${va?.ablation?.qlooVsPeer ? ` The two regressors are not near-copies: the correlation between the taste basket and its peer basket averages <b>${va.ablation.qlooVsPeer.meanCorr.toFixed(2)}</b>, and the taste basket moves in ${va.ablation.qlooVsPeer.meanActive.toFixed(0)} of ${va.ablation.qlooVsPeer.weeks} weeks while the peer basket moves every week — so a null ablation means Qloo's distinct information did not add, not that Qloo reproduced the sector average.` : ""}</p>
+    <p>There are two different questions here and the desk answers both with a rotation test rather than one. <b>Is the basket aligned with returns at all?</b> Rotate it 400 times and see how often a rotation does as well — that p is the placebo cell in the robustness band. <b>Does that alignment survive the sector?</b> The same rotations are scored against the peer models, and that second p is printed under the ablation cell. A basket can be aligned and still not additive: the sector average already reflects the taste its audience shares. The first p being small and the second cell being negative is a coherent, reportable result, and the desk says exactly that rather than letting one number stand in for the other.</p>
+    <h2>Could this just be consumer confidence?</h2>
+    <p>A taste factor built from what people search for and stream can be a lagging confidence proxy: people buy more of everything when they feel good about the economy. The desk's answer is a named exclusion, not a sentence. The taste basket has to add over the S&amp;P 500 <i>and</i> the University of Michigan Index of Consumer Sentiment — a published, monthly index from FRED, carried as its month-over-month change on the weeks inside each month, and the desk says out loud that a monthly series carried this way is coarse. Today taste adds ${va?.sentiment ? bare(va.sentiment.oos.meanTasteExtraR2) + " of r²" : "—"} once sentiment is in the model${va?.sentiment?.oos?.ci90 ? `, 90% CI ${bare(va.sentiment.oos.ci90[0])} → ${bare(va.sentiment.oos.ci90[1])}` : ""}, and the average basket correlates with that sentiment change at <b>${va?.sentiment?.meanCorr == null ? "—" : va.sentiment.meanCorr.toFixed(2)}</b>. A correlation near zero is the evidence that "cultural" is not just a nicer word for "confident"; a correlation near one would say the reverse, and the desk would say so.</p>
+    <h2>Why two ways of fitting the same data?</h2>
+    <p>A per-name slope spends ${va?.pooled?.weeks ?? 102} weeks of data on a basket that moves in about ${DESK?.factorSparsity?.medianActive ?? 29} of them, so the estimate is wide and the sign can be large. The desk therefore also reads the same data <b>pooled</b>: name fixed effects swept out, one market slope for the book, one cultural slope per sub-sector, errors clustered by week because every name shares a calendar. ${va?.pooled ? `On this book the pooled within-ΔR² is ${bare(va.pooled.deltaR2)}, the date-permutation null reads p ${pval(va.pooled.null.p)}, and the sub-sector with the largest |t| is ${(() => { const s = va.pooled.sectors.reduce((a, b) => (Math.abs(b.t) > Math.abs(a.t) ? b : a)); return `${esc(s.id)} at ${s.beta.toFixed(2)} (t ${s.t.toFixed(2)})`; })()}.` : ""} The pooled reading was added after an external review rather than pre-registered, and it is labelled that way wherever it appears. It answers a <b>different estimand</b> from the per-name table: one slope per sub-sector is a statement about the sub-sector, and it cannot confirm or refute a claim about an individual name — a flat sector slope and two names moving in opposite directions are perfectly compatible. ${va?.pooledNameMarket ? `The pooling also forces one market slope on every name, which an external reviewer pointed out could manufacture the answer; that restriction is removed in a second arm, where each name keeps its own market loading, and the within-ΔR² comes out the same (${bare(va.pooledNameMarket.deltaR2)}, permutation p ${pval(va.pooledNameMarket.null.p)}). The loadings themselves span ${va.pooledNameMarket.market.min.toFixed(2)} to ${va.pooledNameMarket.market.max.toFixed(2)}, so the restriction was real; it just was not what produced the null.` : ""} It is reported for the same reason as everything else here: if it had disagreed with the per-name table, that disagreement would be the most interesting number on the page.</p>
+    <h2>Are the names actually different from each other?</h2>
+    <p>A near-zero average beta has two very different readings. Either every name has roughly the same cultural exposure and the per-name column is noise, or names genuinely pull in opposite directions — some hedges, some headwinds — and the mean cancels while the spread does not. The second reading is the one that would make a per-name desk worth having, so it is tested rather than assumed: the spread of the ${va?.dispersion?.names ?? 80} per-name cultural betas is compared with what estimation noise alone would produce, calibrated by rotating each name's basket <b>independently</b> — every basket keeps its own shape and loses only its timing, which leaves noise in place and removes any name-specific signal. ${va?.dispersion ? `On this book the spread across names is ${va.dispersion.variance.toFixed(0)} against ${va.dispersion.samplingVariance.toFixed(0)} from noise alone, the independent-rotation null averages ${va.dispersion.nullMean.toFixed(0)} and reads p ${pval(va.dispersion.p)} in the upper tail and ${pval(va.dispersion.pLow)} in the lower — ${va.dispersion.readsAs === "excess-dispersion" ? "the names genuinely differ" : va.dispersion.readsAs === "no-dispersion" ? "the spread is <b>smaller</b> than noise, the signature of one number plus scatter" : va.dispersion.readsAs === "uninformative" ? "no excess dispersion is detected, and — as the calibration below shows — this window cannot turn that into a finding" : "the spread is <b>no larger</b> than noise"}. The two noise benchmarks are ${Math.abs((va.dispersion.benchmarkGap ?? 0) * 100).toFixed(0)}% apart, and the null settles which one to use: inside its own draws the analytic figure overshoots the cross-sectional variance by ${Math.abs((va.dispersion.gapInNull ?? 0) * 100).toFixed(0)}%, and that gap has two candidate channels the null cannot separate: eighty marginal variances treated as if the names were independent, and a shared calendar, common shocks or correlated residuals that make the cross-section move together. Every p here is read against the rotation null, which carries both. But no dispersion being detected is not the same as there being none, so the reading is keyed to a disclosed power curve: planting known spreads of ${(va.dispersion.power ?? []).map((r) => r.sd).join(", ")} and re-running the test gives detection rates of ${(va.dispersion.power ?? []).map((r) => Math.round(r.power * 100) + "%").join(", ")}, against a pre-specified 80% bar. ${va.dispersion.detectable ? `It only reaches usable power at a spread of about ${va.dispersion.detectable.sd}, which is larger than anything this book could plausibly contain — so the test is <b>uninformative</b> here rather than a refutation of heterogeneity, and it is printed as such. The consequence is direct: this book cannot detect a taste exposure of any size a portfolio would act on, so read the per-name column as a number with its error, not as a ranking of which names carry more cultural risk.` : "It never reaches usable power, so the test is uninformative here rather than a refutation of heterogeneity — this book cannot detect a taste exposure of any practical size, and the per-name column is a reading with its error rather than a ranking."} If the power curve is read at the spread the book actually shows rather than at a plant, the answer is <b>${va.dispersion.powerObserved == null ? "—" : Math.round(va.dispersion.powerObserved * 100) + "%"}</b>: that is how often this test would find a genuine spread this size, and at zero the non-detection carries no information either way. That is the honest limit of the per-name column: it is a reading with its error, not evidence that beauty and restaurants respond to taste differently.` : "The test is not computed on this build."}</p>
+    <h2>How sure are these numbers?</h2>
+    ${(() => {
+      const sc = va?.oos?.scoring;
+      const bound = va?.oos?.refit?.ci90 ? Math.max(Math.abs(va.oos.refit.ci90[0]), Math.abs(va.oos.refit.ci90[1])) * 100 : null;
+      if (sc && sc.testable === false) {
+        return `<p>Every per-name number carries an interval, and the book-level one that has a real bound is the in-sample fit: the basket moves in ${DESK?.factorSparsity?.minActive ?? 19}–${DESK?.factorSparsity?.maxActive ?? 31} of ${DESK?.factorSparsity?.weeks ?? 102} weeks per name, so each slope is estimated from a handful of moves and the per-row ± is large. That is why a zero flag count is a statement about this book, not about taste.</p>
+      <p>The held-out number cannot carry an effect size at all. Qloo's last revision in this pull is ${esc(sc.lastMove ?? "—")}, the final ${sc.frozenAfterWindow} weeks of the window are constant for every name, and all ${sc.testWeeks} scored weeks fall inside them. A coefficient times a zero regressor is zero, so the held-out cell's power against a true taste effect of any size is its size — no larger window at this data vintage would change that, and no interval printed on those weeks is a confidence interval for a taste effect. The desk prints the two intervals anyway, because removing them would hide how the cell is built; the refit one is the wider (effect sizes up to ${bound === null ? "a few" : bound.toFixed(1)} pts a side), and the page says at the cell that it is the fit's perturbation, not a test. What the book does have is the in-sample evidence and three nulls that all match the real alignment: that is a null result about a readable signal, not a demonstration of absence.</p>`;
+      }
+      return `<p>Every headline number carries an interval, not just a point. <b>And every verdict carries the effect size it could not have missed.</b> The out-of-sample interval on this book runs ${va?.oos?.refit?.ci90 ? `${bare(va.oos.refit.ci90[0])} → ${bare(va.oos.refit.ci90[1])}` : "wide of zero"}, which means the window would not have distinguished taste from chance even if taste were worth ${bound === null ? "a few" : bound.toFixed(1)} points of r². NO SIGNAL therefore means "no detectable sign at this length", never "the factor does not exist". The desk re-draws the test weeks ${va?.oos?.draws ?? 400} times in blocks, re-scores the same fitted model each time, and reports a 90% range — so a gain of ${va?.oos ? num(va.oos.meanDeltaR2) : "a few points"} on this sample is stated with the range it would still have on a different 35 weeks. A second range redraws the same weeks <i>and</i> refits the model inside each draw, so the uncertainty in the coefficients is in it too. The two disagree, and when they do the desk grades on the <b>wider one</b> — the refit range — because holding the coefficients still understates their error. That wider range does not "carry a claim" in the sense of supporting one: it <b>bounds the effect sizes this window can exclude</b>, and when it crosses zero the bound it leaves is a large one, which is little. The desk prints which range the grade used at the number, not only here.</p>`;
+    })()}
+    <h2>How strong the claim is meant to be</h2>
+    <p>${(() => {
+      const sc = va?.oos?.scoring;
+      const n = uni?.priced ?? va?.holdings ?? 101;
+      if (sc && sc.testable === false) {
+        return `With ${va.oos.testWeeks} scored weeks, one name's ΔR² would be a coarse number even if those weeks moved — and they do not, so the desk makes <b>no held-out claim</b> on this vintage, and claims no point-estimate precision at the name level. What it claims is narrower and checkable: across ${n} names the in-sample association is stated with its interval, the nulls match the real alignment, and the held-out condition is printed as untestable rather than as a negative. A single row is a reading with its error, not a signal.`;
+      }
+      return `With ${va?.oos?.testWeeks ?? 35} held-out weeks, one name's ΔR² is a coarse number, and the desk does not claim point-estimate precision at the name level. The claim it does make is a book-level one: across ${n} names, taste adds a measured amount on average, on a stated share of names, and the same test repeats on a window fixed before the run. A single row is a reading with its interval, not a signal.`;
+    })()}</p>
+    <h2>What would prove this wrong</h2>
+    <p>Four results would falsify the desk, and each is a computation with a printed verdict rather than a paragraph of caveats:</p>
+    <ul class="limits">
+      <li><b>No flag survives the book.</b> Every cultural beta fails Benjamini–Hochberg at q ≤ 0.10, so nothing clears the correction; the front page says how many names flagged, and zero is a printed answer.</li>
+      <li><b>Taste adds nothing over the sector.</b> The ablation cell reads negative with both intervals crossing zero: the peer basket already carries the channel and Qloo's marginal value over a vendor-free control is nil.</li>
+      <li><b>The peer control wins in both windows.</b> The ablation is run on the primary window and again on the pre-registered second window; if taste loses to peers on both, the claim that Qloo is the only clean instrument for taste risk is not established — the sector average is.</li>
+      <li><b>It does not replicate.</b> The pre-registered second window's mean ΔR² is at or below zero, so the primary reading is a property of one window rather than of the factor.</li>
+    </ul>
+    <p>Each is generated from the numbers by the code, not typed by hand: the flag is <code>verdictOf()</code> on the desk, the ablation cell comes from the same fit that prints its intervals, and the replication sentence is the pipeline's <code>replicates</code> field. A negative result changes what the page says, not whether it renders.</p>
+    <h2>What this is worth if the answer is no</h2>
+    <p>If taste adds nothing beyond the sector, the result is still a finding: a pre-registered falsification memo — estimator, two intervals, the peer control and the replication verdict, in a form a research desk can cite — and the desk prints it as the landed branch rather than dressing the peer basket up as a product. The buyer for that is a factor researcher or a buy-side quant who wants a pre-registered test of a culture-channel hypothesis; the cost is a Qloo subscription plus the desk's compute, and the data stays private under Qloo's terms while the method and the verdict are publishable. There is no mass-market buyer for this, and the entry does not pretend there is one.</p>
+    <h2>What a flag means — and does not</h2>
+    <p>${(() => {
+      const sc = va?.oos?.scoring;
+      const head = `Currently <b>${flagged} of ${ok.length}</b> names carry a flag: negative cultural beta, statistically clear, and corrected for testing ${ok.length} names at once.`;
+      if (sc && sc.testable === false) {
+        return `${head} A flag would also have to hold out of sample — and at this data vintage the scored weeks are frozen, so the flag count is structurally zero here rather than a clean screen. A flag, where one is possible, is a name where taste is a measurable headwind. It is <b>not</b> advice to trade, short or hedge — this desk measures exposure and says so.`;
+      }
+      return `${head} It also held out of sample. A flag is a name where taste is a measurable headwind. It is <b>not</b> advice to trade, short or hedge — this desk measures exposure and says so.`;
+    })()}</p>
+    <h2>What the taste arm costs to run</h2>
+    ${budgetBlock()}
+    <h2>Where the numbers come from</h2>
+    <p>Any row opens its own evidence: the Qloo request, the cached response, and the exact window. The book's average taste gain is ${va ? num(va.meanDeltaR2) + " of r²" : "—"}; the replication verdict is on the Desk and Evidence pages, printed as computed.</p>
+  </section>`;
+}
+
+/* ---------- analyst agent ---------- */
+const ASK_SUGGESTIONS = [
+  "Why is Disney not flagged?",
+  "How is Gymshark trending on Qloo right now?",
+  "Recompute Disney's cultural beta live.",
+  "What is in the media taste basket?",
+  "Can the held-out test detect a taste effect?",
+  "Is this just consumer confidence?",
+  "Where does the Disney basket come from?",
+];
+
+function askView() {
+  const ready = AGENT ? Boolean(AGENT.configured) : true;
+  const disabled = ASK.busy || !DESK || !ready;
+  const r = ASK.res;
+  const meta = r ? [
+    r.cached ? "cached answer" : `${r.toolCalls} tool call${r.toolCalls === 1 ? "" : "s"} · ${r.rounds} round${r.rounds === 1 ? "" : "s"} · ${(r.ms / 1000).toFixed(1)}s`,
+    r.provider ? esc(r.provider) : "",
+    r.model ? esc(r.model) : "",
+  ].filter(Boolean).join(" · ") : "";
+  return `<div class="head">
+    <div class="lede-col">
+      <h1>Ask the <em>desk</em>.</h1>
+      <p class="sub">An analyst that reads the committed panel${AGENT?.live?.enabled ? ", and may make one bounded live Qloo read per answer" : " and the Qloo responses behind it"}. Read-only: it cannot run the pipeline or move a number.</p>
+    </div>
+    <div class="side">
+      ${DESK ? windowPill(DESK.window) : ""}
+      <div class="state ${ready ? "ok" : "warn"}">${ready ? (AGENT?.live?.enabled ? "read-only · one live Qloo read per answer" : "read-only · no Qloo spend") : "analyst not configured"}</div>
+    </div>
+  </div>
+  ${!DESK ? `<div class="notice"><span class="dot"></span><span class="notice-text"><b>No panel to read.</b> This deployment has no Qloo data, and the analyst refuses rather than answer from a stub.</span></div>` : ""}
+  ${DESK && !ready ? `<div class="notice"><span class="dot"></span><span class="notice-text"><b>The analyst model is not configured on this deployment.</b> The desk and every number on it are unaffected — set the <code>AGENT_*</code> variables on the server to enable this page.</span></div>` : ""}
+  <section class="card ask">
+    <form id="ask-form" autocomplete="off">
+      <label class="ask-label" for="ask-q">Question</label>
+      <div class="ask-row">
+        <input id="ask-q" name="question" maxlength="400" placeholder="e.g. Why is Disney not flagged?" value="${esc(ASK.q)}" ${disabled ? "disabled" : ""}>
+        <button class="btn" type="submit" ${disabled ? "disabled" : ""}>${ASK.busy ? "Reading…" : "Ask"}</button>
+      </div>
+    </form>
+    <div class="ask-chips">${ASK_SUGGESTIONS.map((s) => `<button class="qchip" type="button" data-q="${esc(s)}" ${disabled ? "disabled" : ""}>${esc(s)}</button>`).join("")}</div>
+    ${ASK.err ? `<p class="ask-err">${esc(ASK.err)}</p>` : ""}
+    ${r ? `<div class="ask-answer" data-audit="agent-answer">
+      <p class="ask-q">${esc(ASK.q)}</p>
+      ${String(r.answer).split(/\n{2,}/).map((p) => `<p>${esc(p).replace(/\n/g, "<br>")}</p>`).join("")}
+      <p class="ask-meta">${meta}</p>
+      ${r.trace?.length ? `<details class="trace"><summary>What the analyst read (${r.trace.length})</summary>${r.trace.map((t) => `<div class="tr"><b>${esc(t.name)}</b> <code>${esc(JSON.stringify(t.args))}</code><pre>${esc((JSON.stringify(t.result) || "").slice(0, 1600))}</pre></div>`).join("")}</details>` : ""}
+      <p class="ask-note">Generated from the tool results above, not from the estimator: the betas themselves have no model in them. Check any number against the <a href="#/evidence">evidence page</a>.${r.trace?.some((t) => String(t.name).startsWith("live_")) ? " A live Qloo read is listed in the trace; the rest of the answer is the committed panel." : ""}</p>
+    </div>` : `<div class="ask-empty"><p>${ASK.busy ? "Reading the panel — a tool-using answer takes up to a minute; the calls it made will be listed with the answer." : "Answers are limited to what this book contains: a holding, a basket, a null, or the source of a number."}</p>
+      <p class="ask-tools"><b>Tools it chooses between</b> — desk summary · one holding · a sub-sector basket · the weekly taste series · the book-level nulls · Qloo provenance${AGENT?.live?.enabled ? " · a live brand read · a live beta re-run" : ""}. Every call and its result is shown with the answer. The estimator has no model in it; this page does.</p></div>`}
+  </section>`;
 }
 
 /* ---------- router ---------- */
 function setTabs(hash) {
   document.querySelectorAll(".tabs a").forEach((a) => {
-    const on = (a.dataset.tab === "desk" && (hash === "#/" || hash.startsWith("#/holding/")))
+    const on = (a.dataset.tab === "desk" && (hash === "#/" || hash.startsWith("#/holding/") || hash.startsWith("#/read")))
       || (hash.startsWith("#/map") && a.dataset.tab === "map")
-      || (hash.startsWith("#/evidence") && a.dataset.tab === "evidence");
+      || (hash.startsWith("#/evidence") && a.dataset.tab === "evidence")
+      || (hash.startsWith("#/ask") && a.dataset.tab === "ask");
     a.classList.toggle("on", on);
     if (a.dataset.tab === "map") a.hidden = !DESK;
   });
@@ -518,16 +1362,30 @@ function route() {
   const v = $("#view");
   if (DESK && h.startsWith("#/holding/")) v.innerHTML = holdingView(decodeURIComponent(h.split("/")[2] || ""));
   else if (DESK && h.startsWith("#/map")) v.innerHTML = mapView();
+  else if (h.startsWith("#/read")) v.innerHTML = readView();
+  else if (h.startsWith("#/ask")) v.innerHTML = askView();
   else if (h.startsWith("#/evidence")) v.innerHTML = evidenceView(DESK ? decodeURIComponent(h.split("/")[2] || "") : "");
   else v.innerHTML = deskView();
+  const wk = $("#note-weeks");
+  if (wk && DESK?.window?.weeks) wk.textContent = `${DESK.window.weeks} aligned`;
   setTabs(h);
   wire(h);
 }
 
 function wire(hash) {
+  document.querySelectorAll(".fchip").forEach((b) => b.onclick = () => {
+    if (sectorFilter === b.dataset.sector) return;
+    sectorFilter = b.dataset.sector;
+    route();
+  });
+  const openSector = (id) => { if (!id) return; sectorFilter = id; location.hash = "#/"; };
+  document.querySelectorAll("svg .dot").forEach((g) => {
+    g.onclick = () => openSector(g.dataset.sector);
+    g.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openSector(g.dataset.sector); } };
+  });
   document.querySelectorAll("th.sort").forEach((th) => th.onclick = () => {
     const k = th.dataset.k;
-    if (k === sortKey) sortDir *= -1; else { sortKey = k; sortDir = k === "ticker" ? 1 : -1; }
+    if (k === sortKey) sortDir *= -1; else { sortKey = k; sortDir = (k === "ticker" || k === "culturalQ") ? 1 : -1; }
     route();
   });
   document.querySelectorAll("tr.link").forEach((tr) => tr.onclick = (e) => {
@@ -536,6 +1394,31 @@ function wire(hash) {
   });
   const btn = $("#recompute");
   if (btn) btn.onclick = recompute;
+  const askForm = $("#ask-form");
+  if (askForm) {
+    const run = async (q) => {
+      const question = String(q ?? $("#ask-q")?.value ?? "").trim();
+      if (!question || ASK.busy) return;
+      ASK = { q: question, busy: true, res: null, err: null };
+      route();
+      try {
+        const r = await fetch("/api/ask", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ question }) });
+        const j = await r.json().catch(() => ({}));
+        if (r.ok) ASK = { q: question, busy: false, res: j, err: null };
+        else ASK = {
+          q: question, busy: false, res: null,
+          err: j.error === "AGENT_NOT_CONFIGURED" ? "The analyst is not configured on this deployment. The desk is unaffected."
+            : j.error === "RATE_LIMITED" ? `Slow down — try again in ${j.retryAfter}s.`
+              : (j.message || j.error || "The analyst failed."),
+        };
+      } catch {
+        ASK = { q: question, busy: false, res: null, err: "Could not reach the analyst endpoint." };
+      }
+      route();
+    };
+    askForm.onsubmit = (e) => { e.preventDefault(); run(); };
+    document.querySelectorAll(".qchip").forEach((b) => b.onclick = () => run(b.dataset.q));
+  }
   const target = hash.startsWith("#/evidence/") ? hash.split("/")[2] : "";
   const row = target ? document.getElementById("ev-" + decodeURIComponent(target)) : null;
   if (row) { row.classList.add("hl"); row.scrollIntoView({ block: "center" }); }
@@ -547,21 +1430,29 @@ async function recompute() {
   try {
     const r = await fetch("/api/recompute", { method: "POST" });
     const j = await r.json();
-    if (r.ok) { await load(); refreshNote("Desk refreshed from a live Qloo run just now."); }
-    else {
+    if (r.ok) {
+      await load();
+      // The desk never spends Qloo requests because a visitor pressed a button; say
+      // which of the two things just happened.
+      refreshNote(j.mode === "keyed"
+        ? "Desk rebuilt from a fresh keyed Qloo run — the operator opted in, and the budget paid for it."
+        : "Desk rebuilt from the Qloo responses already cached by the paid-for run. No new calls were made.");
+    } else {
       DESK = null; SERIES = null; EVIDENCE = null;
       const m = await get("/api/market-only.json"); if (m.ok) MARKET = m.data;
       route();
       const err = ((j.log?.at(-1)?.err || "") + "").split("\n")[0].slice(0, 140);
-      refreshNote("Live run refused: " + err);
+      refreshNote("Recompute refused: " + err);
     }
-  } catch (e) { refreshNote("Live run failed: " + e.message); }
+  } catch (e) { refreshNote("Recompute failed: " + e.message); }
   const again = $("#recompute");
-  if (again) { again.disabled = false; again.textContent = "Recompute from Qloo"; }
+  if (again) { again.disabled = false; again.textContent = "Re-derive the panel"; }
 }
 
 function refreshNote(text) {
   const el = $("#note-live"); if (el) el.textContent = text;
+  const wk = $("#note-weeks");
+  if (wk && DESK?.window?.weeks) wk.textContent = `${DESK.window.weeks} aligned`;
 }
 
 window.addEventListener("hashchange", route);

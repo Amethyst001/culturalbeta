@@ -1,0 +1,131 @@
+{
+ "harness": {
+  "version": "0.1.26",
+  "surface": "exec recommend"
+ },
+ "input": {
+  "target_type": "brand",
+  "signals": [
+   "urn:entity:brand:stub-mcdonald-s",
+   "urn:entity:brand:stub-starbucks",
+   "urn:entity:brand:stub-chipotle",
+   "urn:entity:brand:stub-kfc",
+   "urn:entity:brand:stub-domino-s",
+   "urn:entity:brand:stub-olive-garden",
+   "urn:entity:brand:stub-texas-roadhouse",
+   "urn:entity:brand:stub-burger-king"
+  ],
+  "limit": 10
+ },
+ "fetchedAt": "2026-10-30T09:15:46.880Z",
+ "correlationId": "exec-stub-recommend",
+ "response": {
+  "status": "ok",
+  "interpretation": {
+   "target_type": "brand",
+   "signals": [
+    "urn:entity:brand:stub-mcdonald-s",
+    "urn:entity:brand:stub-starbucks",
+    "urn:entity:brand:stub-chipotle",
+    "urn:entity:brand:stub-kfc",
+    "urn:entity:brand:stub-domino-s",
+    "urn:entity:brand:stub-olive-garden",
+    "urn:entity:brand:stub-texas-roadhouse",
+    "urn:entity:brand:stub-burger-king"
+   ]
+  },
+  "results": [
+   {
+    "entity_id": "urn:entity:brand:stub-urn-entity-brand-stub-mcdonald-s-0",
+    "name": "Stub brand 0",
+    "type": "urn:entity:brand",
+    "affinity": 0.6
+   },
+   {
+    "entity_id": "urn:entity:brand:stub-urn-entity-brand-stub-mcdonald-s-1",
+    "name": "Stub brand 1",
+    "type": "urn:entity:brand",
+    "affinity": 0.59
+   },
+   {
+    "entity_id": "urn:entity:brand:stub-urn-entity-brand-stub-mcdonald-s-2",
+    "name": "Stub brand 2",
+    "type": "urn:entity:brand",
+    "affinity": 0.58
+   },
+   {
+    "entity_id": "urn:entity:brand:stub-urn-entity-brand-stub-mcdonald-s-3",
+    "name": "Stub brand 3",
+    "type": "urn:entity:brand",
+    "affinity": 0.57
+   },
+   {
+    "entity_id": "urn:entity:brand:stub-urn-entity-brand-stub-mcdonald-s-4",
+    "name": "Stub brand 4",
+    "type": "urn:entity:brand",
+    "affinity": 0.56
+   },
+   {
+    "entity_id": "urn:entity:brand:stub-urn-entity-brand-stub-mcdonald-s-5",
+    "name": "Stub brand 5",
+    "type": "urn:entity:brand",
+    "affinity": 0.55
+   },
+   {
+    "entity_id": "urn:entity:brand:stub-urn-entity-brand-stub-mcdonald-s-6",
+    "name": "Stub brand 6",
+    "type": "urn:entity:brand",
+    "affinity": 0.54
+   },
+   {
+    "entity_id": "urn:entity:brand:stub-urn-entity-brand-stub-mcdonald-s-7",
+    "name": "Stub brand 7",
+    "type": "urn:entity:brand",
+    "affinity": 0.53
+   },
+   {
+    "entity_id": "urn:entity:brand:stub-urn-entity-brand-stub-mcdonald-s-8",
+    "name": "Stub brand 8",
+    "type": "urn:entity:brand",
+    "affinity": 0.52
+   },
+   {
+    "entity_id": "urn:entity:brand:stub-urn-entity-brand-stub-mcdonald-s-9",
+    "name": "Stub brand 9",
+    "type": "urn:entity:brand",
+    "affinity": 0.51
+   }
+  ],
+  "result_count": 10,
+  "provenance": {
+   "source": "stub",
+   "endpoint": "/v2/insights",
+   "documentation": "stub",
+   "requests": [
+    {
+     "method": "GET",
+     "path": "/v2/insights",
+     "query": {
+      "target_type": "brand",
+      "signals": [
+       "urn:entity:brand:stub-mcdonald-s",
+       "urn:entity:brand:stub-starbucks",
+       "urn:entity:brand:stub-chipotle",
+       "urn:entity:brand:stub-kfc",
+       "urn:entity:brand:stub-domino-s",
+       "urn:entity:brand:stub-olive-garden",
+       "urn:entity:brand:stub-texas-roadhouse",
+       "urn:entity:brand:stub-burger-king"
+      ],
+      "limit": 10
+     }
+    }
+   ]
+  },
+  "execution": {
+   "transport": "direct",
+   "correlation_id": "exec-stub-recommend",
+   "duration_ms": 1
+  }
+ }
+}

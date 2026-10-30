@@ -1,0 +1,26 @@
+{
+ "harness": {
+  "version": "0.1.26",
+  "surface": "api search"
+ },
+ "request": {
+  "argv": [
+   "search",
+   "--query",
+   "Grand Theft Auto",
+   "--type",
+   "brand",
+   "--take",
+   "10"
+  ]
+ },
+ "fetchedAt": "2026-10-30T09:14:48.283Z",
+ "response": [
+  {
+   "entity_id": "urn:entity:brand:stub-grand-theft-auto",
+   "name": "Grand Theft Auto",
+   "type": "urn:entity:brand",
+   "subtype": "urn:entity:brand"
+  }
+ ]
+}

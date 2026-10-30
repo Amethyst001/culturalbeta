@@ -1,0 +1,26 @@
+{
+ "harness": {
+  "version": "0.1.26",
+  "surface": "api search"
+ },
+ "request": {
+  "argv": [
+   "search",
+   "--query",
+   "Marlboro",
+   "--type",
+   "brand",
+   "--take",
+   "10"
+  ]
+ },
+ "fetchedAt": "2026-10-30T09:14:52.635Z",
+ "response": [
+  {
+   "entity_id": "urn:entity:brand:stub-marlboro",
+   "name": "Marlboro",
+   "type": "urn:entity:brand",
+   "subtype": "urn:entity:brand"
+  }
+ ]
+}

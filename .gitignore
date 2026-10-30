@@ -6,3 +6,6 @@ fixtures/qloo/
 .DS_Store
 review/shots-*/
 review/panel-*.json
+
+# Early live-probe responses: real Qloo data, must never be published.
+.probe/

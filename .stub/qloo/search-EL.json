@@ -1,0 +1,26 @@
+{
+ "harness": {
+  "version": "0.1.26",
+  "surface": "api search"
+ },
+ "request": {
+  "argv": [
+   "search",
+   "--query",
+   "Estée Lauder",
+   "--type",
+   "brand",
+   "--take",
+   "10"
+  ]
+ },
+ "fetchedAt": "2026-10-30T09:14:43.662Z",
+ "response": [
+  {
+   "entity_id": "urn:entity:brand:stub-est-e-lauder",
+   "name": "Estée Lauder",
+   "type": "urn:entity:brand",
+   "subtype": "urn:entity:brand"
+  }
+ ]
+}

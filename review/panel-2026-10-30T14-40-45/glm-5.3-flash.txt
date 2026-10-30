@@ -1,0 +1,1 @@
+ERROR: {"error":{"code":"rate_limit_exceeded","message":"Rate limit exceeded: this model allows at most 1 successful requests per minute per account. Retry after 60 seconds. After your first top-up, this free model allows up to 10 successful requests per minute. Your top-up balance can also be used for pai

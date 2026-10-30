@@ -1,0 +1,26 @@
+{
+  "verdict": "PASS",
+  "score_total": 66,
+  "scores": { "technological_implementation": 20, "design": 19, "potential_impact": 12, "quality_of_idea": 15 },
+  "fatal": "none — no simulated data, no trading claim, traceable cached responses, and the headline claim is now hedged to the evidence. A hostile judge can dispute the conclusion, not the integrity.",
+  "must_fix": [
+    "Replace the pooled panel's single market slope with name-specific market betas (two-pass or name x market interaction). One common slope of 0.75 assumes away exactly the cross-sectional heterogeneity a 'cultural beta per name' claim depends on; the pooled +0.04 pts may be an artifact of forcing one market loading.",
+    "Add a dispersion test: is the cross-sectional variance of per-name taste betas greater than sampling error alone would produce (e.g. a Hausman-style or bootstrap-over-names variance test)? A mean near zero with genuine dispersion is still a sellable risk-channel story; no dispersion kills it.",
+    "Extend the estimation window toward 2022-07 where Qloo levels exist. The brief never justifies starting at 2024-10; 102 usable weeks instead of ~58 covered weeks in the prior window suggests the binding constraint is discretionary, and the power complaint is partly self-inflicted.",
+    "State in the fold line that the fixed-coefficient OOS interval [-0.56, +0.28] is narrow and centered on zero, so 'unpowered' applies to the refit interval only; the fixed-coefficient result is a null, not a power problem."
+  ],
+  "method_objections": [
+    "Pooling critique: one cultural slope per sub-sector with name fixed effects and week clusters is the wrong pooling for this claim. The economic object is name-level taste exposure; sweeping in fixed effects and estimating 11 sub-sector slopes tests whether sub-sectors move together, which is a different (and weaker) hypothesis. A hierarchical random-slopes model would be the right object; the current panel does not support or refute the per-name claim, and presenting it as the pooled answer to round 1 is a subtle scope error.",
+    "In-sample vs out-of-sample: per-name mean in-sample dR2 of +0.67 pts collapsing to -0.05 OOS with 2 free regressors per name is the signature of overfitting, not of a weak-but-real signal. The submission handles this correctly by leading with OOS, but the +0.67 figure should not appear without the OOS number adjacent.",
+    "The nulls are correct in construction (shared shuffles, per-basket spread preserved, ablation null honestly discarded) and the conclusion 'not separable from chance at this window length' is the strongest defensible claim. p 0.898 and 0.778 with real alignment at or below shuffled mean means the basket return contains no incremental calendar information over SPY here; that is a null result, and no additional test within this data will rescue it except the dispersion test above.",
+    "The four-week revision cut is adequately defended: keeping the weeks changes OOS by 0.05 pts and the placebo p moves to 1.000, so the cut is not driving the result. The refusal to reinstate weeks as dummies (three-unit outliers) is a defensible judgment call, and the sensitivity run is the right substitute."
+  ],
+  "overstatements": [
+    "'taste is a risk channel an index beta does not report' (pitch sentence, brief) — with two nulls at p>=0.78 and OOS dR2 of zero, the evidence shows taste-basket co-movement is not measurable as a distinct risk channel in this window; correct to 'a candidate risk channel this test cannot detect'.",
+    "'the wider interval carries the claim' — an interval of [-2.12, +0.64] carries no claim; it is compatible with a large negative or modest positive effect. Correct to 'the wider interval bounds the effect size the data can exclude, which is little'.",
+    "'does not report' (revised headline copy) — still slightly strong; the honest phrasing is 'does not measurably report in this sample', since the failure could be power or window rather than the channel."
+  ],
+  "best_next_model_construction": "Hierarchical (mixed-effects) model: name-specific random taste and market slopes with sub-sector-level random effects, fit on the extended window back to 2022-07, with the reported statistic being the cross-sectional variance of taste slopes and its bootstrap p — this tests dispersion, which is the actual claim, rather than a pooled mean that assumes it away.",
+  "headline_rewrite": "On 80 priced names over 102 weeks, a Qloo-derived taste-basket return adds no measurable out-of-sample explanatory power over SPY and is statistically indistinguishable from chance alignment; the panel lacks the power and window length to rule out small or name-dispersed cultural exposure.",
+  "judge_60s": "A skimming judge will most likely misread the per-name in-sample +0.67 pts dR2 and the two sub-sector slopes with |t|>=2 as evidence the factor works, or conversely misread UNPOWERED as the team conceding failure; the actual finding is a clean, honestly-labeled null that is one dispersion test away from being either a hit or a definitive kill."
+}

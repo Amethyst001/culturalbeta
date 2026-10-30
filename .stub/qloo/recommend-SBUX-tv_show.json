@@ -1,0 +1,110 @@
+{
+ "harness": {
+  "version": "0.1.26",
+  "surface": "exec recommend"
+ },
+ "input": {
+  "target_type": "tv_show",
+  "signals": [
+   "urn:entity:brand:stub-starbucks"
+  ],
+  "limit": 10
+ },
+ "fetchedAt": "2026-10-30T09:15:56.958Z",
+ "correlationId": "exec-stub-recommend",
+ "response": {
+  "status": "ok",
+  "interpretation": {
+   "target_type": "tv_show",
+   "signals": [
+    "urn:entity:brand:stub-starbucks"
+   ]
+  },
+  "results": [
+   {
+    "entity_id": "urn:entity:tv_show:stub-urn-entity-brand-stub-starbucks-0",
+    "name": "Stub tv_show 0",
+    "type": "urn:entity:tv_show",
+    "affinity": 0.6
+   },
+   {
+    "entity_id": "urn:entity:tv_show:stub-urn-entity-brand-stub-starbucks-1",
+    "name": "Stub tv_show 1",
+    "type": "urn:entity:tv_show",
+    "affinity": 0.59
+   },
+   {
+    "entity_id": "urn:entity:tv_show:stub-urn-entity-brand-stub-starbucks-2",
+    "name": "Stub tv_show 2",
+    "type": "urn:entity:tv_show",
+    "affinity": 0.58
+   },
+   {
+    "entity_id": "urn:entity:tv_show:stub-urn-entity-brand-stub-starbucks-3",
+    "name": "Stub tv_show 3",
+    "type": "urn:entity:tv_show",
+    "affinity": 0.57
+   },
+   {
+    "entity_id": "urn:entity:tv_show:stub-urn-entity-brand-stub-starbucks-4",
+    "name": "Stub tv_show 4",
+    "type": "urn:entity:tv_show",
+    "affinity": 0.56
+   },
+   {
+    "entity_id": "urn:entity:tv_show:stub-urn-entity-brand-stub-starbucks-5",
+    "name": "Stub tv_show 5",
+    "type": "urn:entity:tv_show",
+    "affinity": 0.55
+   },
+   {
+    "entity_id": "urn:entity:tv_show:stub-urn-entity-brand-stub-starbucks-6",
+    "name": "Stub tv_show 6",
+    "type": "urn:entity:tv_show",
+    "affinity": 0.54
+   },
+   {
+    "entity_id": "urn:entity:tv_show:stub-urn-entity-brand-stub-starbucks-7",
+    "name": "Stub tv_show 7",
+    "type": "urn:entity:tv_show",
+    "affinity": 0.53
+   },
+   {
+    "entity_id": "urn:entity:tv_show:stub-urn-entity-brand-stub-starbucks-8",
+    "name": "Stub tv_show 8",
+    "type": "urn:entity:tv_show",
+    "affinity": 0.52
+   },
+   {
+    "entity_id": "urn:entity:tv_show:stub-urn-entity-brand-stub-starbucks-9",
+    "name": "Stub tv_show 9",
+    "type": "urn:entity:tv_show",
+    "affinity": 0.51
+   }
+  ],
+  "result_count": 10,
+  "provenance": {
+   "source": "stub",
+   "endpoint": "/v2/insights",
+   "documentation": "stub",
+   "requests": [
+    {
+     "method": "GET",
+     "path": "/v2/insights",
+     "query": {
+      "target_type": "tv_show",
+      "signals": [
+       "urn:entity:brand:stub-starbucks"
+      ],
+      "limit": 10
+     }
+    }
+   ]
+  },
+  "execution": {
+   "transport": "direct",
+   "correlation_id": "exec-stub-recommend",
+   "duration_ms": 1
+  }
+ }
+}

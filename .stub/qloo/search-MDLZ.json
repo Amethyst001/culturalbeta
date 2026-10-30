@@ -1,0 +1,26 @@
+{
+ "harness": {
+  "version": "0.1.26",
+  "surface": "api search"
+ },
+ "request": {
+  "argv": [
+   "search",
+   "--query",
+   "Oreo",
+   "--type",
+   "brand",
+   "--take",
+   "10"
+  ]
+ },
+ "fetchedAt": "2026-10-30T09:14:53.160Z",
+ "response": [
+  {
+   "entity_id": "urn:entity:brand:stub-oreo",
+   "name": "Oreo",
+   "type": "urn:entity:brand",
+   "subtype": "urn:entity:brand"
+  }
+ ]
+}

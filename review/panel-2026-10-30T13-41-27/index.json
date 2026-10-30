@@ -1,0 +1,142 @@
+[
+  {
+    "id": "nemotron-3.5-super",
+    "label": "NVIDIA NIM / Nemotron 3.5 Super VL 120B",
+    "endpoint": "https://integrate.api.nvidia.com/v1/chat/completions",
+    "keyVar": "NVIDIA_API_KEY",
+    "model": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+    "maxTokens": 12000,
+    "gap": 5000,
+    "ok": true,
+    "verdict": {
+      "verdict": "FAIL",
+      "score_total": 40,
+      "scores": {
+        "technological_implementation": 14,
+        "design": 6,
+        "potential_impact": 8,
+        "quality_of_idea": 12
+      },
+      "fatal": "none",
+      "must_fix": [
+        "Replace the 'better of two nulls' verdict rule with a single pre-registered book-level date-permutation null and report the per-name estimator as the only pre-registered estimand; move the pooled panel to an exploratory appendix or drop it from the headline.",
+        "Impose a minimum active-week floor (for example, at least 52 of 102 weeks with nonzero basket movement) before estimating any name's cultural beta, and drop names that fail it instead of printing active-week counts beside uncertain estimates.",
+        "Re-estimate with the four catalogue-revision weeks retained as book-wide level-shift dummies rather than deleted, to test whether the signal survives the only weeks in which the percentile actually moves.",
+        "Restrict the universe to names with complete prices and resolved Qloo entities (drop WBD, EA, K and the 18 unresolved) so every reported number is traceable to a complete Qloo-priced pair."
+      ],
+      "method_objections": [
+        "The in-sample ΔR² of +0.67 pts is not evidence of a cultural channel: the rotation null mean (+0.96 pts) exceeds the real alignment and p is 0.898, so the aligned data underperform a rotated placebo.",
+        "The pooled panel assumes one cultural slope per sub-sector and sweeps out name fixed effects, which assumes away the cross-sectional variation in cultural exposure that the original claim depends on; it estimates a different estimand and is explicitly post-hoc, so random slopes or a hierarchical model would not rescue the verdict—they would only shrink the extreme slopes (media −19.16, travel +4.40) further toward zero.",
+        "The taste-basket regressor is piecewise-constant with the newest ~8 weeks frozen and moves in only 19–31 of 102 weeks (median 29); the cultural beta is weakly identified and the median |t| of 0.60 reflects a near-constant regressor, not a precisely estimated zero.",
+        "Both nulls match the real alignment (rotation p 0.898, permutation p 0.778) and out-of-sample ΔR² is −0.05 with a CI crossing zero; 'not separable from chance' is defensible, but the stronger conclusion is no detectable out-of-sample predictive content."
+      ],
+      "overstatements": [
+        "\"The pitch: taste is a risk channel an index beta does not report.\" — The data do not detect such a channel: in-sample ΔR² is +0.67 pts, out-of-sample is −0.05 pts with CI [−0.56, +0.28], and both nulls match the real alignment. Correction: \"taste is hypothesized as a risk channel; the tested specification finds no detectable out-of-sample premium.\"",
+        "\"The desk says the wider interval carries the claim and labels it.\" — The refit interval [−2.12, +0.64] includes zero and large negative values, so it carries no claim. Correction: \"the wider interval reflects refit uncertainty and includes zero; it supports no directional claim.\"",
+        "\"UNPOWERED ... is a limit of the test, not a verdict on the factor.\" — Both nulls match the real alignment and the rotation null mean beats the real in-sample gain, so the honest verdict is no evidence of a factor rather than merely insufficient power. Correction: \"the test fails to reject the null of no cultural risk premium; the data are consistent with a zero effect.\""
+      ],
+      "best_next_model_construction": "A pre-registered, name-level out-of-sample Fama–MacBeth test: estimate each name's cultural beta on a rolling window requiring at least 40 active basket weeks, then regress next-week excess returns on the cross-section of lagged cultural betas with week-clustered standard errors; report the single slope and its p-value, with no pooling, no post-hoc null selection, and no 'better of two nulls' rule.",
+      "headline_rewrite": "Cultural beta shows no detectable out-of-sample premium: taste-basket alignment adds −0.05 pts to ΔR² (90% CI [−0.56, +0.28]) and both alignment nulls match the real data.",
+      "judge_60s": "A Qloo judge skimming for 60 seconds will most likely misread 'UNPOWERED' as 'promising but needs more data' and miss that both nulls match the real alignment, the rotation null mean exceeds the real in-sample gain, and out-of-sample ΔR² is negative—i.e., the evidence is null, not merely underpowered."
+    },
+    "finish": "stop",
+    "usage": {
+      "prompt_tokens": 2846,
+      "completion_tokens": 10071,
+      "total_tokens": 12917,
+      "prompt_tokens_details": {
+        "audio_tokens": null,
+        "cached_tokens": 0
+      },
+      "completion_tokens_details": {
+        "accepted_prediction_tokens": null,
+        "audio_tokens": null,
+        "reasoning_tokens": 8972,
+        "rejected_prediction_tokens": null
+      }
+    },
+    "ms": 75959
+  },
+  {
+    "id": "glm-5.3-flash",
+    "label": "BeatAPI / GLM 5.3 Flash (free)",
+    "endpoint": "https://api.beatapi.io/v1/chat/completions",
+    "keyVar": "BEATAPI_API_KEY",
+    "model": "glm-5.3-flash-free",
+    "maxTokens": 8000,
+    "gap": 65000,
+    "ok": true,
+    "verdict": {
+      "verdict": "PASS",
+      "score_total": 66,
+      "scores": {
+        "technological_implementation": 20,
+        "design": 19,
+        "potential_impact": 12,
+        "quality_of_idea": 15
+      },
+      "fatal": "none — no simulated data, no trading claim, traceable cached responses, and the headline claim is now hedged to the evidence. A hostile judge can dispute the conclusion, not the integrity.",
+      "must_fix": [
+        "Replace the pooled panel's single market slope with name-specific market betas (two-pass or name x market interaction). One common slope of 0.75 assumes away exactly the cross-sectional heterogeneity a 'cultural beta per name' claim depends on; the pooled +0.04 pts may be an artifact of forcing one market loading.",
+        "Add a dispersion test: is the cross-sectional variance of per-name taste betas greater than sampling error alone would produce (e.g. a Hausman-style or bootstrap-over-names variance test)? A mean near zero with genuine dispersion is still a sellable risk-channel story; no dispersion kills it.",
+        "Extend the estimation window toward 2022-07 where Qloo levels exist. The brief never justifies starting at 2024-10; 102 usable weeks instead of ~58 covered weeks in the prior window suggests the binding constraint is discretionary, and the power complaint is partly self-inflicted.",
+        "State in the fold line that the fixed-coefficient OOS interval [-0.56, +0.28] is narrow and centered on zero, so 'unpowered' applies to the refit interval only; the fixed-coefficient result is a null, not a power problem."
+      ],
+      "method_objections": [
+        "Pooling critique: one cultural slope per sub-sector with name fixed effects and week clusters is the wrong pooling for this claim. The economic object is name-level taste exposure; sweeping in fixed effects and estimating 11 sub-sector slopes tests whether sub-sectors move together, which is a different (and weaker) hypothesis. A hierarchical random-slopes model would be the right object; the current panel does not support or refute the per-name claim, and presenting it as the pooled answer to round 1 is a subtle scope error.",
+        "In-sample vs out-of-sample: per-name mean in-sample dR2 of +0.67 pts collapsing to -0.05 OOS with 2 free regressors per name is the signature of overfitting, not of a weak-but-real signal. The submission handles this correctly by leading with OOS, but the +0.67 figure should not appear without the OOS number adjacent.",
+        "The nulls are correct in construction (shared shuffles, per-basket spread preserved, ablation null honestly discarded) and the conclusion 'not separable from chance at this window length' is the strongest defensible claim. p 0.898 and 0.778 with real alignment at or below shuffled mean means the basket return contains no incremental calendar information over SPY here; that is a null result, and no additional test within this data will rescue it except the dispersion test above.",
+        "The four-week revision cut is adequately defended: keeping the weeks changes OOS by 0.05 pts and the placebo p moves to 1.000, so the cut is not driving the result. The refusal to reinstate weeks as dummies (three-unit outliers) is a defensible judgment call, and the sensitivity run is the right substitute."
+      ],
+      "overstatements": [
+        "'taste is a risk channel an index beta does not report' (pitch sentence, brief) — with two nulls at p>=0.78 and OOS dR2 of zero, the evidence shows taste-basket co-movement is not measurable as a distinct risk channel in this window; correct to 'a candidate risk channel this test cannot detect'.",
+        "'the wider interval carries the claim' — an interval of [-2.12, +0.64] carries no claim; it is compatible with a large negative or modest positive effect. Correct to 'the wider interval bounds the effect size the data can exclude, which is little'.",
+        "'does not report' (revised headline copy) — still slightly strong; the honest phrasing is 'does not measurably report in this sample', since the failure could be power or window rather than the channel."
+      ],
+      "best_next_model_construction": "Hierarchical (mixed-effects) model: name-specific random taste and market slopes with sub-sector-level random effects, fit on the extended window back to 2022-07, with the reported statistic being the cross-sectional variance of taste slopes and its bootstrap p — this tests dispersion, which is the actual claim, rather than a pooled mean that assumes it away.",
+      "headline_rewrite": "On 80 priced names over 102 weeks, a Qloo-derived taste-basket return adds no measurable out-of-sample explanatory power over SPY and is statistically indistinguishable from chance alignment; the panel lacks the power and window length to rule out small or name-dispersed cultural exposure.",
+      "judge_60s": "A skimming judge will most likely misread the per-name in-sample +0.67 pts dR2 and the two sub-sector slopes with |t|>=2 as evidence the factor works, or conversely misread UNPOWERED as the team conceding failure; the actual finding is a clean, honestly-labeled null that is one dispersion test away from being either a hit or a definitive kill."
+    },
+    "finish": "stop",
+    "usage": {
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cached_tokens": 0,
+      "completion_thinking_tokens": 593,
+      "completion_tokens": 1750,
+      "completion_tokens_details": {
+        "accepted_prediction_tokens": 0,
+        "audio_tokens": 0,
+        "cached_tokens": 0,
+        "reasoning_tokens": 593,
+        "rejected_prediction_tokens": 0
+      },
+      "prompt_cache_hit_tokens": 0,
+      "prompt_cache_miss_tokens": 2642,
+      "prompt_cache_write_tokens": 0,
+      "prompt_tokens": 2642,
+      "prompt_tokens_details": {
+        "accepted_prediction_tokens": 0,
+        "audio_tokens": 0,
+        "cached_tokens": 0,
+        "reasoning_tokens": 0,
+        "rejected_prediction_tokens": 0
+      },
+      "total_tokens": 4392
+    },
+    "ms": 64827
+  },
+  {
+    "id": "minimax-m2.7",
+    "label": "dahl / MiniMax M2.7",
+    "endpoint": "https://inference.dahl.global/v1/chat/completions",
+    "keyVar": "DAHL_API_KEY",
+    "model": "MiniMaxAI/MiniMax-M2.7",
+    "maxTokens": 8000,
+    "gap": 20000,
+    "ok": false,
+    "status": 502,
+    "error": "<!DOCTYPE html>\n<!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 7]>    <html class=\"no-js ie7 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 8]>    <html class=\"no-js ie8 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if gt IE 8]><!--> <html class=\"no-js\" lang=\"en-US\"> <!",
+    "ms": 120614
+  }
+]

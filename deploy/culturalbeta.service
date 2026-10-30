@@ -1,0 +1,26 @@
+[Unit]
+Description=Cultural Beta consumer desk
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=culturalbeta
+WorkingDirectory=/opt/culturalbeta
+EnvironmentFile=-/opt/culturalbeta/.env
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/node /opt/culturalbeta/server/desk-server.mjs
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+# A keyed recompute writes both the panel and the Qloo response cache; the rest
+# of the tree stays read-only under ProtectSystem=strict.
+ReadWritePaths=/opt/culturalbeta/output /opt/culturalbeta/fixtures/qloo
+AmbientCapabilities=
+CapabilityBoundingSet=
+
+[Install]
+WantedBy=multi-user.target

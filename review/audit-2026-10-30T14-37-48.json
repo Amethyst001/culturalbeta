@@ -1,0 +1,1756 @@
+{
+ "stamp": "2026-10-30T14-37-48",
+ "target": "http://localhost:8790",
+ "results": [
+  {
+   "viewport": "desktop",
+   "route": "desk",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 1440 / viewport 1440"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 50px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "Taste is a risk factor."
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "102 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "83 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "12 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "3 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "value-add-slot",
+     "ok": true,
+     "detail": "ΔR² slot present"
+    },
+    {
+     "id": "verdict-line",
+     "ok": true,
+     "detail": "573 chars"
+    },
+    {
+     "id": "verdict-chips",
+     "ok": true,
+     "detail": "7 chips, grade NO SIGNAL"
+    },
+    {
+     "id": "verdict-note",
+     "ok": true,
+     "detail": "NO SIGNAL = the out-of-sample interval crosses z…"
+    },
+    {
+     "id": "state-tag-derived",
+     "ok": true,
+     "detail": "80/83 PRICED · LIVE QLOO"
+    },
+    {
+     "id": "contrast-secondary",
+     "ok": true,
+     "detail": "5.29:1 rgb(107, 97, 82) on rgb(244, 239, 227)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "table-headers-match",
+     "ok": true,
+     "detail": "5 th vs 5 cells"
+    },
+    {
+     "id": "numeric-alignment",
+     "ok": true,
+     "detail": "right-aligned numerals"
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-30T14-37-48/desktop-desk.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "desktop",
+   "route": "map",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 1440 / viewport 1440"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 50px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "Taste map."
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "102 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "0 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "0 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "3 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "map-one-dot-per-sector",
+     "ok": true,
+     "detail": "11 sub-sector dots"
+    },
+    {
+     "id": "map-labels-separated",
+     "ok": true,
+     "detail": "11 labels, no overlap"
+    },
+    {
+     "id": "contrast-secondary",
+     "ok": true,
+     "detail": "16.77:1 rgb(28, 23, 16) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-30T14-37-48/desktop-map.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "desktop",
+   "route": "evidence",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 1440 / viewport 1440"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 50px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "Evidence desk."
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "102 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "83 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "0 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": "165/165 165/165 165/165 165/165 165/165 165/165 165/165 165/165 165/165 165/165 165/165 165/165 165/165 165/165 165/165 165/165 165/165 165/165 165/165 165/165 165/165 165/165 165/165 165/165 165/165 165/165 165/165 165/"
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "3 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "robustness-band",
+     "ok": true,
+     "detail": "2 tests: -0.05 pts · p 0.898"
+    },
+    {
+     "id": "window-labels",
+     "ok": true,
+     "detail": "1 window labels"
+    },
+    {
+     "id": "ablation-band",
+     "ok": true,
+     "detail": "2 cells: -0.78 pts · 57%"
+    },
+    {
+     "id": "ablation-intervals",
+     "ok": true,
+     "detail": "2 interval lines, refit labelled: true"
+    },
+    {
+     "id": "ablation-no-insample-cell",
+     "ok": true,
+     "detail": "in-sample cell not in the band"
+    },
+    {
+     "id": "ablation-interval-rule",
+     "ok": true,
+     "detail": "wider-interval rule printed at the number"
+    },
+    {
+     "id": "peer-control-no-qloo",
+     "ok": true,
+     "detail": "peer control stated as Qloo-free"
+    },
+    {
+     "id": "second-window-regime",
+     "ok": true,
+     "detail": "second window reported as untestable, pre-registration stated"
+    },
+    {
+     "id": "ablation-rotation-null",
+     "ok": true,
+     "detail": "ablation carries its own rotation null"
+    },
+    {
+     "id": "sentiment-exclusion",
+     "ok": true,
+     "detail": "sentiment exclusion printed with source, cadence and interval"
+    },
+    {
+     "id": "sentiment-chip-honest",
+     "ok": true,
+     "detail": "chip does not claim survival when its interval crosses zero"
+    },
+    {
+     "id": "alerts-route",
+     "ok": true,
+     "detail": "alerts feed listed in the product surface"
+    },
+    {
+     "id": "cost-band-numbers",
+     "ok": true,
+     "detail": "3,816 requests · 0 requests · p 0.898 · p 0.830 · p 0.126"
+    },
+    {
+     "id": "cost-band-both-nulls",
+     "ok": true,
+     "detail": "rotation p 0.898 / permutation p 0.830 / peer p 0.126"
+    },
+    {
+     "id": "pooled-panel",
+     "ok": true,
+     "detail": "11 sub-sector rows, post-hoc label true"
+    },
+    {
+     "id": "pooled-multiplicity",
+     "ok": true,
+     "detail": "multiplicity across sub-sector tests printed"
+    },
+    {
+     "id": "pooled-estimand-scoped",
+     "ok": true,
+     "detail": "pooled reading scoped as a sub-sector estimand, not a per-name test"
+    },
+    {
+     "id": "pooled-name-market",
+     "ok": true,
+     "detail": "common-slope restriction removed in a second arm"
+    },
+    {
+     "id": "revision-cut-sensitivity",
+     "ok": true,
+     "detail": "revision cut carries its own re-run"
+    },
+    {
+     "id": "permutation-null",
+     "ok": true,
+     "detail": "date-permutation null printed beside the rotation null"
+    },
+    {
+     "id": "permutation-blocks",
+     "ok": true,
+     "detail": "cadence-respecting permutation printed beside the week-by-week one"
+    },
+    {
+     "id": "nulls-intersection-union",
+     "ok": true,
+     "detail": "claim requires every null, not the friendliest one"
+    },
+    {
+     "id": "dispersion-test",
+     "ok": true,
+     "detail": "variance vs noise vs independent-rotation null"
+    },
+    {
+     "id": "dispersion-power",
+     "ok": true,
+     "detail": "power calibration printed and the reading scoped to it"
+    },
+    {
+     "id": "dispersion-power-observed",
+     "ok": true,
+     "detail": "power at the observed spread printed, non-detection scoped to it"
+    },
+    {
+     "id": "dispersion-benchmark-reconciled",
+     "ok": true,
+     "detail": "miscalibrated benchmark identified from inside the null"
+    },
+    {
+     "id": "contrast-secondary",
+     "ok": true,
+     "detail": "5.72:1 rgb(107, 97, 82) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "table-headers-match",
+     "ok": true,
+     "detail": "6 th vs 6 cells"
+    },
+    {
+     "id": "numeric-alignment",
+     "ok": true,
+     "detail": "right-aligned numerals"
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-30T14-37-48/desktop-evidence.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "desktop",
+   "route": "holding",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 1440 / viewport 1440"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 50px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "ELF — e.l.f. Beauty"
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "102 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "0 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "0 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "3 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "value-add-slot",
+     "ok": true,
+     "detail": "ΔR² slot present"
+    },
+    {
+     "id": "holding-basket-legible",
+     "ok": true,
+     "detail": "2 basket blocks · 0 stub rows · 0 labelled state"
+    },
+    {
+     "id": "holding-two-intervals",
+     "ok": true,
+     "detail": "both intervals, claim line present"
+    },
+    {
+     "id": "contrast-secondary",
+     "ok": true,
+     "detail": "16.77:1 rgb(28, 23, 16) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-30T14-37-48/desktop-holding.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "desktop",
+   "route": "read",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 1440 / viewport 1440"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 50px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "How to read this desk."
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "102 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "0 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "0 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "3 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "read-plain-language",
+     "ok": true,
+     "detail": "2422 words"
+    },
+    {
+     "id": "read-no-raw-markup",
+     "ok": true,
+     "detail": "no raw markup"
+    },
+    {
+     "id": "read-falsifiers",
+     "ok": true,
+     "detail": "four falsifiers named"
+    },
+    {
+     "id": "read-claim-level",
+     "ok": true,
+     "detail": "claim bounded to the book"
+    },
+    {
+     "id": "read-negative-valuation",
+     "ok": true,
+     "detail": "negative case priced honestly"
+    },
+    {
+     "id": "read-two-nulls",
+     "ok": true,
+     "detail": "market null and ablation null told apart"
+    },
+    {
+     "id": "read-sentiment-exclusion",
+     "ok": true,
+     "detail": "sentiment exclusion named on the read page"
+    },
+    {
+     "id": "read-run-cost-numeric",
+     "ok": true,
+     "detail": "the Qloo cost of a run printed as numbers, control arm at zero"
+    },
+    {
+     "id": "contrast-secondary",
+     "ok": true,
+     "detail": "16.77:1 rgb(28, 23, 16) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-30T14-37-48/desktop-read.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "tablet",
+   "route": "desk",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 768 / viewport 768"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 38px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "Taste is a risk factor."
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "102 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "83 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "12 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "3 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "value-add-slot",
+     "ok": true,
+     "detail": "ΔR² slot present"
+    },
+    {
+     "id": "verdict-line",
+     "ok": true,
+     "detail": "573 chars"
+    },
+    {
+     "id": "verdict-chips",
+     "ok": true,
+     "detail": "7 chips, grade NO SIGNAL"
+    },
+    {
+     "id": "verdict-note",
+     "ok": true,
+     "detail": "NO SIGNAL = the out-of-sample interval crosses z…"
+    },
+    {
+     "id": "state-tag-derived",
+     "ok": true,
+     "detail": "80/83 PRICED · LIVE QLOO"
+    },
+    {
+     "id": "contrast-secondary",
+     "ok": true,
+     "detail": "5.29:1 rgb(107, 97, 82) on rgb(244, 239, 227)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "table-headers-match",
+     "ok": true,
+     "detail": "5 th vs 5 cells"
+    },
+    {
+     "id": "numeric-alignment",
+     "ok": true,
+     "detail": "right-aligned numerals"
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-30T14-37-48/tablet-desk.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "tablet",
+   "route": "map",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 768 / viewport 768"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 38px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "Taste map."
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "102 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "0 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "0 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "3 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "map-one-dot-per-sector",
+     "ok": true,
+     "detail": "11 sub-sector dots"
+    },
+    {
+     "id": "map-labels-separated",
+     "ok": true,
+     "detail": "11 labels, no overlap"
+    },
+    {
+     "id": "contrast-secondary",
+     "ok": true,
+     "detail": "16.77:1 rgb(28, 23, 16) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-30T14-37-48/tablet-map.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "tablet",
+   "route": "evidence",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 768 / viewport 768"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 38px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "Evidence desk."
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "102 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "83 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "0 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": "132/132 132/132 132/132 132/132 132/132 132/132 132/132 132/132 132/132 132/132 132/132 132/132 132/132 132/132 132/132 132/132 132/132 132/132 132/132 132/132 132/132 132/132 132/132 132/132 132/132 132/132 132/132 132/"
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "3 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "robustness-band",
+     "ok": true,
+     "detail": "2 tests: -0.05 pts · p 0.898"
+    },
+    {
+     "id": "window-labels",
+     "ok": true,
+     "detail": "1 window labels"
+    },
+    {
+     "id": "ablation-band",
+     "ok": true,
+     "detail": "2 cells: -0.78 pts · 57%"
+    },
+    {
+     "id": "ablation-intervals",
+     "ok": true,
+     "detail": "2 interval lines, refit labelled: true"
+    },
+    {
+     "id": "ablation-no-insample-cell",
+     "ok": true,
+     "detail": "in-sample cell not in the band"
+    },
+    {
+     "id": "ablation-interval-rule",
+     "ok": true,
+     "detail": "wider-interval rule printed at the number"
+    },
+    {
+     "id": "peer-control-no-qloo",
+     "ok": true,
+     "detail": "peer control stated as Qloo-free"
+    },
+    {
+     "id": "second-window-regime",
+     "ok": true,
+     "detail": "second window reported as untestable, pre-registration stated"
+    },
+    {
+     "id": "ablation-rotation-null",
+     "ok": true,
+     "detail": "ablation carries its own rotation null"
+    },
+    {
+     "id": "sentiment-exclusion",
+     "ok": true,
+     "detail": "sentiment exclusion printed with source, cadence and interval"
+    },
+    {
+     "id": "sentiment-chip-honest",
+     "ok": true,
+     "detail": "chip does not claim survival when its interval crosses zero"
+    },
+    {
+     "id": "alerts-route",
+     "ok": true,
+     "detail": "alerts feed listed in the product surface"
+    },
+    {
+     "id": "cost-band-numbers",
+     "ok": true,
+     "detail": "3,816 requests · 0 requests · p 0.898 · p 0.830 · p 0.126"
+    },
+    {
+     "id": "cost-band-both-nulls",
+     "ok": true,
+     "detail": "rotation p 0.898 / permutation p 0.830 / peer p 0.126"
+    },
+    {
+     "id": "pooled-panel",
+     "ok": true,
+     "detail": "11 sub-sector rows, post-hoc label true"
+    },
+    {
+     "id": "pooled-multiplicity",
+     "ok": true,
+     "detail": "multiplicity across sub-sector tests printed"
+    },
+    {
+     "id": "pooled-estimand-scoped",
+     "ok": true,
+     "detail": "pooled reading scoped as a sub-sector estimand, not a per-name test"
+    },
+    {
+     "id": "pooled-name-market",
+     "ok": true,
+     "detail": "common-slope restriction removed in a second arm"
+    },
+    {
+     "id": "revision-cut-sensitivity",
+     "ok": true,
+     "detail": "revision cut carries its own re-run"
+    },
+    {
+     "id": "permutation-null",
+     "ok": true,
+     "detail": "date-permutation null printed beside the rotation null"
+    },
+    {
+     "id": "permutation-blocks",
+     "ok": true,
+     "detail": "cadence-respecting permutation printed beside the week-by-week one"
+    },
+    {
+     "id": "nulls-intersection-union",
+     "ok": true,
+     "detail": "claim requires every null, not the friendliest one"
+    },
+    {
+     "id": "dispersion-test",
+     "ok": true,
+     "detail": "variance vs noise vs independent-rotation null"
+    },
+    {
+     "id": "dispersion-power",
+     "ok": true,
+     "detail": "power calibration printed and the reading scoped to it"
+    },
+    {
+     "id": "dispersion-power-observed",
+     "ok": true,
+     "detail": "power at the observed spread printed, non-detection scoped to it"
+    },
+    {
+     "id": "dispersion-benchmark-reconciled",
+     "ok": true,
+     "detail": "miscalibrated benchmark identified from inside the null"
+    },
+    {
+     "id": "contrast-secondary",
+     "ok": true,
+     "detail": "5.72:1 rgb(107, 97, 82) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "table-headers-match",
+     "ok": true,
+     "detail": "6 th vs 6 cells"
+    },
+    {
+     "id": "numeric-alignment",
+     "ok": true,
+     "detail": "right-aligned numerals"
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-30T14-37-48/tablet-evidence.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "tablet",
+   "route": "holding",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 768 / viewport 768"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 38px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "ELF — e.l.f. Beauty"
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "102 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "0 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "0 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "3 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "value-add-slot",
+     "ok": true,
+     "detail": "ΔR² slot present"
+    },
+    {
+     "id": "holding-basket-legible",
+     "ok": true,
+     "detail": "2 basket blocks · 0 stub rows · 0 labelled state"
+    },
+    {
+     "id": "holding-two-intervals",
+     "ok": true,
+     "detail": "both intervals, claim line present"
+    },
+    {
+     "id": "contrast-secondary",
+     "ok": true,
+     "detail": "16.77:1 rgb(28, 23, 16) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-30T14-37-48/tablet-holding.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "tablet",
+   "route": "read",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 768 / viewport 768"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 38px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "How to read this desk."
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "102 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "0 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "0 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "3 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "read-plain-language",
+     "ok": true,
+     "detail": "2422 words"
+    },
+    {
+     "id": "read-no-raw-markup",
+     "ok": true,
+     "detail": "no raw markup"
+    },
+    {
+     "id": "read-falsifiers",
+     "ok": true,
+     "detail": "four falsifiers named"
+    },
+    {
+     "id": "read-claim-level",
+     "ok": true,
+     "detail": "claim bounded to the book"
+    },
+    {
+     "id": "read-negative-valuation",
+     "ok": true,
+     "detail": "negative case priced honestly"
+    },
+    {
+     "id": "read-two-nulls",
+     "ok": true,
+     "detail": "market null and ablation null told apart"
+    },
+    {
+     "id": "read-sentiment-exclusion",
+     "ok": true,
+     "detail": "sentiment exclusion named on the read page"
+    },
+    {
+     "id": "read-run-cost-numeric",
+     "ok": true,
+     "detail": "the Qloo cost of a run printed as numbers, control arm at zero"
+    },
+    {
+     "id": "contrast-secondary",
+     "ok": true,
+     "detail": "16.77:1 rgb(28, 23, 16) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-30T14-37-48/tablet-read.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "phone",
+   "route": "desk",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 390 / viewport 390"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 31px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "Taste is a risk factor."
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "102 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "83 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "12 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "3 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "value-add-slot",
+     "ok": true,
+     "detail": "ΔR² slot present"
+    },
+    {
+     "id": "verdict-line",
+     "ok": true,
+     "detail": "573 chars"
+    },
+    {
+     "id": "verdict-chips",
+     "ok": true,
+     "detail": "7 chips, grade NO SIGNAL"
+    },
+    {
+     "id": "verdict-note",
+     "ok": true,
+     "detail": "NO SIGNAL = the out-of-sample interval crosses z…"
+    },
+    {
+     "id": "state-tag-derived",
+     "ok": true,
+     "detail": "80/83 PRICED · LIVE QLOO"
+    },
+    {
+     "id": "mobile-signal-line",
+     "ok": true,
+     "detail": "signal top 1448 · trace top 1448"
+    },
+    {
+     "id": "contrast-secondary",
+     "ok": true,
+     "detail": "5.29:1 rgb(107, 97, 82) on rgb(244, 239, 227)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "table-headers-match",
+     "ok": true,
+     "detail": "5 th vs 5 cells"
+    },
+    {
+     "id": "numeric-alignment",
+     "ok": true,
+     "detail": "right-aligned numerals"
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-30T14-37-48/phone-desk.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "phone",
+   "route": "map",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 390 / viewport 390"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 31px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "Taste map."
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "102 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "0 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "0 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "3 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "map-one-dot-per-sector",
+     "ok": true,
+     "detail": "11 sub-sector dots"
+    },
+    {
+     "id": "map-labels-separated",
+     "ok": true,
+     "detail": "11 labels, no overlap"
+    },
+    {
+     "id": "contrast-secondary",
+     "ok": true,
+     "detail": "16.77:1 rgb(28, 23, 16) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-30T14-37-48/phone-map.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "phone",
+   "route": "evidence",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 390 / viewport 390"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 31px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "Evidence desk."
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "102 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "83 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "0 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": "300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/"
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "3 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "robustness-band",
+     "ok": true,
+     "detail": "2 tests: -0.05 pts · p 0.898"
+    },
+    {
+     "id": "window-labels",
+     "ok": true,
+     "detail": "1 window labels"
+    },
+    {
+     "id": "ablation-band",
+     "ok": true,
+     "detail": "2 cells: -0.78 pts · 57%"
+    },
+    {
+     "id": "ablation-intervals",
+     "ok": true,
+     "detail": "2 interval lines, refit labelled: true"
+    },
+    {
+     "id": "ablation-no-insample-cell",
+     "ok": true,
+     "detail": "in-sample cell not in the band"
+    },
+    {
+     "id": "ablation-interval-rule",
+     "ok": true,
+     "detail": "wider-interval rule printed at the number"
+    },
+    {
+     "id": "peer-control-no-qloo",
+     "ok": true,
+     "detail": "peer control stated as Qloo-free"
+    },
+    {
+     "id": "second-window-regime",
+     "ok": true,
+     "detail": "second window reported as untestable, pre-registration stated"
+    },
+    {
+     "id": "ablation-rotation-null",
+     "ok": true,
+     "detail": "ablation carries its own rotation null"
+    },
+    {
+     "id": "sentiment-exclusion",
+     "ok": true,
+     "detail": "sentiment exclusion printed with source, cadence and interval"
+    },
+    {
+     "id": "sentiment-chip-honest",
+     "ok": true,
+     "detail": "chip does not claim survival when its interval crosses zero"
+    },
+    {
+     "id": "alerts-route",
+     "ok": true,
+     "detail": "alerts feed listed in the product surface"
+    },
+    {
+     "id": "cost-band-numbers",
+     "ok": true,
+     "detail": "3,816 requests · 0 requests · p 0.898 · p 0.830 · p 0.126"
+    },
+    {
+     "id": "cost-band-both-nulls",
+     "ok": true,
+     "detail": "rotation p 0.898 / permutation p 0.830 / peer p 0.126"
+    },
+    {
+     "id": "pooled-panel",
+     "ok": true,
+     "detail": "11 sub-sector rows, post-hoc label true"
+    },
+    {
+     "id": "pooled-multiplicity",
+     "ok": true,
+     "detail": "multiplicity across sub-sector tests printed"
+    },
+    {
+     "id": "pooled-estimand-scoped",
+     "ok": true,
+     "detail": "pooled reading scoped as a sub-sector estimand, not a per-name test"
+    },
+    {
+     "id": "pooled-name-market",
+     "ok": true,
+     "detail": "common-slope restriction removed in a second arm"
+    },
+    {
+     "id": "revision-cut-sensitivity",
+     "ok": true,
+     "detail": "revision cut carries its own re-run"
+    },
+    {
+     "id": "permutation-null",
+     "ok": true,
+     "detail": "date-permutation null printed beside the rotation null"
+    },
+    {
+     "id": "permutation-blocks",
+     "ok": true,
+     "detail": "cadence-respecting permutation printed beside the week-by-week one"
+    },
+    {
+     "id": "nulls-intersection-union",
+     "ok": true,
+     "detail": "claim requires every null, not the friendliest one"
+    },
+    {
+     "id": "dispersion-test",
+     "ok": true,
+     "detail": "variance vs noise vs independent-rotation null"
+    },
+    {
+     "id": "dispersion-power",
+     "ok": true,
+     "detail": "power calibration printed and the reading scoped to it"
+    },
+    {
+     "id": "dispersion-power-observed",
+     "ok": true,
+     "detail": "power at the observed spread printed, non-detection scoped to it"
+    },
+    {
+     "id": "dispersion-benchmark-reconciled",
+     "ok": true,
+     "detail": "miscalibrated benchmark identified from inside the null"
+    },
+    {
+     "id": "contrast-secondary",
+     "ok": true,
+     "detail": "5.72:1 rgb(107, 97, 82) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "table-headers-match",
+     "ok": true,
+     "detail": "6 th vs 6 cells"
+    },
+    {
+     "id": "numeric-alignment",
+     "ok": true,
+     "detail": "right-aligned numerals"
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-30T14-37-48/phone-evidence.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "phone",
+   "route": "holding",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 390 / viewport 390"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 31px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "ELF — e.l.f. Beauty"
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "102 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "0 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "0 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "3 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "value-add-slot",
+     "ok": true,
+     "detail": "ΔR² slot present"
+    },
+    {
+     "id": "holding-basket-legible",
+     "ok": true,
+     "detail": "2 basket blocks · 0 stub rows · 0 labelled state"
+    },
+    {
+     "id": "holding-two-intervals",
+     "ok": true,
+     "detail": "both intervals, claim line present"
+    },
+    {
+     "id": "mobile-signal-line",
+     "ok": true,
+     "detail": "no row"
+    },
+    {
+     "id": "contrast-secondary",
+     "ok": true,
+     "detail": "16.77:1 rgb(28, 23, 16) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-30T14-37-48/phone-holding.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "phone",
+   "route": "read",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 390 / viewport 390"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 31px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "How to read this desk."
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "102 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "0 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "0 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "3 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "read-plain-language",
+     "ok": true,
+     "detail": "2422 words"
+    },
+    {
+     "id": "read-no-raw-markup",
+     "ok": true,
+     "detail": "no raw markup"
+    },
+    {
+     "id": "read-falsifiers",
+     "ok": true,
+     "detail": "four falsifiers named"
+    },
+    {
+     "id": "read-claim-level",
+     "ok": true,
+     "detail": "claim bounded to the book"
+    },
+    {
+     "id": "read-negative-valuation",
+     "ok": true,
+     "detail": "negative case priced honestly"
+    },
+    {
+     "id": "read-two-nulls",
+     "ok": true,
+     "detail": "market null and ablation null told apart"
+    },
+    {
+     "id": "read-sentiment-exclusion",
+     "ok": true,
+     "detail": "sentiment exclusion named on the read page"
+    },
+    {
+     "id": "read-run-cost-numeric",
+     "ok": true,
+     "detail": "the Qloo cost of a run printed as numbers, control arm at zero"
+    },
+    {
+     "id": "contrast-secondary",
+     "ok": true,
+     "detail": "16.77:1 rgb(28, 23, 16) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-30T14-37-48/phone-read.png",
+   "consoleErrors": []
+  }
+ ]
+}

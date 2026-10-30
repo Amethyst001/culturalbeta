@@ -1,0 +1,36 @@
+{
+  "verdict": "FIX FIRST",
+  "score_total": 50,
+  "scores": {
+    "technological_implementation": 15,
+    "design": 13,
+    "potential_impact": 10,
+    "quality_of_idea": 12
+  },
+  "fatal": "none",
+  "must_fix": [
+    "Replace the grade \"NO SIGNAL (IN-SAMPLE)\" with a label stating the held-out slice is untestable, e.g. \"NO OUT-OF-SAMPLE TEST — FROZEN TASTE REGRESSOR\".",
+    "Remove the post-hoc diagnostic or re-label it as ungraded, non-pre-registered, and interval-free; it currently implies out-of-sample evidence.",
+    "Disclose on the data vintage card that Qloo population_percentile is frozen for the final 44 of 102 weeks and the taste regressor is identically zero across all 35 scored weeks.",
+    "Explain or remove the 18 unresolved names; 21 percent of the book lacks the core cultural column."
+  ],
+  "method_objections": [
+    "The held-out taste regressor has zero variation, so the out-of-sample condition has power equal to size; \"no test\" is accurate but the surrounding copy still implies a completed inference.",
+    "All 35 scored weeks fall inside the carry-forward region; the final 44 weeks are stale Qloo data.",
+    "The dispersion test has 0 percent power at the observed standard deviation (28.4) and is labeled uninformative yet remains on the desk.",
+    "Qloo-vs-peer basket correlation averages 0.04; the taste basket moves in only 27 of 102 weeks while the peer basket moves every week, so the taste regressor is not a weekly signal.",
+    "The three nulls share one calendar and one frozen tail; p-values of 0.78 to 0.90 are not rescued by calling them one stringent check.",
+    "The 38/20 post-hoc split is median-led, outlier-dominated (range -127.5 to +15.8), and reported without an interval or grade."
+  ],
+  "overstatements": [
+    "\"NO SIGNAL (IN-SAMPLE)\" claims a capable in-sample test found nothing; the in-sample nulls were not cleared (rotation p 0.90, week-order p 0.78, block p 0.83) and the out-of-sample slice is frozen. It should read \"NO OUT-OF-SAMPLE TEST — FROZEN TASTE REGRESSOR.\"",
+    "The diagnostic's presentation of a post-hoc median (-0.49 pts) as an out-of-sample check overstates the evidence; it is post-hoc, ungraded, interval-free, and outlier-dominated. It should read \"post-hoc diagnostic only, not evidence.\"",
+    "\"IN-SAMPLE ONLY\" implies a confirmed in-sample state; the correct reading is \"in-sample association not confirmed by any null.\""
+  ],
+  "grade_label_verdict": "No. The label still reads as a capable test that found nothing, but the held-out regressor is identically zero and the in-sample nulls were not cleared; there is no signal to reject, only an untestable slice.",
+  "roster_verdict": "Integrity in disclosure, but a broken table for 21 percent of the book. Keeping the rows with the query tried is better than silent dropping, yet it invites the question why 18 consumer names failed to resolve to Qloo entities without answering it.",
+  "cadence_diagnostic_verdict": "Cut. It is post-hoc, median-led, outlier-dominated, interval-free, and ungraded; no single sentence makes a result-shopping diagnostic safe. If retained, it must carry: \"This post-hoc split is ungraded, has no confidence interval, and does not support the book's verdict.\"",
+  "best_next_model_construction": "Re-base the sample on weeks where Qloo population_percentile actually changes, restrict to the 83 resolved names, pre-register a hold-out with non-zero taste regressor variation, switch to a Qloo endpoint with weekly movement instead of carry-forward percentiles, and power the dispersion test before reporting it.",
+  "headline_rewrite": "Cultural beta desk: 101 consumer names, 80 priced, zero significant flags, and no testable out-of-sample slice because the Qloo taste series is frozen for the final 44 weeks.",
+  "judge_60s": "A judge will read \"NO SIGNAL (IN-SAMPLE)\" and conclude the desk tested cultural beta and found it does not predict returns, when the out-of-sample test was impossible (frozen regressor) and the in-sample association failed its own nulls."
+}

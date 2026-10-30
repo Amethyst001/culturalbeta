@@ -1,0 +1,31 @@
+{
+  "verdict": "FIX FIRST",
+  "score_total": 55,
+  "scores": {
+    "technological_implementation": 17,
+    "design": 18,
+    "potential_impact": 8,
+    "quality_of_idea": 12
+  },
+  "fatal": "none",
+  "must_fix": [
+    "Replace per-name weekly OLS on the shared sector basket with a pooled panel model (name fixed effects, one cultural beta per sector or hierarchical shrinkage) and cluster standard errors at sector-week; 80 names share roughly 29 nonzero basket weeks, so per-name classical SEs are not valid.",
+    "Stop deleting the four catalogue-revision weeks; dummy them or model them explicitly, since they are the only dates with simultaneous large basket moves (median log move 0.188-0.262 vs 0.0007 normally) and cutting them removes the identifying variation.",
+    "Pre-register one signal definition and present the velocity_fold_change to population_percentile log-change switch as a sensitivity analysis, not the main specification, because both signals are invalidated by the same refresh-cadence sparsity.",
+    "Report the effective sample (nonzero basket weeks per sector) and switch the placebo to a date permutation of basket move dates; the rotation null discards 194 of 400 draws and yields p = 0.126 with roughly 1/206 granularity, so it is unstable."
+  ],
+  "method_objections": [
+    "The basket is zero in roughly 75% of weeks and the slope is identified on about 29 sector-weeks; the large per-name coefficients (DIS +43.8, KDP -27.4) are leverage artifacts of sparse nonzero weeks, not stable cultural exposures.",
+    "Running 80 separate time-series regressions on a common sector regressor treats 80 x 102 observations as independent when the effective sample for the cultural beta is roughly 29 sector-week moves; the Benjamini-Hochberg correction across names does not fix this pseudoreplication.",
+    "Cutting the four revision weeks removes the only dates with common, large basket movement and can only attenuate or bias the cultural slope, leaving identification to refresh-cadence noise rather than cleaning it.",
+    "The rotation null skips name-draws with fewer than 8 nonzero training weeks or less than 5% of basket spread and drops draws keeping under 80% of names (206 of 400 valid); p = 0.126 moves to 0.099 or 0.147 under looser or stricter rules, so it is not a stable usable number."
+  ],
+  "overstatements": [
+    "cultural beta is an exposure an index beta cannot see — corrected: no exposure is detected; OOS delta-R-squared is -0.05 pts with a CI crossing zero and the rotation null gives p = 0.898.",
+    "the factor did not survive out of sample — a finding about the factor, not a defect in the desk — corrected: this frames a null result as a neutral product feature when the desk's core claim, a visible cultural beta beyond SPY, is unsupported.",
+    "alignment over peers — corrected: the peer ablation shows a -0.78 pts OOS gain (90% CI -2.00 to +0.41, p = 0.126), so there is no detectable added value or alignment over the peer basket."
+  ],
+  "best_next_model_construction": "Pooled panel regression r_it = alpha_i + beta_mkt SPY_t + beta_cult,s(i) basket_s,t + gamma UMCSENT_t + e_it with name fixed effects, sector-week clustered SEs, and ridge shrinkage on beta_cult; score OOS on the held-out 35 weeks using the pre-registered window.",
+  "headline_rewrite": "No detectable cultural beta: 0 of 80 names pass the multiplicity-corrected screen, mean OOS delta-R-squared is -0.05 points (90% CI -0.56 to +0.28), and the rotation null cannot be rejected (p = 0.898), so Qloo taste adds no weekly signal beyond SPY in this sample.",
+  "judge_60s": "A Qloo judge skimming for 60 seconds will most likely misread the careful null (0 flagged, negative OOS, rotation p = 0.898) as proof that Qloo data is useless for equity, when the real defect is the mismatch between weekly stock returns and Qloo's sparse, piecewise-constant, catalogue-revised percentile levels, not the quality of the underlying entities."
+}

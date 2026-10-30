@@ -1,0 +1,463 @@
+{
+ "harness": {
+  "version": "0.1.26",
+  "surface": "exec trends"
+ },
+ "entityType": "movie",
+ "entities": [
+  "urn:entity:movie:stub-urn-entity-brand-stub-starbucks-1",
+  "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-0",
+  "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-1"
+ ],
+ "window": {
+  "start": "2022-10-03",
+  "end": "2026-11-02"
+ },
+ "cadenceDays": 7,
+ "calls": [
+  {
+   "input": {
+    "entities": [
+     "urn:entity:movie:stub-urn-entity-brand-stub-starbucks-1",
+     "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-0",
+     "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-1"
+    ],
+    "entity_type": "movie",
+    "start_date": "2022-10-03",
+    "end_date": "2023-02-12",
+    "limit": 20
+   },
+   "points": 57,
+   "correlationId": "exec-stub-trends",
+   "provenance": {
+    "source": "stub",
+    "endpoint": "/v2/trending",
+    "documentation": "stub",
+    "requests": [
+     {
+      "method": "GET",
+      "path": "/v2/trending",
+      "query": {
+       "entities": [
+        "urn:entity:movie:stub-urn-entity-brand-stub-starbucks-1",
+        "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-0",
+        "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-1"
+       ],
+       "entity_type": "movie",
+       "start_date": "2022-10-03",
+       "end_date": "2023-02-12",
+       "limit": 20
+      }
+     }
+    ]
+   }
+  },
+  {
+   "input": {
+    "entities": [
+     "urn:entity:movie:stub-urn-entity-brand-stub-starbucks-1",
+     "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-0",
+     "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-1"
+    ],
+    "entity_type": "movie",
+    "start_date": "2023-02-13",
+    "end_date": "2023-06-25",
+    "limit": 20
+   },
+   "points": 57,
+   "correlationId": "exec-stub-trends",
+   "provenance": {
+    "source": "stub",
+    "endpoint": "/v2/trending",
+    "documentation": "stub",
+    "requests": [
+     {
+      "method": "GET",
+      "path": "/v2/trending",
+      "query": {
+       "entities": [
+        "urn:entity:movie:stub-urn-entity-brand-stub-starbucks-1",
+        "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-0",
+        "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-1"
+       ],
+       "entity_type": "movie",
+       "start_date": "2023-02-13",
+       "end_date": "2023-06-25",
+       "limit": 20
+      }
+     }
+    ]
+   }
+  },
+  {
+   "input": {
+    "entities": [
+     "urn:entity:movie:stub-urn-entity-brand-stub-starbucks-1",
+     "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-0",
+     "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-1"
+    ],
+    "entity_type": "movie",
+    "start_date": "2023-06-26",
+    "end_date": "2023-11-05",
+    "limit": 20
+   },
+   "points": 57,
+   "correlationId": "exec-stub-trends",
+   "provenance": {
+    "source": "stub",
+    "endpoint": "/v2/trending",
+    "documentation": "stub",
+    "requests": [
+     {
+      "method": "GET",
+      "path": "/v2/trending",
+      "query": {
+       "entities": [
+        "urn:entity:movie:stub-urn-entity-brand-stub-starbucks-1",
+        "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-0",
+        "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-1"
+       ],
+       "entity_type": "movie",
+       "start_date": "2023-06-26",
+       "end_date": "2023-11-05",
+       "limit": 20
+      }
+     }
+    ]
+   }
+  },
+  {
+   "input": {
+    "entities": [
+     "urn:entity:movie:stub-urn-entity-brand-stub-starbucks-1",
+     "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-0",
+     "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-1"
+    ],
+    "entity_type": "movie",
+    "start_date": "2023-11-06",
+    "end_date": "2024-03-17",
+    "limit": 20
+   },
+   "points": 57,
+   "correlationId": "exec-stub-trends",
+   "provenance": {
+    "source": "stub",
+    "endpoint": "/v2/trending",
+    "documentation": "stub",
+    "requests": [
+     {
+      "method": "GET",
+      "path": "/v2/trending",
+      "query": {
+       "entities": [
+        "urn:entity:movie:stub-urn-entity-brand-stub-starbucks-1",
+        "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-0",
+        "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-1"
+       ],
+       "entity_type": "movie",
+       "start_date": "2023-11-06",
+       "end_date": "2024-03-17",
+       "limit": 20
+      }
+     }
+    ]
+   }
+  },
+  {
+   "input": {
+    "entities": [
+     "urn:entity:movie:stub-urn-entity-brand-stub-starbucks-1",
+     "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-0",
+     "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-1"
+    ],
+    "entity_type": "movie",
+    "start_date": "2024-03-18",
+    "end_date": "2024-07-28",
+    "limit": 20
+   },
+   "points": 57,
+   "correlationId": "exec-stub-trends",
+   "provenance": {
+    "source": "stub",
+    "endpoint": "/v2/trending",
+    "documentation": "stub",
+    "requests": [
+     {
+      "method": "GET",
+      "path": "/v2/trending",
+      "query": {
+       "entities": [
+        "urn:entity:movie:stub-urn-entity-brand-stub-starbucks-1",
+        "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-0",
+        "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-1"
+       ],
+       "entity_type": "movie",
+       "start_date": "2024-03-18",
+       "end_date": "2024-07-28",
+       "limit": 20
+      }
+     }
+    ]
+   }
+  },
+  {
+   "input": {
+    "entities": [
+     "urn:entity:movie:stub-urn-entity-brand-stub-starbucks-1",
+     "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-0",
+     "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-1"
+    ],
+    "entity_type": "movie",
+    "start_date": "2024-07-29",
+    "end_date": "2024-12-08",
+    "limit": 20
+   },
+   "points": 57,
+   "correlationId": "exec-stub-trends",
+   "provenance": {
+    "source": "stub",
+    "endpoint": "/v2/trending",
+    "documentation": "stub",
+    "requests": [
+     {
+      "method": "GET",
+      "path": "/v2/trending",
+      "query": {
+       "entities": [
+        "urn:entity:movie:stub-urn-entity-brand-stub-starbucks-1",
+        "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-0",
+        "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-1"
+       ],
+       "entity_type": "movie",
+       "start_date": "2024-07-29",
+       "end_date": "2024-12-08",
+       "limit": 20
+      }
+     }
+    ]
+   }
+  },
+  {
+   "input": {
+    "entities": [
+     "urn:entity:movie:stub-urn-entity-brand-stub-starbucks-1",
+     "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-0",
+     "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-1"
+    ],
+    "entity_type": "movie",
+    "start_date": "2024-12-09",
+    "end_date": "2025-04-20",
+    "limit": 20
+   },
+   "points": 57,
+   "correlationId": "exec-stub-trends",
+   "provenance": {
+    "source": "stub",
+    "endpoint": "/v2/trending",
+    "documentation": "stub",
+    "requests": [
+     {
+      "method": "GET",
+      "path": "/v2/trending",
+      "query": {
+       "entities": [
+        "urn:entity:movie:stub-urn-entity-brand-stub-starbucks-1",
+        "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-0",
+        "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-1"
+       ],
+       "entity_type": "movie",
+       "start_date": "2024-12-09",
+       "end_date": "2025-04-20",
+       "limit": 20
+      }
+     }
+    ]
+   }
+  },
+  {
+   "input": {
+    "entities": [
+     "urn:entity:movie:stub-urn-entity-brand-stub-starbucks-1",
+     "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-0",
+     "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-1"
+    ],
+    "entity_type": "movie",
+    "start_date": "2025-04-21",
+    "end_date": "2025-08-31",
+    "limit": 20
+   },
+   "points": 57,
+   "correlationId": "exec-stub-trends",
+   "provenance": {
+    "source": "stub",
+    "endpoint": "/v2/trending",
+    "documentation": "stub",
+    "requests": [
+     {
+      "method": "GET",
+      "path": "/v2/trending",
+      "query": {
+       "entities": [
+        "urn:entity:movie:stub-urn-entity-brand-stub-starbucks-1",
+        "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-0",
+        "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-1"
+       ],
+       "entity_type": "movie",
+       "start_date": "2025-04-21",
+       "end_date": "2025-08-31",
+       "limit": 20
+      }
+     }
+    ]
+   }
+  },
+  {
+   "input": {
+    "entities": [
+     "urn:entity:movie:stub-urn-entity-brand-stub-starbucks-1",
+     "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-0",
+     "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-1"
+    ],
+    "entity_type": "movie",
+    "start_date": "2025-09-01",
+    "end_date": "2026-01-11",
+    "limit": 20
+   },
+   "points": 57,
+   "correlationId": "exec-stub-trends",
+   "provenance": {
+    "source": "stub",
+    "endpoint": "/v2/trending",
+    "documentation": "stub",
+    "requests": [
+     {
+      "method": "GET",
+      "path": "/v2/trending",
+      "query": {
+       "entities": [
+        "urn:entity:movie:stub-urn-entity-brand-stub-starbucks-1",
+        "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-0",
+        "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-1"
+       ],
+       "entity_type": "movie",
+       "start_date": "2025-09-01",
+       "end_date": "2026-01-11",
+       "limit": 20
+      }
+     }
+    ]
+   }
+  },
+  {
+   "input": {
+    "entities": [
+     "urn:entity:movie:stub-urn-entity-brand-stub-starbucks-1",
+     "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-0",
+     "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-1"
+    ],
+    "entity_type": "movie",
+    "start_date": "2026-01-12",
+    "end_date": "2026-05-24",
+    "limit": 20
+   },
+   "points": 57,
+   "correlationId": "exec-stub-trends",
+   "provenance": {
+    "source": "stub",
+    "endpoint": "/v2/trending",
+    "documentation": "stub",
+    "requests": [
+     {
+      "method": "GET",
+      "path": "/v2/trending",
+      "query": {
+       "entities": [
+        "urn:entity:movie:stub-urn-entity-brand-stub-starbucks-1",
+        "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-0",
+        "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-1"
+       ],
+       "entity_type": "movie",
+       "start_date": "2026-01-12",
+       "end_date": "2026-05-24",
+       "limit": 20
+      }
+     }
+    ]
+   }
+  },
+  {
+   "input": {
+    "entities": [
+     "urn:entity:movie:stub-urn-entity-brand-stub-starbucks-1",
+     "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-0",
+     "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-1"
+    ],
+    "entity_type": "movie",
+    "start_date": "2026-05-25",
+    "end_date": "2026-10-04",
+    "limit": 20
+   },
+   "points": 57,
+   "correlationId": "exec-stub-trends",
+   "provenance": {
+    "source": "stub",
+    "endpoint": "/v2/trending",
+    "documentation": "stub",
+    "requests": [
+     {
+      "method": "GET",
+      "path": "/v2/trending",
+      "query": {
+       "entities": [
+        "urn:entity:movie:stub-urn-entity-brand-stub-starbucks-1",
+        "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-0",
+        "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-1"
+       ],
+       "entity_type": "movie",
+       "start_date": "2026-05-25",
+       "end_date": "2026-10-04",
+       "limit": 20
+      }
+     }
+    ]
+   }
+  },
+  {
+   "input": {
+    "entities": [
+     "urn:entity:movie:stub-urn-entity-brand-stub-starbucks-1",
+     "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-0",
+     "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-1"
+    ],
+    "entity_type": "movie",
+    "start_date": "2026-10-05",
+    "end_date": "2026-11-02",
+    "limit": 20
+   },
+   "points": 15,
+   "correlationId": "exec-stub-trends",
+   "provenance": {
+    "source": "stub",
+    "endpoint": "/v2/trending",
+    "documentation": "stub",
+    "requests": [
+     {
+      "method": "GET",
+      "path": "/v2/trending",
+      "query": {
+       "entities": [
+        "urn:entity:movie:stub-urn-entity-brand-stub-starbucks-1",
+        "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-0",
+        "urn:entity:movie:stub-urn-entity-brand-stub-chipotle-1"
+       ],
+       "entity_type": "movie",
+       "start_date": "2026-10-05",
+       "end_date": "2026-11-02",
+       "limit": 20
+      }
+     }
+    ]
+   }
+  }
+ ]
+}

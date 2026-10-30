@@ -1,0 +1,34 @@
+{
+  "verdict": "FIX FIRST",
+  "score_total": 53,
+  "scores": {
+    "technological_implementation": 16,
+    "design": 14,
+    "potential_impact": 9,
+    "quality_of_idea": 14
+  },
+  "fatal": "none — no simulated Qloo data, no trading claim, and no concealed fabrication; the entry honestly discloses that its central held-out test is vacuous on this vintage, so it is a null/untestable entry rather than a disqualifying one",
+  "must_fix": [
+    "Remove the post-hoc cadence diagnostic from the product desk, evidence, and read pages (or relegate it to a clearly non-evidence appendix with no grade); labelling a post-hoc, outlier-dominated, interval-less diagnostic does not make it evidence.",
+    "Stop reading the held-out grade off the refit interval and stop printing \"Held-out arm: mean ΔR² −0.05 pts\" as a taste result; replace it with a single line stating the scored slice is frozen (regressor identically zero in all 35 scored weeks; last move 2025-12-22) so the held-out taste test is untestable and no interval bounds taste.",
+    "Change the overall grade from NO SIGNAL to UNTESTABLE (or NO SIGNAL IN SAMPLE) so the grade does not imply a capable out-of-sample test found nothing; keep FAILS reserved for a measured negative effect with an interval clear of zero.",
+    "Do not re-cut the pre-registered split to chase a testable slice; instead either source a Qloo series that moves weekly within the existing scored window so Qloo is load-bearing, or accept the held-out test is untestable and remove all OOS ΔR² / refit-interval numbers from the grade."
+  ],
+  "method_objections": [
+    "Held-out ΔR² and the refit interval fail as a taste test: the scored regressor is identically zero in all 35 scored weeks, so the cultural beta is unidentified on that slice and power equals size for any effect; the interval bounds only market-coefficient perturbation, not taste.",
+    "The rotation null (p 0.898) holds as an exchangeability check on in-sample ΔR² but cannot validate taste because it preserves the same frozen/low-movement regressor structure; it tests whether the in-sample fit is exchangeable, not whether a moving taste signal exists.",
+    "The max-of-p rule across week and 6-block date permutations (p 0.778 / 0.830) is an intersection-union decision (reject only if every p ≤ α), so describing it as \"conservative by construction rather than as an intersection-union test\" is a distinction without a difference, and it does not cure the frozen regressor.",
+    "The dispersion test is uninformative: power is 0% at the observed spread (sd 28.4) and reaches 100% only at planted sd 50, so it cannot detect effects at the scale actually present; attributing the analytic/null gap to \"two channels\" is post-hoc rationalization of an underpowered cross-section."
+  ],
+  "overstatements": [
+    "\"the grade is read off the refit interval\" — the refit interval is computed where the taste regressor is identically zero, so it bounds only market-coefficient perturbation, not any taste effect; it cannot grade a held-out taste test.",
+    "\"Held-out arm: mean ΔR² −0.05 pts\" — this is a perturbation of training-fit market coefficients on a frozen all-zero regressor slice, not an out-of-sample taste result.",
+    "\"taste is a candidate risk channel that an index beta does not measurably report in this sample\" — on this vintage the scored Qloo basket is frozen (zero weekly change in all 35 scored weeks), so no taste effect of any size could be detected; it is untestable, not an open candidate in this sample."
+  ],
+  "untestable_label_verdict": "Yes — the held-out condition is correctly untestable because the scored regressor is identically zero in all 35 scored weeks, so power equals size for any effect; it should not be removed (that would hide the pre-registration), replaced by the post-hoc diagnostic, or graded with a bound (the refit interval is not a bound on taste).",
+  "cadence_diagnostic_verdict": "Do not ship it in the product as evidence — it is post-hoc, outlier-dominated (mean −8.42 versus median −0.49), has only 9 moving test weeks, and no interval because block resampling can yield singular refits; labelling it does not cure result-shopping.",
+  "grade_label_verdict": "No — NO SIGNAL implies a capable test found nothing, but the held-out test could not run; the overall grade should be UNTESTABLE (or NO SIGNAL IN SAMPLE) with the held-out cell explicitly untestable, while FAILS stays reserved for a measured negative effect with an interval clear of zero.",
+  "best_next_model_construction": "Source a Qloo series that changes weekly within the scored period (or re-scope the scored window to end at or before the last Qloo move, 2025-12-22, only if pre-registration allows) so a held-out slice with a moving taste basket exists; then re-run the pre-registered split on a testable slice.",
+  "headline_rewrite": "Qloo's taste basket is frozen for the final 44 weeks (last move 2025-12-22), so the pre-registered out-of-sample cultural-beta test cannot run on this vintage — no signal, not a failed test.",
+  "judge_60s": "A judge skimming will most likely misread the held-out ΔR² (−0.05 pts) and its refit interval as an out-of-sample taste result, and the overall NO SIGNAL grade as a capable test that found nothing, when in fact the scored regressor is identically zero in all 35 scored weeks."
+}

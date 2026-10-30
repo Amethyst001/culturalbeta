@@ -1,0 +1,1014 @@
+{
+ "stamp": "2026-10-29T23-39-35",
+ "target": "http://localhost:8801",
+ "results": [
+  {
+   "viewport": "desktop",
+   "route": "desk",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 1440 / viewport 1440"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 50px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "Taste is a risk factor."
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "106 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "101 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "12 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "3 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "value-add-slot",
+     "ok": true,
+     "detail": "ΔR² slot present"
+    },
+    {
+     "id": "verdict-line",
+     "ok": true,
+     "detail": "285 chars"
+    },
+    {
+     "id": "verdict-chips",
+     "ok": true,
+     "detail": "6 chips, grade MARGINAL"
+    },
+    {
+     "id": "contrast-secondary",
+     "ok": true,
+     "detail": "5.29:1 rgb(107, 97, 82) on rgb(244, 239, 227)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "table-headers-match",
+     "ok": true,
+     "detail": "5 th vs 5 cells"
+    },
+    {
+     "id": "numeric-alignment",
+     "ok": true,
+     "detail": "right-aligned numerals"
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-29T23-39-35/desktop-desk.png",
+   "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ]
+  },
+  {
+   "viewport": "desktop",
+   "route": "map",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 1440 / viewport 1440"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 50px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "Taste map."
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "106 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "0 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "0 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "3 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "map-one-dot-per-sector",
+     "ok": true,
+     "detail": "11 sub-sector dots"
+    },
+    {
+     "id": "contrast-secondary",
+     "ok": true,
+     "detail": "16.77:1 rgb(28, 23, 16) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-29T23-39-35/desktop-map.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "desktop",
+   "route": "evidence",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 1440 / viewport 1440"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 50px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "Evidence desk."
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "106 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "101 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "0 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": "189/189 189/189 189/189 189/189 189/189 189/189 189/189 189/189 189/189 189/189 189/189 189/189 189/189 189/189 189/189 189/189 189/189 189/189 189/189 189/189 189/189 189/189 189/189 189/189 189/189 189/189 189/189 189/"
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "3 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "robustness-band",
+     "ok": true,
+     "detail": "4 tests: +0.34 pts · p 0.070 · +0.14 pts · p 0.531"
+    },
+    {
+     "id": "window-labels",
+     "ok": true,
+     "detail": "2 window labels"
+    },
+    {
+     "id": "alerts-route",
+     "ok": true,
+     "detail": "alerts feed listed in the product surface"
+    },
+    {
+     "id": "contrast-secondary",
+     "ok": true,
+     "detail": "5.72:1 rgb(107, 97, 82) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "table-headers-match",
+     "ok": true,
+     "detail": "6 th vs 6 cells"
+    },
+    {
+     "id": "numeric-alignment",
+     "ok": true,
+     "detail": "right-aligned numerals"
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-29T23-39-35/desktop-evidence.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "desktop",
+   "route": "holding",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 1440 / viewport 1440"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 50px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "ELF — e.l.f. Beauty"
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "106 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "0 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "0 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "3 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "value-add-slot",
+     "ok": true,
+     "detail": "ΔR² slot present"
+    },
+    {
+     "id": "contrast-secondary",
+     "ok": true,
+     "detail": "16.77:1 rgb(28, 23, 16) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-29T23-39-35/desktop-holding.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "tablet",
+   "route": "desk",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 768 / viewport 768"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 38px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "Taste is a risk factor."
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "106 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "101 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "12 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "3 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "value-add-slot",
+     "ok": true,
+     "detail": "ΔR² slot present"
+    },
+    {
+     "id": "verdict-line",
+     "ok": true,
+     "detail": "285 chars"
+    },
+    {
+     "id": "verdict-chips",
+     "ok": true,
+     "detail": "6 chips, grade MARGINAL"
+    },
+    {
+     "id": "contrast-secondary",
+     "ok": true,
+     "detail": "5.29:1 rgb(107, 97, 82) on rgb(244, 239, 227)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "table-headers-match",
+     "ok": true,
+     "detail": "5 th vs 5 cells"
+    },
+    {
+     "id": "numeric-alignment",
+     "ok": true,
+     "detail": "right-aligned numerals"
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-29T23-39-35/tablet-desk.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "tablet",
+   "route": "map",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 768 / viewport 768"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 38px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "Taste map."
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "106 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "0 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "0 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "3 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "map-one-dot-per-sector",
+     "ok": true,
+     "detail": "11 sub-sector dots"
+    },
+    {
+     "id": "contrast-secondary",
+     "ok": true,
+     "detail": "16.77:1 rgb(28, 23, 16) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-29T23-39-35/tablet-map.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "tablet",
+   "route": "evidence",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 796 / viewport 796"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 38px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "Evidence desk."
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "106 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "101 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "0 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": "132/132 132/132 132/132 132/132 132/132 132/132 132/132 132/132 132/132 132/132 132/132 132/132 132/132 132/132 132/132 132/132 132/132 132/132 132/132 132/132 132/132 132/132 132/132 132/132 132/132 132/132 132/132 132/"
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "3 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "robustness-band",
+     "ok": true,
+     "detail": "4 tests: +0.34 pts · p 0.070 · +0.14 pts · p 0.531"
+    },
+    {
+     "id": "window-labels",
+     "ok": true,
+     "detail": "2 window labels"
+    },
+    {
+     "id": "alerts-route",
+     "ok": true,
+     "detail": "alerts feed listed in the product surface"
+    },
+    {
+     "id": "contrast-secondary",
+     "ok": true,
+     "detail": "5.72:1 rgb(107, 97, 82) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "table-headers-match",
+     "ok": true,
+     "detail": "6 th vs 6 cells"
+    },
+    {
+     "id": "numeric-alignment",
+     "ok": true,
+     "detail": "right-aligned numerals"
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-29T23-39-35/tablet-evidence.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "tablet",
+   "route": "holding",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 768 / viewport 768"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 38px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "ELF — e.l.f. Beauty"
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "106 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "0 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "0 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "3 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "value-add-slot",
+     "ok": true,
+     "detail": "ΔR² slot present"
+    },
+    {
+     "id": "contrast-secondary",
+     "ok": true,
+     "detail": "16.77:1 rgb(28, 23, 16) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-29T23-39-35/tablet-holding.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "phone",
+   "route": "desk",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 390 / viewport 390"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 31px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "Taste is a risk factor."
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "106 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "101 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "12 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "3 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "value-add-slot",
+     "ok": true,
+     "detail": "ΔR² slot present"
+    },
+    {
+     "id": "verdict-line",
+     "ok": true,
+     "detail": "285 chars"
+    },
+    {
+     "id": "verdict-chips",
+     "ok": true,
+     "detail": "6 chips, grade MARGINAL"
+    },
+    {
+     "id": "mobile-signal-line",
+     "ok": true,
+     "detail": "signal top 1245 · trace top 1245"
+    },
+    {
+     "id": "contrast-secondary",
+     "ok": true,
+     "detail": "5.29:1 rgb(107, 97, 82) on rgb(244, 239, 227)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "table-headers-match",
+     "ok": true,
+     "detail": "5 th vs 5 cells"
+    },
+    {
+     "id": "numeric-alignment",
+     "ok": true,
+     "detail": "right-aligned numerals"
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-29T23-39-35/phone-desk.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "phone",
+   "route": "map",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 390 / viewport 390"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 31px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "Taste map."
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "106 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "0 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "0 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "3 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "map-one-dot-per-sector",
+     "ok": true,
+     "detail": "11 sub-sector dots"
+    },
+    {
+     "id": "contrast-secondary",
+     "ok": true,
+     "detail": "16.77:1 rgb(28, 23, 16) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-29T23-39-35/phone-map.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "phone",
+   "route": "evidence",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 390 / viewport 390"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 31px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "Evidence desk."
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "106 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "101 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "0 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": "300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/"
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "3 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "robustness-band",
+     "ok": true,
+     "detail": "4 tests: +0.34 pts · p 0.070 · +0.14 pts · p 0.531"
+    },
+    {
+     "id": "window-labels",
+     "ok": true,
+     "detail": "2 window labels"
+    },
+    {
+     "id": "alerts-route",
+     "ok": true,
+     "detail": "alerts feed listed in the product surface"
+    },
+    {
+     "id": "contrast-secondary",
+     "ok": true,
+     "detail": "5.72:1 rgb(107, 97, 82) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "table-headers-match",
+     "ok": true,
+     "detail": "6 th vs 6 cells"
+    },
+    {
+     "id": "numeric-alignment",
+     "ok": true,
+     "detail": "right-aligned numerals"
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-29T23-39-35/phone-evidence.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "phone",
+   "route": "holding",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 390 / viewport 390"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 31px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "ELF — e.l.f. Beauty"
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "106 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "0 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "0 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "3 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "value-add-slot",
+     "ok": true,
+     "detail": "ΔR² slot present"
+    },
+    {
+     "id": "mobile-signal-line",
+     "ok": true,
+     "detail": "no row"
+    },
+    {
+     "id": "contrast-secondary",
+     "ok": true,
+     "detail": "16.77:1 rgb(28, 23, 16) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-29T23-39-35/phone-holding.png",
+   "consoleErrors": []
+  }
+ ]
+}

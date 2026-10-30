@@ -1,0 +1,138 @@
+<think>This is a complex review task. Let me carefully analyze the submission and answer all the questions.
+
+First, let me understand what this product is:
+- A consumer equity desk that calculates market beta and "cultural beta" (using Qloo data)
+- 101 US consumer names across 11 sub-sectors
+- Uses Qloo `/v2/trending` API for cultural data
+- Has multiple surfaces: desk, taste map, evidence, per-name pages, API, alerts
+
+Key findings:
+- 83/101 resolved to Qloo brand entities
+- 80/101 priced (3 no complete price history)
+- 18 unresolved (market-only beta, null cultural column, query shown)
+- 0 flags (no negative cultural beta with |t| ≥ 2 and BH q ≤ 0.10)
+- In-sample: basket adds +0.67 pts r²
+- All null p-values are high (0.90, 0.78, 0.83)
+- Held-out slice is EMPTY - Qloo data frozen since 2025-12-22, window ends 2026-10-26
+- Final 44 of 102 weeks are carry-forward
+- All 35 scored weeks are inside the frozen region
+- Post-hoc split gives median -0.49, positive 38%, mean -8.42
+- Peer basket control is also a perturbation on frozen slice
+- Qloo-vs-peer basket correlation averages 0.04
+
+Changes from round 5:
+1. Grade now branches on `scoring.testable === false` before OOS comparison
+2. OOS cell leads with "no test"
+3. States three nulls share one calendar and frozen tail
+4. States rotation/shuffling preserve slow shape
+5. Symmetric frozen-arm rule stated once
+6. 18 unresolved names now keep rows
+
+Let me score this:
+
+**Technological Implementation (0-25):**
+- Uses Qloo API properly (no simulation)
+
+
+- Deterministic code with no model in statistical loop
+- 63/63 npm tests passing, 344/344 CDP audit across 5 routes and 3 viewports
+- Solid technical foundation overall
+- Score: 20/25
+
+**Design (0-25):**
+- Multiple surfaces (desk, taste map, evidence, per-name pages, API, alerts)
+- Clear presentation of nulls and grades
+- Unresolved rows now visible
+- Diagnostic kept but labeled appropriately
+- Score: 18/25
+
+**Potential Impact (0-25):**
+- Interesting concept linking cultural data to equity returns
+- But: NO ACTUAL SIGNAL FOUND
+- The product's core premise (that cultural beta predicts returns) is NOT demonstrated
+- Frozen data means no real validation possible
+- Score: 12/25
+
+**Quality of Idea (0-25):**
+- Creative and novel approach
+- Well-executed technically
+- But the idea doesn't work - no signal found
+- The framing is honest about limitations
+- Score: 15/25
+
+Total: 65/100
+
+**Questions:**
+
+1. **Grade label:** Is "NO SIGNAL (IN-SAMPLE)" defensible for a book with frozen held-out slice?
+   - The label accurately reflects what the data shows - no signal detected in the available sample
+   - The frozen slice prevents out-of-sample validation, so the grade appropriately restricts claims to in-sample findings
+   - Score: 15/25
+
+2. **Roster change:** 101 rows with 21 carrying no cultural beta
+   - Showing unresolved names with queries attempted demonstrates transparency about data limitations
+   - However, 21% missing data is substantial and raises questions about coverage and representativeness
+   - The presentation is honest but the high missing rate is a notable constraint
+   - Score: 12/25
+
+3. **Diagnostic:** Kept, median-led, post-hoc, no interval, no grade
+   - The diagnostic provides additional context without overstating findings
+   - Post-hoc nature is disclosed, median-led approach is reasonable
+   - No grade prevents over-interpretation
+   - Score: 14/25
+
+4. **Competitiveness:** 
+   - Greatest weakness: Potential Impact (12/25) - no demonstrated signal
+   - Single change to recover most: Acquire fresh Qloo data to enable true out-of-sample testing
+   - This would transform the submission from "interesting concept" to "validated approach"
+   - Score: 10/25
+
+5. **Fatal objections:**
+   - No simulated data present
+   - No trading claims made
+   - Failures are disclosed transparently
+   - Qloo terms compliance maintained (computed betas and request URLs shown, response bodies withheld)
+   - Score: PASS - no disqualifying issues
+
+6. **Overstatement:**
+   - Need to identify any sentences claiming more than the data supports
+   - The submission appears to avoid overstating findings
+   - Score: 15/25
+
+**Verdict:** PASS (65/100)
+- The submission demonstrates technical competence and honest reporting
+- No fatal flaws or disqualifying issues
+- Main limitation is the frozen data preventing full validation
+- Would benefit from fresh data to strengthen the potential impact score
+</think>
+
+```json
+{
+  "verdict": "PASS",
+  "score_total": 62,
+  "scores": {
+    "technological_implementation": 21,
+    "design": 18,
+    "potential_impact": 11,
+    "quality_of_idea": 12
+  },
+  "fatal": "none",
+  "must_fix": [],
+  "method_objections": [
+    "The three nulls (rotation, week-order permutation, 6-week-block permutation) are described as sharing one calendar and one frozen tail, but this framing conflates data dependency with test independence. If the same frozen data feeds all three, the tests are not independent replications — they are the same test with cosmetic variation. The claim that this constitutes 'one stringent check' rather than three opportunities to fluke is unsupported.",
+    "The rotation and block-permutation nulls preserve 'slow shape' per the desk's own statement, which means they are weak tests for a weekly signal. The high p-values (0.78–0.90) may reflect test weakness rather than evidence against signal, but the desk presents them as evidence against.",
+    "The post-hoc 58-week split (38 train / 20 test) with 9 moving test weeks is not pre-registered and has no interval. Presenting median −0.49 with no confidence bounds and no grade does not make it safe — it still anchors the reader on a negative median before they read the caveats."
+  ],
+  "overstatements": [
+    "The desk copy states the grade 'says the grade rests on the in-sample book and the nulls only.' This is accurate but the phrase 'IN-SAMPLE' in the grade word may still be read as a qualified positive finding rather than a statement that no test was possible.",
+    "'The taste regressor is identically zero' in the OOS window is described as a perturbation tag, but this is not a perturbation — it is a structural consequence of frozen data. Calling it a perturbation implies it is a minor artifact; it is the reason the test has zero power.",
+    "The diagnostic median of −0.49 is presented without an interval, which implies precision the data does not support. A reader who sees 'median −0.49' and does not read the full diagnostic will anchor on that number."
+  ],
+  "grade_label_verdict": "Partially. 'NO SIGNAL (IN-SAMPLE)' is more defensible than the previous 'NO SIGNAL' because it explicitly disclaims the OOS basis. However, the parenthetical still reads as a qualified finding rather than a statement that the held-out test had zero power. A label like 'INSUFFICIENT DATA — NO TEST POSSIBLE' or 'HELD-OUT TEST: NO POWER' would be unambiguous. The current label requires the reader to infer that 'IN-SAMPLE' means the OOS slice was untestable, not merely that in-sample results are shown.",
+  "roster_verdict": "Integrity. Showing 101 rows with 21 carrying null cultural columns and the query tried is the correct disclosure. However, the phrase 'no Qloo entity' should be replaced with 'Qloo entity not found for query: [query]' — the current framing implies Qloo failed to match, which may invite the follow-up 'did you try alternate spellings or parent companies?' The query shown is necessary but not sufficient; the desk should state whether alternate queries were attempted.",
+  "cadence_diagnostic_verdict": "Change. The diagnostic is labeled post-hoc and has no grade, but it still functions as result-shopping because the median (−0.49) anchors the reader before the caveats. One sentence that would make it safe: 'This split was not pre-registered and has no statistical interval; treat it as a sanity check with no inferential weight, not as evidence for or against the hypothesis.' Without that explicit disclaimer at the point of the number — not buried in the documentation — the median will be quoted out of context.",
+  "best_next_model_construction": "Acquire a live Qloo data vintage with at least 20 weeks of post-freeze observations to populate the held-out slice. Until then, the product demonstrates a working pipeline and honest reporting, but cannot demonstrate the one thing it claims to do: that cultural beta adds predictive signal to market beta. The held-out test is not a formality — it is the entire empirical case.",
+  "headline_rewrite": "A consumer equity desk that computes cultural beta from live Qloo data — currently reporting NO SIGNAL (IN-SAMPLE) because the held-out test has zero power on frozen data.",
+  "judge_60s": "A judge skimming for 60 seconds will read 'NO SIGNAL (IN-SAMPLE)' as a finding that cultural beta was tested and came up empty, rather than understanding that the test itself had no power. They will see the post-hoc diagnostic median of −0.49 and treat it as corroborating evidence. They will not read the frozen-data disclosure in the OOS cell. They will likely score this as a failed hypothesis rather than a pipeline demo with honest reporting on a data limitation."
+}
+```

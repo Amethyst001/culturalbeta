@@ -1,0 +1,2022 @@
+[
+ {
+  "ticker": "ELF",
+  "label": "e.l.f. Beauty",
+  "query": "e.l.f. Beauty",
+  "matchedQuery": "e.l.f. Beauty",
+  "altUsed": false,
+  "sector": "beauty",
+  "featured": true,
+  "entityId": "urn:entity:brand:stub-e-l-f-beauty",
+  "entityName": "e.l.f. Beauty",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-e-l-f-beauty",
+    "name": "e.l.f. Beauty",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-ELF.json"
+ },
+ {
+  "ticker": "ULTA",
+  "label": "Ulta Beauty",
+  "query": "Ulta Beauty",
+  "matchedQuery": "Ulta Beauty",
+  "altUsed": false,
+  "sector": "beauty",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-ulta-beauty",
+  "entityName": "Ulta Beauty",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-ulta-beauty",
+    "name": "Ulta Beauty",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-ULTA.json"
+ },
+ {
+  "ticker": "EL",
+  "label": "Estée Lauder",
+  "query": "Estée Lauder",
+  "matchedQuery": "Estée Lauder",
+  "altUsed": false,
+  "sector": "beauty",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-est-e-lauder",
+  "entityName": "Estée Lauder",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-est-e-lauder",
+    "name": "Estée Lauder",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-EL.json"
+ },
+ {
+  "ticker": "COTY",
+  "label": "Coty",
+  "query": "Coty",
+  "matchedQuery": "Coty",
+  "altUsed": false,
+  "sector": "beauty",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-coty",
+  "entityName": "Coty",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-coty",
+    "name": "Coty",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-COTY.json"
+ },
+ {
+  "ticker": "IPAR",
+  "label": "Inter Parfums",
+  "query": "Inter Parfums",
+  "matchedQuery": "Inter Parfums",
+  "altUsed": false,
+  "sector": "beauty",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-inter-parfums",
+  "entityName": "Inter Parfums",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-inter-parfums",
+    "name": "Inter Parfums",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-IPAR.json"
+ },
+ {
+  "ticker": "NKE",
+  "label": "Nike",
+  "query": "Nike",
+  "matchedQuery": "Nike",
+  "altUsed": false,
+  "sector": "apparel",
+  "featured": true,
+  "entityId": "urn:entity:brand:stub-nike",
+  "entityName": "Nike",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-nike",
+    "name": "Nike",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-NKE.json"
+ },
+ {
+  "ticker": "LULU",
+  "label": "Lululemon",
+  "query": "lululemon athletica",
+  "matchedQuery": "lululemon athletica",
+  "altUsed": false,
+  "sector": "apparel",
+  "featured": true,
+  "entityId": "urn:entity:brand:stub-lululemon-athletica",
+  "entityName": "lululemon athletica",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-lululemon-athletica",
+    "name": "lululemon athletica",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-LULU.json"
+ },
+ {
+  "ticker": "TPR",
+  "label": "Tapestry",
+  "query": "Coach",
+  "matchedQuery": "Coach",
+  "altUsed": false,
+  "sector": "apparel",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-coach",
+  "entityName": "Coach",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-coach",
+    "name": "Coach",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-TPR.json"
+ },
+ {
+  "ticker": "RL",
+  "label": "Ralph Lauren",
+  "query": "Ralph Lauren",
+  "matchedQuery": "Ralph Lauren",
+  "altUsed": false,
+  "sector": "apparel",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-ralph-lauren",
+  "entityName": "Ralph Lauren",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-ralph-lauren",
+    "name": "Ralph Lauren",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-RL.json"
+ },
+ {
+  "ticker": "DECK",
+  "label": "Deckers",
+  "query": "UGG",
+  "matchedQuery": "UGG",
+  "altUsed": false,
+  "sector": "apparel",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-ugg",
+  "entityName": "UGG",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-ugg",
+    "name": "UGG",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-DECK.json"
+ },
+ {
+  "ticker": "VFC",
+  "label": "VF Corp",
+  "query": "Vans",
+  "matchedQuery": "Vans",
+  "altUsed": false,
+  "sector": "apparel",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-vans",
+  "entityName": "Vans",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-vans",
+    "name": "Vans",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-VFC.json"
+ },
+ {
+  "ticker": "CROX",
+  "label": "Crocs",
+  "query": "Crocs",
+  "matchedQuery": "Crocs",
+  "altUsed": false,
+  "sector": "apparel",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-crocs",
+  "entityName": "Crocs",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-crocs",
+    "name": "Crocs",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-CROX.json"
+ },
+ {
+  "ticker": "MCD",
+  "label": "McDonald's",
+  "query": "McDonald's",
+  "matchedQuery": "McDonald's",
+  "altUsed": false,
+  "sector": "restaurants",
+  "featured": true,
+  "entityId": "urn:entity:brand:stub-mcdonald-s",
+  "entityName": "McDonald's",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-mcdonald-s",
+    "name": "McDonald's",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-MCD.json"
+ },
+ {
+  "ticker": "SBUX",
+  "label": "Starbucks",
+  "query": "Starbucks",
+  "matchedQuery": "Starbucks",
+  "altUsed": false,
+  "sector": "restaurants",
+  "featured": true,
+  "entityId": "urn:entity:brand:stub-starbucks",
+  "entityName": "Starbucks",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-starbucks",
+    "name": "Starbucks",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-SBUX.json"
+ },
+ {
+  "ticker": "CMG",
+  "label": "Chipotle",
+  "query": "Chipotle",
+  "matchedQuery": "Chipotle",
+  "altUsed": false,
+  "sector": "restaurants",
+  "featured": true,
+  "entityId": "urn:entity:brand:stub-chipotle",
+  "entityName": "Chipotle",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-chipotle",
+    "name": "Chipotle",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-CMG.json"
+ },
+ {
+  "ticker": "YUM",
+  "label": "Yum Brands",
+  "query": "KFC",
+  "matchedQuery": "KFC",
+  "altUsed": false,
+  "sector": "restaurants",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-kfc",
+  "entityName": "KFC",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-kfc",
+    "name": "KFC",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-YUM.json"
+ },
+ {
+  "ticker": "DPZ",
+  "label": "Domino's",
+  "query": "Domino's",
+  "matchedQuery": "Domino's",
+  "altUsed": false,
+  "sector": "restaurants",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-domino-s",
+  "entityName": "Domino's",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-domino-s",
+    "name": "Domino's",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-DPZ.json"
+ },
+ {
+  "ticker": "DRI",
+  "label": "Darden",
+  "query": "Olive Garden",
+  "matchedQuery": "Olive Garden",
+  "altUsed": false,
+  "sector": "restaurants",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-olive-garden",
+  "entityName": "Olive Garden",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-olive-garden",
+    "name": "Olive Garden",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-DRI.json"
+ },
+ {
+  "ticker": "TXRH",
+  "label": "Texas Roadhouse",
+  "query": "Texas Roadhouse",
+  "matchedQuery": "Texas Roadhouse",
+  "altUsed": false,
+  "sector": "restaurants",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-texas-roadhouse",
+  "entityName": "Texas Roadhouse",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-texas-roadhouse",
+    "name": "Texas Roadhouse",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-TXRH.json"
+ },
+ {
+  "ticker": "QSR",
+  "label": "Restaurant Brands",
+  "query": "Burger King",
+  "matchedQuery": "Burger King",
+  "altUsed": false,
+  "sector": "restaurants",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-burger-king",
+  "entityName": "Burger King",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-burger-king",
+    "name": "Burger King",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-QSR.json"
+ },
+ {
+  "ticker": "DIS",
+  "label": "Disney",
+  "query": "Disney",
+  "matchedQuery": "Disney",
+  "altUsed": false,
+  "sector": "media",
+  "featured": true,
+  "entityId": "urn:entity:brand:stub-disney",
+  "entityName": "Disney",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-disney",
+    "name": "Disney",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-DIS.json"
+ },
+ {
+  "ticker": "NFLX",
+  "label": "Netflix",
+  "query": "Netflix",
+  "matchedQuery": "Netflix",
+  "altUsed": false,
+  "sector": "media",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-netflix",
+  "entityName": "Netflix",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-netflix",
+    "name": "Netflix",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-NFLX.json"
+ },
+ {
+  "ticker": "WBD",
+  "label": "Warner Bros. Discovery",
+  "query": "HBO",
+  "matchedQuery": "HBO",
+  "altUsed": false,
+  "sector": "media",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-hbo",
+  "entityName": "HBO",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-hbo",
+    "name": "HBO",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-WBD.json"
+ },
+ {
+  "ticker": "PARA",
+  "label": "Paramount",
+  "query": "Paramount Pictures",
+  "matchedQuery": "Paramount Pictures",
+  "altUsed": false,
+  "sector": "media",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-paramount-pictures",
+  "entityName": "Paramount Pictures",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-paramount-pictures",
+    "name": "Paramount Pictures",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-PARA.json"
+ },
+ {
+  "ticker": "EA",
+  "label": "Electronic Arts",
+  "query": "Electronic Arts",
+  "matchedQuery": "Electronic Arts",
+  "altUsed": false,
+  "sector": "media",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-electronic-arts",
+  "entityName": "Electronic Arts",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-electronic-arts",
+    "name": "Electronic Arts",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-EA.json"
+ },
+ {
+  "ticker": "TTWO",
+  "label": "Take-Two",
+  "query": "Grand Theft Auto",
+  "matchedQuery": "Grand Theft Auto",
+  "altUsed": false,
+  "sector": "media",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-grand-theft-auto",
+  "entityName": "Grand Theft Auto",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-grand-theft-auto",
+    "name": "Grand Theft Auto",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-TTWO.json"
+ },
+ {
+  "ticker": "HAS",
+  "label": "Hasbro",
+  "query": "Hasbro",
+  "matchedQuery": "Hasbro",
+  "altUsed": false,
+  "sector": "media",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-hasbro",
+  "entityName": "Hasbro",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-hasbro",
+    "name": "Hasbro",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-HAS.json"
+ },
+ {
+  "ticker": "MAT",
+  "label": "Mattel",
+  "query": "Barbie",
+  "matchedQuery": "Barbie",
+  "altUsed": false,
+  "sector": "media",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-barbie",
+  "entityName": "Barbie",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-barbie",
+    "name": "Barbie",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-MAT.json"
+ },
+ {
+  "ticker": "WMT",
+  "label": "Walmart",
+  "query": "Walmart",
+  "matchedQuery": "Walmart",
+  "altUsed": false,
+  "sector": "grocery",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-walmart",
+  "entityName": "Walmart",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-walmart",
+    "name": "Walmart",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-WMT.json"
+ },
+ {
+  "ticker": "COST",
+  "label": "Costco",
+  "query": "Costco",
+  "matchedQuery": "Costco",
+  "altUsed": false,
+  "sector": "grocery",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-costco",
+  "entityName": "Costco",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-costco",
+    "name": "Costco",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-COST.json"
+ },
+ {
+  "ticker": "TGT",
+  "label": "Target",
+  "query": "Target",
+  "matchedQuery": "Target",
+  "altUsed": false,
+  "sector": "grocery",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-target",
+  "entityName": "Target",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-target",
+    "name": "Target",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-TGT.json"
+ },
+ {
+  "ticker": "KR",
+  "label": "Kroger",
+  "query": "Kroger",
+  "matchedQuery": "Kroger",
+  "altUsed": false,
+  "sector": "grocery",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-kroger",
+  "entityName": "Kroger",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-kroger",
+    "name": "Kroger",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-KR.json"
+ },
+ {
+  "ticker": "DG",
+  "label": "Dollar General",
+  "query": "Dollar General",
+  "matchedQuery": "Dollar General",
+  "altUsed": false,
+  "sector": "grocery",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-dollar-general",
+  "entityName": "Dollar General",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-dollar-general",
+    "name": "Dollar General",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-DG.json"
+ },
+ {
+  "ticker": "DLTR",
+  "label": "Dollar Tree",
+  "query": "Dollar Tree",
+  "matchedQuery": "Dollar Tree",
+  "altUsed": false,
+  "sector": "grocery",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-dollar-tree",
+  "entityName": "Dollar Tree",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-dollar-tree",
+    "name": "Dollar Tree",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-DLTR.json"
+ },
+ {
+  "ticker": "SYY",
+  "label": "Sysco",
+  "query": "Sysco",
+  "matchedQuery": "Sysco",
+  "altUsed": false,
+  "sector": "grocery",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-sysco",
+  "entityName": "Sysco",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-sysco",
+    "name": "Sysco",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-SYY.json"
+ },
+ {
+  "ticker": "HD",
+  "label": "Home Depot",
+  "query": "Home Depot",
+  "matchedQuery": "Home Depot",
+  "altUsed": false,
+  "sector": "home",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-home-depot",
+  "entityName": "Home Depot",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-home-depot",
+    "name": "Home Depot",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-HD.json"
+ },
+ {
+  "ticker": "LOW",
+  "label": "Lowe's",
+  "query": "Lowe's",
+  "matchedQuery": "Lowe's",
+  "altUsed": false,
+  "sector": "home",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-lowe-s",
+  "entityName": "Lowe's",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-lowe-s",
+    "name": "Lowe's",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-LOW.json"
+ },
+ {
+  "ticker": "POOL",
+  "label": "Pool Corp",
+  "query": "Pool Corporation",
+  "matchedQuery": "Pool Corporation",
+  "altUsed": false,
+  "sector": "home",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-pool-corporation",
+  "entityName": "Pool Corporation",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-pool-corporation",
+    "name": "Pool Corporation",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-POOL.json"
+ },
+ {
+  "ticker": "WHR",
+  "label": "Whirlpool",
+  "query": "Whirlpool",
+  "matchedQuery": "Whirlpool",
+  "altUsed": false,
+  "sector": "home",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-whirlpool",
+  "entityName": "Whirlpool",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-whirlpool",
+    "name": "Whirlpool",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-WHR.json"
+ },
+ {
+  "ticker": "MHK",
+  "label": "Mohawk",
+  "query": "Mohawk Industries",
+  "matchedQuery": "Mohawk Industries",
+  "altUsed": false,
+  "sector": "home",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-mohawk-industries",
+  "entityName": "Mohawk Industries",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-mohawk-industries",
+    "name": "Mohawk Industries",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-MHK.json"
+ },
+ {
+  "ticker": "LEN",
+  "label": "Lennar",
+  "query": "Lennar",
+  "matchedQuery": "Lennar",
+  "altUsed": false,
+  "sector": "home",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-lennar",
+  "entityName": "Lennar",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-lennar",
+    "name": "Lennar",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-LEN.json"
+ },
+ {
+  "ticker": "DHI",
+  "label": "D.R. Horton",
+  "query": "D.R. Horton",
+  "matchedQuery": "D.R. Horton",
+  "altUsed": false,
+  "sector": "home",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-d-r-horton",
+  "entityName": "D.R. Horton",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-d-r-horton",
+    "name": "D.R. Horton",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-DHI.json"
+ },
+ {
+  "ticker": "PHM",
+  "label": "PulteGroup",
+  "query": "PulteGroup",
+  "matchedQuery": "PulteGroup",
+  "altUsed": false,
+  "sector": "home",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-pultegroup",
+  "entityName": "PulteGroup",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-pultegroup",
+    "name": "PulteGroup",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-PHM.json"
+ },
+ {
+  "ticker": "NVR",
+  "label": "NVR",
+  "query": "Ryan Homes",
+  "matchedQuery": "Ryan Homes",
+  "altUsed": false,
+  "sector": "home",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-ryan-homes",
+  "entityName": "Ryan Homes",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-ryan-homes",
+    "name": "Ryan Homes",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-NVR.json"
+ },
+ {
+  "ticker": "TSCO",
+  "label": "Tractor Supply",
+  "query": "Tractor Supply",
+  "matchedQuery": "Tractor Supply",
+  "altUsed": false,
+  "sector": "home",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-tractor-supply",
+  "entityName": "Tractor Supply",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-tractor-supply",
+    "name": "Tractor Supply",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-TSCO.json"
+ },
+ {
+  "ticker": "KO",
+  "label": "Coca-Cola",
+  "query": "Coca-Cola",
+  "matchedQuery": "Coca-Cola",
+  "altUsed": false,
+  "sector": "beverages",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-coca-cola",
+  "entityName": "Coca-Cola",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-coca-cola",
+    "name": "Coca-Cola",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-KO.json"
+ },
+ {
+  "ticker": "PEP",
+  "label": "PepsiCo",
+  "query": "Pepsi",
+  "matchedQuery": "Pepsi",
+  "altUsed": false,
+  "sector": "beverages",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-pepsi",
+  "entityName": "Pepsi",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-pepsi",
+    "name": "Pepsi",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-PEP.json"
+ },
+ {
+  "ticker": "STZ",
+  "label": "Constellation Brands",
+  "query": "Corona beer",
+  "matchedQuery": "Corona beer",
+  "altUsed": false,
+  "sector": "beverages",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-corona-beer",
+  "entityName": "Corona beer",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-corona-beer",
+    "name": "Corona beer",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-STZ.json"
+ },
+ {
+  "ticker": "MNST",
+  "label": "Monster Beverage",
+  "query": "Monster Energy",
+  "matchedQuery": "Monster Energy",
+  "altUsed": false,
+  "sector": "beverages",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-monster-energy",
+  "entityName": "Monster Energy",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-monster-energy",
+    "name": "Monster Energy",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-MNST.json"
+ },
+ {
+  "ticker": "KDP",
+  "label": "Keurig Dr Pepper",
+  "query": "Dr Pepper",
+  "matchedQuery": "Dr Pepper",
+  "altUsed": false,
+  "sector": "beverages",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-dr-pepper",
+  "entityName": "Dr Pepper",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-dr-pepper",
+    "name": "Dr Pepper",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-KDP.json"
+ },
+ {
+  "ticker": "TAP",
+  "label": "Molson Coors",
+  "query": "Coors Light",
+  "matchedQuery": "Coors Light",
+  "altUsed": false,
+  "sector": "beverages",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-coors-light",
+  "entityName": "Coors Light",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-coors-light",
+    "name": "Coors Light",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-TAP.json"
+ },
+ {
+  "ticker": "BF.B",
+  "label": "Brown-Forman",
+  "query": "Jack Daniel's",
+  "matchedQuery": "Jack Daniel's",
+  "altUsed": false,
+  "sector": "beverages",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-jack-daniel-s",
+  "entityName": "Jack Daniel's",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-jack-daniel-s",
+    "name": "Jack Daniel's",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-BF.B.json"
+ },
+ {
+  "ticker": "PM",
+  "label": "Philip Morris",
+  "query": "Marlboro",
+  "matchedQuery": "Marlboro",
+  "altUsed": false,
+  "sector": "beverages",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-marlboro",
+  "entityName": "Marlboro",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-marlboro",
+    "name": "Marlboro",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-PM.json"
+ },
+ {
+  "ticker": "MO",
+  "label": "Altria",
+  "query": "Altria",
+  "matchedQuery": "Altria",
+  "altUsed": false,
+  "sector": "beverages",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-altria",
+  "entityName": "Altria",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-altria",
+    "name": "Altria",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-MO.json"
+ },
+ {
+  "ticker": "PG",
+  "label": "Procter & Gamble",
+  "query": "Tide",
+  "matchedQuery": "Tide",
+  "altUsed": false,
+  "sector": "food",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-tide",
+  "entityName": "Tide",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-tide",
+    "name": "Tide",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-PG.json"
+ },
+ {
+  "ticker": "MDLZ",
+  "label": "Mondelez",
+  "query": "Oreo",
+  "matchedQuery": "Oreo",
+  "altUsed": false,
+  "sector": "food",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-oreo",
+  "entityName": "Oreo",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-oreo",
+    "name": "Oreo",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-MDLZ.json"
+ },
+ {
+  "ticker": "KHC",
+  "label": "Kraft Heinz",
+  "query": "Heinz",
+  "matchedQuery": "Heinz",
+  "altUsed": false,
+  "sector": "food",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-heinz",
+  "entityName": "Heinz",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-heinz",
+    "name": "Heinz",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-KHC.json"
+ },
+ {
+  "ticker": "GIS",
+  "label": "General Mills",
+  "query": "Cheerios",
+  "matchedQuery": "Cheerios",
+  "altUsed": false,
+  "sector": "food",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-cheerios",
+  "entityName": "Cheerios",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-cheerios",
+    "name": "Cheerios",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-GIS.json"
+ },
+ {
+  "ticker": "K",
+  "label": "Kellanova",
+  "query": "Kellogg's",
+  "matchedQuery": "Kellogg's",
+  "altUsed": false,
+  "sector": "food",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-kellogg-s",
+  "entityName": "Kellogg's",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-kellogg-s",
+    "name": "Kellogg's",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-K.json"
+ },
+ {
+  "ticker": "HSY",
+  "label": "Hershey",
+  "query": "Hershey's",
+  "matchedQuery": "Hershey's",
+  "altUsed": false,
+  "sector": "food",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-hershey-s",
+  "entityName": "Hershey's",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-hershey-s",
+    "name": "Hershey's",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-HSY.json"
+ },
+ {
+  "ticker": "CPB",
+  "label": "Campbell's",
+  "query": "Campbell's",
+  "matchedQuery": "Campbell's",
+  "altUsed": false,
+  "sector": "food",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-campbell-s",
+  "entityName": "Campbell's",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-campbell-s",
+    "name": "Campbell's",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-CPB.json"
+ },
+ {
+  "ticker": "SJM",
+  "label": "J.M. Smucker",
+  "query": "Jif",
+  "matchedQuery": "Jif",
+  "altUsed": false,
+  "sector": "food",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-jif",
+  "entityName": "Jif",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-jif",
+    "name": "Jif",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-SJM.json"
+ },
+ {
+  "ticker": "CAG",
+  "label": "Conagra",
+  "query": "Healthy Choice",
+  "matchedQuery": "Healthy Choice",
+  "altUsed": false,
+  "sector": "food",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-healthy-choice",
+  "entityName": "Healthy Choice",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-healthy-choice",
+    "name": "Healthy Choice",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-CAG.json"
+ },
+ {
+  "ticker": "LW",
+  "label": "Lamb Weston",
+  "query": "Lamb Weston",
+  "matchedQuery": "Lamb Weston",
+  "altUsed": false,
+  "sector": "food",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-lamb-weston",
+  "entityName": "Lamb Weston",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-lamb-weston",
+    "name": "Lamb Weston",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-LW.json"
+ },
+ {
+  "ticker": "MKC",
+  "label": "McCormick",
+  "query": "McCormick",
+  "matchedQuery": "McCormick",
+  "altUsed": false,
+  "sector": "food",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-mccormick",
+  "entityName": "McCormick",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-mccormick",
+    "name": "McCormick",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-MKC.json"
+ },
+ {
+  "ticker": "TSN",
+  "label": "Tyson",
+  "query": "Tyson Foods",
+  "matchedQuery": "Tyson Foods",
+  "altUsed": false,
+  "sector": "food",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-tyson-foods",
+  "entityName": "Tyson Foods",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-tyson-foods",
+    "name": "Tyson Foods",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-TSN.json"
+ },
+ {
+  "ticker": "HRL",
+  "label": "Hormel",
+  "query": "Hormel",
+  "matchedQuery": "Hormel",
+  "altUsed": false,
+  "sector": "food",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-hormel",
+  "entityName": "Hormel",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-hormel",
+    "name": "Hormel",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-HRL.json"
+ },
+ {
+  "ticker": "CL",
+  "label": "Colgate",
+  "query": "Colgate",
+  "matchedQuery": "Colgate",
+  "altUsed": false,
+  "sector": "food",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-colgate",
+  "entityName": "Colgate",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-colgate",
+    "name": "Colgate",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-CL.json"
+ },
+ {
+  "ticker": "KMB",
+  "label": "Kimberly-Clark",
+  "query": "Huggies",
+  "matchedQuery": "Huggies",
+  "altUsed": false,
+  "sector": "food",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-huggies",
+  "entityName": "Huggies",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-huggies",
+    "name": "Huggies",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-KMB.json"
+ },
+ {
+  "ticker": "CLX",
+  "label": "Clorox",
+  "query": "Clorox",
+  "matchedQuery": "Clorox",
+  "altUsed": false,
+  "sector": "food",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-clorox",
+  "entityName": "Clorox",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-clorox",
+    "name": "Clorox",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-CLX.json"
+ },
+ {
+  "ticker": "ADM",
+  "label": "ADM",
+  "query": "Archer-Daniels-Midland",
+  "matchedQuery": "Archer-Daniels-Midland",
+  "altUsed": false,
+  "sector": "food",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-archer-daniels-midland",
+  "entityName": "Archer-Daniels-Midland",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-archer-daniels-midland",
+    "name": "Archer-Daniels-Midland",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-ADM.json"
+ },
+ {
+  "ticker": "BG",
+  "label": "Bunge",
+  "query": "Bunge",
+  "matchedQuery": "Bunge",
+  "altUsed": false,
+  "sector": "food",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-bunge",
+  "entityName": "Bunge",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-bunge",
+    "name": "Bunge",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-BG.json"
+ },
+ {
+  "ticker": "AMZN",
+  "label": "Amazon",
+  "query": "Amazon",
+  "matchedQuery": "Amazon",
+  "altUsed": false,
+  "sector": "retail",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-amazon",
+  "entityName": "Amazon",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-amazon",
+    "name": "Amazon",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-AMZN.json"
+ },
+ {
+  "ticker": "TJX",
+  "label": "TJX",
+  "query": "TJ Maxx",
+  "matchedQuery": "TJ Maxx",
+  "altUsed": false,
+  "sector": "retail",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-tj-maxx",
+  "entityName": "TJ Maxx",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-tj-maxx",
+    "name": "TJ Maxx",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-TJX.json"
+ },
+ {
+  "ticker": "ROST",
+  "label": "Ross Stores",
+  "query": "Ross Dress for Less",
+  "matchedQuery": "Ross Dress for Less",
+  "altUsed": false,
+  "sector": "retail",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-ross-dress-for-less",
+  "entityName": "Ross Dress for Less",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-ross-dress-for-less",
+    "name": "Ross Dress for Less",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-ROST.json"
+ },
+ {
+  "ticker": "BURL",
+  "label": "Burlington",
+  "query": "Burlington",
+  "matchedQuery": "Burlington",
+  "altUsed": false,
+  "sector": "retail",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-burlington",
+  "entityName": "Burlington",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-burlington",
+    "name": "Burlington",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-BURL.json"
+ },
+ {
+  "ticker": "EBAY",
+  "label": "eBay",
+  "query": "eBay",
+  "matchedQuery": "eBay",
+  "altUsed": false,
+  "sector": "retail",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-ebay",
+  "entityName": "eBay",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-ebay",
+    "name": "eBay",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-EBAY.json"
+ },
+ {
+  "ticker": "BBY",
+  "label": "Best Buy",
+  "query": "Best Buy",
+  "matchedQuery": "Best Buy",
+  "altUsed": false,
+  "sector": "retail",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-best-buy",
+  "entityName": "Best Buy",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-best-buy",
+    "name": "Best Buy",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-BBY.json"
+ },
+ {
+  "ticker": "AZO",
+  "label": "AutoZone",
+  "query": "AutoZone",
+  "matchedQuery": "AutoZone",
+  "altUsed": false,
+  "sector": "retail",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-autozone",
+  "entityName": "AutoZone",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-autozone",
+    "name": "AutoZone",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-AZO.json"
+ },
+ {
+  "ticker": "ORLY",
+  "label": "O'Reilly",
+  "query": "O'Reilly Auto Parts",
+  "matchedQuery": "O'Reilly Auto Parts",
+  "altUsed": false,
+  "sector": "retail",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-o-reilly-auto-parts",
+  "entityName": "O'Reilly Auto Parts",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-o-reilly-auto-parts",
+    "name": "O'Reilly Auto Parts",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-ORLY.json"
+ },
+ {
+  "ticker": "GPC",
+  "label": "Genuine Parts",
+  "query": "NAPA Auto Parts",
+  "matchedQuery": "NAPA Auto Parts",
+  "altUsed": false,
+  "sector": "retail",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-napa-auto-parts",
+  "entityName": "NAPA Auto Parts",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-napa-auto-parts",
+    "name": "NAPA Auto Parts",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-GPC.json"
+ },
+ {
+  "ticker": "LKQ",
+  "label": "LKQ",
+  "query": "LKQ",
+  "matchedQuery": "LKQ",
+  "altUsed": false,
+  "sector": "retail",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-lkq",
+  "entityName": "LKQ",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-lkq",
+    "name": "LKQ",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-LKQ.json"
+ },
+ {
+  "ticker": "AN",
+  "label": "AutoNation",
+  "query": "AutoNation",
+  "matchedQuery": "AutoNation",
+  "altUsed": false,
+  "sector": "retail",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-autonation",
+  "entityName": "AutoNation",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-autonation",
+    "name": "AutoNation",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-AN.json"
+ },
+ {
+  "ticker": "KMX",
+  "label": "CarMax",
+  "query": "CarMax",
+  "matchedQuery": "CarMax",
+  "altUsed": false,
+  "sector": "retail",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-carmax",
+  "entityName": "CarMax",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-carmax",
+    "name": "CarMax",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-KMX.json"
+ },
+ {
+  "ticker": "BKNG",
+  "label": "Booking",
+  "query": "Booking.com",
+  "matchedQuery": "Booking.com",
+  "altUsed": false,
+  "sector": "travel",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-booking-com",
+  "entityName": "Booking.com",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-booking-com",
+    "name": "Booking.com",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-BKNG.json"
+ },
+ {
+  "ticker": "MAR",
+  "label": "Marriott",
+  "query": "Marriott",
+  "matchedQuery": "Marriott",
+  "altUsed": false,
+  "sector": "travel",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-marriott",
+  "entityName": "Marriott",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-marriott",
+    "name": "Marriott",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-MAR.json"
+ },
+ {
+  "ticker": "HLT",
+  "label": "Hilton",
+  "query": "Hilton",
+  "matchedQuery": "Hilton",
+  "altUsed": false,
+  "sector": "travel",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-hilton",
+  "entityName": "Hilton",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-hilton",
+    "name": "Hilton",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-HLT.json"
+ },
+ {
+  "ticker": "EXPE",
+  "label": "Expedia",
+  "query": "Expedia",
+  "matchedQuery": "Expedia",
+  "altUsed": false,
+  "sector": "travel",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-expedia",
+  "entityName": "Expedia",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-expedia",
+    "name": "Expedia",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-EXPE.json"
+ },
+ {
+  "ticker": "ABNB",
+  "label": "Airbnb",
+  "query": "Airbnb",
+  "matchedQuery": "Airbnb",
+  "altUsed": false,
+  "sector": "travel",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-airbnb",
+  "entityName": "Airbnb",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-airbnb",
+    "name": "Airbnb",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-ABNB.json"
+ },
+ {
+  "ticker": "RCL",
+  "label": "Royal Caribbean",
+  "query": "Royal Caribbean",
+  "matchedQuery": "Royal Caribbean",
+  "altUsed": false,
+  "sector": "travel",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-royal-caribbean",
+  "entityName": "Royal Caribbean",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-royal-caribbean",
+    "name": "Royal Caribbean",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-RCL.json"
+ },
+ {
+  "ticker": "CCL",
+  "label": "Carnival",
+  "query": "Carnival Cruise",
+  "matchedQuery": "Carnival Cruise",
+  "altUsed": false,
+  "sector": "travel",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-carnival-cruise",
+  "entityName": "Carnival Cruise",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-carnival-cruise",
+    "name": "Carnival Cruise",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-CCL.json"
+ },
+ {
+  "ticker": "NCLH",
+  "label": "Norwegian",
+  "query": "Norwegian Cruise Line",
+  "matchedQuery": "Norwegian Cruise Line",
+  "altUsed": false,
+  "sector": "travel",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-norwegian-cruise-line",
+  "entityName": "Norwegian Cruise Line",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-norwegian-cruise-line",
+    "name": "Norwegian Cruise Line",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-NCLH.json"
+ },
+ {
+  "ticker": "LVS",
+  "label": "Las Vegas Sands",
+  "query": "The Venetian",
+  "matchedQuery": "The Venetian",
+  "altUsed": false,
+  "sector": "travel",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-the-venetian",
+  "entityName": "The Venetian",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-the-venetian",
+    "name": "The Venetian",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-LVS.json"
+ },
+ {
+  "ticker": "WYNN",
+  "label": "Wynn",
+  "query": "Wynn Las Vegas",
+  "matchedQuery": "Wynn Las Vegas",
+  "altUsed": false,
+  "sector": "travel",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-wynn-las-vegas",
+  "entityName": "Wynn Las Vegas",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-wynn-las-vegas",
+    "name": "Wynn Las Vegas",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-WYNN.json"
+ },
+ {
+  "ticker": "MGM",
+  "label": "MGM Resorts",
+  "query": "MGM Grand",
+  "matchedQuery": "MGM Grand",
+  "altUsed": false,
+  "sector": "travel",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-mgm-grand",
+  "entityName": "MGM Grand",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-mgm-grand",
+    "name": "MGM Grand",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-MGM.json"
+ },
+ {
+  "ticker": "CZR",
+  "label": "Caesars",
+  "query": "Caesars Palace",
+  "matchedQuery": "Caesars Palace",
+  "altUsed": false,
+  "sector": "travel",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-caesars-palace",
+  "entityName": "Caesars Palace",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-caesars-palace",
+    "name": "Caesars Palace",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-CZR.json"
+ },
+ {
+  "ticker": "TSLA",
+  "label": "Tesla",
+  "query": "Tesla",
+  "matchedQuery": "Tesla",
+  "altUsed": false,
+  "sector": "auto",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-tesla",
+  "entityName": "Tesla",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-tesla",
+    "name": "Tesla",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-TSLA.json"
+ },
+ {
+  "ticker": "F",
+  "label": "Ford",
+  "query": "Ford",
+  "matchedQuery": "Ford",
+  "altUsed": false,
+  "sector": "auto",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-ford",
+  "entityName": "Ford",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-ford",
+    "name": "Ford",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-F.json"
+ },
+ {
+  "ticker": "GM",
+  "label": "General Motors",
+  "query": "Chevrolet",
+  "matchedQuery": "Chevrolet",
+  "altUsed": false,
+  "sector": "auto",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-chevrolet",
+  "entityName": "Chevrolet",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-chevrolet",
+    "name": "Chevrolet",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-GM.json"
+ },
+ {
+  "ticker": "APTV",
+  "label": "Aptiv",
+  "query": "Aptiv",
+  "matchedQuery": "Aptiv",
+  "altUsed": false,
+  "sector": "auto",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-aptiv",
+  "entityName": "Aptiv",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-aptiv",
+    "name": "Aptiv",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-APTV.json"
+ },
+ {
+  "ticker": "BWA",
+  "label": "BorgWarner",
+  "query": "BorgWarner",
+  "matchedQuery": "BorgWarner",
+  "altUsed": false,
+  "sector": "auto",
+  "featured": false,
+  "entityId": "urn:entity:brand:stub-borgwarner",
+  "entityName": "BorgWarner",
+  "candidates": [
+   {
+    "id": "urn:entity:brand:stub-borgwarner",
+    "name": "BorgWarner",
+    "type": "urn:entity:brand"
+   }
+  ],
+  "exact": true,
+  "provenance": "fixtures/qloo/search-BWA.json"
+ }
+]

@@ -1,0 +1,67 @@
+{
+  "verdict": "FIX FIRST",
+  "score_total": 38,
+  "scores": {
+    "technological_implementation": 12,
+    "design": 9,
+    "potential_impact": 7,
+    "quality_of_idea": 10
+  },
+  "would_make_top3": false,
+  "agentic_gap_closed": false,
+  "agentic_verdict": "No. The agent is a read-only chatbot over precomputed JSON; it plans nothing, spends no Qloo, and cannot change a single output. It is explanatory, not load-bearing.",
+  "fatal": "The held-out test has zero power because the scored regressor is identically zero across all 35 weeks, and the two hard gates (public repo, external hosting) are unmet, so the entry is neither externally reviewable nor statistically falsifiable.",
+  "must_fix": [
+    "Make the repo public with the MIT license visible in the About section.",
+    "Deploy external hosting with TLS on the Oracle VM.",
+    "Replace the 45-second fallback LLM path with a sub-second deterministic answer bank for the demo so a cold judge does not wait.",
+    "Stop reporting 'no test' as a result; declare the held-out test invalid due to an identically zero regressor and publish pre-registered effect-size bounds.",
+    "Attach an exact Qloo receipt (endpoint, entity IDs, timestamp) to every agent answer."
+  ],
+  "method_objections": [
+    "The held-out regressor is identically zero for all 35 scored weeks (carry-forward tail), so the test has zero power at any effect size.",
+    "44 of 102 weeks are carry-forward from the last Qloo revision (2025-12-22); the taste basket is stale for 43% of the sample.",
+    "18 of 101 names are unresolved by Qloo, creating survivorship bias in the 80 priced names.",
+    "Mean in-sample ΔR² of +0.67 points is economically trivial and zero names survive Benjamini-Hochberg at q ≤ 0.10.",
+    "The dispersion test has 0% power at the observed spread, so the placebo suite cannot detect the effect it claims to rule out.",
+    "Weekly OLS with sector taste baskets is not shown to address autocorrelation or look-ahead bias."
+  ],
+  "overstatements": [
+    "The agent answers with 'the exact Qloo request and the uncertainty' — the verified transcript is truncated by token limits and an earlier run overclaimed significance while omitting q = 0.164.",
+    "The entry 'would not work without Qloo' is true for the desk but false for the agent layer, which reads static JSON and makes no Qloo calls.",
+    "Calling the agent 'load-bearing' when it is a read-only Q&A layer over committed output files.",
+    "Presenting 'no test' as a valid output rather than an admission that the held-out slice is mechanically empty."
+  ],
+  "own_modifications": [
+    "Replace the live LLM fallback chain for judging with a deterministic, precomputed answer bank for the 10 most likely judge questions, with full Qloo receipts and sub-second latency.",
+    "Add one load-bearing tool: `refresh_basket(sub_sector)` that calls Qloo at inference and recomputes that sector's cultural beta, so the agent's tool choice changes the desk output.",
+    "Replace the invalid held-out test with a pre-registered out-of-sample window using only Qloo revisions before 2025-12-22, or publish the minimum detectable effect size as the headline result.",
+    "Cut the 400-character question cap and 120 questions/hour global limit for the demo; whitelist judge IPs.",
+    "Drop the proposed sector-briefing and alert-triage agents; they are vaporware and distract from shipping one working thing."
+  ],
+  "cut": [
+    "Cut the proposed multi-agent roadmap (sector briefing, alert triage).",
+    "Cut the 45-second fallback LLM from the critical demo path.",
+    "Cut the 'no test' framing; replace with an explicit invalidity notice and effect-size bound.",
+    "Cut the 400-character question cap for the demo environment."
+  ],
+  "score_per_hour_rank": [
+    "Make repo public with LICENSE visible in About (unblocks hard gate).",
+    "Deploy Oracle VM with vhost + TLS / external hosting (unblocks hard gate).",
+    "Replace live LLM agent with cached deterministic answers for top judge questions (fixes 45s latency and 429s).",
+    "Fix held-out framing: publish effect-size bounds instead of 'no test'.",
+    "Add Qloo request receipt to every answer.",
+    "Add one live Qloo tool to make the agent load-bearing (only if hours remain)."
+  ],
+  "path_to_90": [
+    "Public repo and live hosting with TLS.",
+    "Valid held-out test with a non-degenerate Qloo regressor through the test window.",
+    "Agent makes live Qloo calls at inference and changes computed output.",
+    "Sub-5-second judge-facing latency with no provider 429s.",
+    "Honest headline: Qloo taste data adds no detectable predictive power to consumer equity returns; here is the instrument, the receipts, and the bound."
+  ],
+  "highest_honest_score_this_vintage": 65,
+  "judge_60s": "A consumer equity screener that added Qloo 'cultural beta' to market beta, found no significant signal, and attached a slow chatbot that reads static files; no public repo and no live URL.",
+  "headline_rewrite": "Cultural beta fails to predict consumer stock returns: a transparent null result with a chatbot attached.",
+  "best_next_model_construction": "A live judge-facing tool that lets the agent resolve an off-book consumer entity via Qloo, pull its trend series, and recompute that name's cultural beta in real time, making Qloo load-bearing at inference."
+}
