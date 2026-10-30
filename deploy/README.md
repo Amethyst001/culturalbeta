@@ -20,8 +20,8 @@ existing sites still live.
    `0.0.0.0/0`. Oracle's default list permits 22 only, and the certificate challenge
    fails without 80. On the host, `ufw status` must also allow 'Nginx Full' if ufw is on.
 2. **Point DNS** — an `A` record for the subdomain at the instance's public IP. Done for
-   `culturalbeta.ktnamethyst.me` → 84.8.134.19 on 2026-10-30, verified resolving through
-   8.8.8.8.
+   `culturalbeta.ktnamethyst.me` on 2026-10-30, verified resolving through
+   a public resolver.
 
 ## Install
 
@@ -30,23 +30,44 @@ existing sites still live.
 sudo ./deploy/install.sh culturalbeta.ktnamethyst.me you@example.com
 ```
 
-That installs Node 22 and certbot, creates a `culturalbeta` system user, copies the tree
-to `/opt/culturalbeta`, runs it under systemd on 127.0.0.1:8787, writes one nginx vhost
-for the subdomain, and issues a certificate with `certbot --nginx --redirect`. Re-running
-is safe: `rsync --delete` refreshes the tree, the vhost is left alone if it exists, and
-the service restarts.
+That creates a `culturalbeta` system user, copies the tree to `/opt/culturalbeta`, runs
+it under systemd on 127.0.0.1:8790 (8787 belongs to another service on this host), writes
+one nginx vhost for the subdomain, and issues a certificate with `certbot --nginx
+--redirect`. Re-running is safe: `rsync --delete` refreshes the tree, the vhost is left
+alone if it exists, and the service restarts.
+
+The Qloo harness CLI declares `engines.node >=22.19.0`; run under the host's older node
+it fails with `webidl.util.markAsUncloneable is not a function`. The installer therefore
+unpacks a private Node 22 under `/opt/node22` and puts it first on this service's PATH
+only — a distro node the other sites on the box are pinned to is never upgraded.
+
+The hackathon credential authenticates only against `https://hackathon.api.qloo.com`.
+A host that has never run `qloo setup` leaves the harness pointing at the public
+endpoint, where every live read comes back `QLOO_AUTH` — the desk then reports the
+freshness check as unavailable rather than printing a reading. The installer writes
+`$APP/.state/.qloo/config` with `base_url` and `trusted_base_url` set to the hackathon
+endpoint (`QLOO_BASE_URL` overrides it).
+
+`.env` must have LF line endings. systemd's `EnvironmentFile` keeps a trailing `\r` on
+every value, and the harness then rejects the key with `QLOO_AUTH` while the same key
+works from a shell — this cost a deploy cycle on 2026-10-30.
 
 ## Verify after install
 
 ```bash
 systemctl status culturalbeta --no-pager
-curl -fsS https://culturalbeta.ktnamethyst.me/api/v1/panel | head -c 200
-curl -fsS https://culturalbeta.ktnamethyst.me/export/panel.csv | head -2
+curl -fsS https://culturalbeta.ktnamethyst.me/api/desk.json | head -c 200
+curl -fsS https://culturalbeta.ktnamethyst.me/api/agent.json
 curl -fsS https://culturalbeta.ktnamethyst.me/api/v1/alerts | head -c 200
+# The attestation must be the host's own Qloo read, not a page that arrived with the tree:
+curl -fsS https://culturalbeta.ktnamethyst.me/api/freshness.json | grep -o '"fromCachedPage":[a-z]*'
 ```
 
 Expected: the panel reports `priced: 80`, the alerts feed `status: "watchlist-only"` and
-`count: 0`, and its note names the placebo p and the frozen held-out slice.
+`count: 0`, and its note names the placebo p and the frozen held-out slice. The
+attestation prints `{"checked":true,...,"requests":1,"fromCachedPage":false,...}` with a
+correlation id the host received itself; `true` there means it replayed a page cached
+before the deploy, which is honest but is not proof the host can reach Qloo.
 
 ## What is exposed, and what is not
 

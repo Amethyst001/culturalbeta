@@ -1,11 +1,18 @@
 // Desk backend. Holds the Qloo key server-side (never shipped to the browser).
 // GET  /api/desk.json        -> committed computation, or a refusal if Qloo data absent.
+// GET  /api/mde.json         -> committed minimum-detectable-effect bounds (zero Qloo requests to build).
+// GET  /api/basket-sensitivity.json -> the same estimator re-run under alternative taste baskets.
 // GET  /api/v1/panel         -> versioned feed of the same numbers, for ingestion.
 // GET  /api/v1/holding/:tick -> one holding.
 // GET  /api/v1/alerts        -> the panel read as a watchlist: which names would fire, and why none does.
 // GET  /export/panel.csv     -> the panel as a spreadsheet.
 // GET  /api/agent.json       -> whether the analyst agent is configured, and its limits.
-// POST /api/ask              -> the analyst agent over the committed panel (read-only, no Qloo spend).
+// GET  /api/freshness.json   -> the last live Qloo freshness attestation. Reads the cache only: it never
+//                               makes a request, so opening the page cannot spend the budget.
+// POST /api/ask              -> the analyst agent over the committed panel. Every answer carries a Qloo
+//                               freshness attestation the server asks at answer time and a receipt naming
+//                               the calls or cached responses behind it. Read-only: it can spend at most
+//                               two bounded trend requests, and never a number.
 // POST /api/recompute        -> runs the live pipeline (needs QLOO_API_KEY in .env).
 import { createServer } from "node:http";
 import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
@@ -15,10 +22,10 @@ import { ROOT } from "../src/env.mjs";
 import { ols } from "../src/ols.mjs";
 import { loadUniverse } from "../src/universe.mjs";
 import { computeBudget, spentFromCache } from "../src/budget.mjs";
-import { createDeskTools, readProviders, askQuestion, LIMITS } from "../src/agent.mjs";
-import { withLiveTools, liveStatus } from "../src/live-qloo.mjs";
+import { createDeskTools, readProviders, askQuestion, collectReceipts, LIMITS } from "../src/agent.mjs";
+import { withLiveTools, liveStatus, createFreshnessChecker, freshnessGateReason, FRESHNESS, LIVE } from "../src/live-qloo.mjs";
 
-const PORT = Number(process.env.PORT || 8787);
+const PORT = Number(process.env.PORT || 8811);
 const OUT = process.env.CULTURALBETA_OUTPUT_DIR ? resolve(process.env.CULTURALBETA_OUTPUT_DIR) : resolve(ROOT, "output");
 // Same resolution rule as src/qloo.mjs, restated so the desk stays importable
 // without pulling in the harness or the key.
@@ -296,14 +303,32 @@ const ASK_CACHE_MAX = 200;
 const askGlobal = [];
 const askLastByIp = new Map();
 const askCache = new Map();
-let agentToolsCache = { stamp: "", tools: null };
+let agentToolsCache = { stamp: "", tools: null, series: null };
+let freshnessState = { stamp: "", checker: null };
 
 function agentStatus() {
+  const live = liveStatus();
   return {
     configured: AGENT_PROVIDERS.length > 0,
     providers: AGENT_PROVIDERS.map((p) => p.label),
     readOnly: true,
-    live: liveStatus(),
+    live,
+    // The freshness attestation is not a tool the model may decline: /api/ask runs
+    // it itself, on every answer, and prints whatever Qloo actually returned.
+    freshness: {
+      enabled: live.enabled,
+      onEveryAnswer: true,
+      cacheMinutes: FRESHNESS.cacheMinutes,
+      maxRequests: FRESHNESS.maxRequests,
+      drawnFromDailyBudget: LIVE.dailyRequests,
+      note: live.enabled
+        ? `Before answering, the server asks Qloo one bounded trend page for one committed basket entity and attests what it got; the attestation is cached ${FRESHNESS.cacheMinutes} minutes for the whole book and never prints a date without a response behind it. If it cannot run, the answer says it was not checked and why.`
+        : "The live gate is off on this deployment, so no answer can carry a freshness attestation; every answer says so.",
+    },
+    receipts: {
+      onEveryAnswer: true,
+      note: "Each answer lists the Qloo provenance behind it: operation, entity ids, correlation ids, timestamps and request counts for a live call, cached response file names and the request that produced them for a committed one. Never a key, never a file's contents.",
+    },
     limits: {
       questionChars: LIMITS.maxQuestionChars,
       toolCalls: LIMITS.maxToolCalls,
@@ -311,8 +336,8 @@ function agentStatus() {
       perHour: ASK_PER_HOUR,
       minGapMs: ASK_MIN_GAP_MS,
     },
-    note: liveStatus().enabled
-      ? "The analyst reads the committed panel, and may spend one bounded live Qloo read per answer. It cannot run the pipeline or change a number."
+    note: live.enabled
+      ? "The analyst reads the committed panel, may spend one bounded live Qloo read per answer, and always carries the server's freshness attestation and receipt. It cannot run the pipeline or change a number."
       : "The analyst reads the committed panel and the Qloo responses behind it. It cannot run the pipeline, spend a Qloo request, or change a number.",
   };
 }
@@ -321,12 +346,40 @@ function loadAgentTools() {
   const loaded = loadDesk();
   if (!loaded) return null;
   const sf = resolve(OUT, "series.json");
-  const stamp = `${loaded.revision}|${existsSync(sf) ? statSync(sf).mtime.toISOString() : "no-series"}`;
+  // Optional inputs: when they are absent the analyst's detectability tool says so
+  // rather than reasoning about power from the flag count.
+  const aux = [resolve(OUT, "mde.json"), resolve(OUT, "basket-sensitivity.json")];
+  const mtimes = [sf, ...aux].map((f) => (existsSync(f) ? statSync(f).mtime.toISOString() : "absent"));
+  const stamp = `${loaded.revision}|${mtimes.join("|")}`;
   if (agentToolsCache.stamp !== stamp) {
     const series = existsSync(sf) ? JSON.parse(readFileSync(sf, "utf8")) : {};
-    agentToolsCache = { stamp, tools: createDeskTools({ desk: loaded.desk, series }) };
+    const [mde, basketSensitivity] = aux.map((f) => (existsSync(f) ? JSON.parse(readFileSync(f, "utf8")) : null));
+    agentToolsCache = { stamp, tools: createDeskTools({ desk: loaded.desk, series, mde, basketSensitivity }), series };
   }
-  return { tools: agentToolsCache.tools, revision: loaded.revision, desk: loaded.desk };
+  return { tools: agentToolsCache.tools, series: agentToolsCache.series, revision: loaded.revision, desk: loaded.desk };
+}
+
+function freshnessCheckerFor(loaded, { prime = true } = {}) {
+  const live = liveStatus();
+  if (!live.enabled) return null;
+  if (freshnessState.stamp !== loaded.revision) {
+    freshnessState = { stamp: loaded.revision, checker: createFreshnessChecker({ desk: loaded.desk, series: loaded.series }) };
+  }
+  // The first probe of a new panel revision is a cold live call measured at ~13 s,
+  // which an answer should not have to wait for. Starting it as the checker is
+  // created means the first answer usually carries a reading that already landed.
+  if (prime) freshnessState.checker.prime?.();
+  return freshnessState.checker;
+}
+
+// An attestation that could not be obtained degrades to a reason, never to a date.
+async function attestation(checker) {
+  if (!checker) return { checked: false, why: freshnessGateReason() ?? "live_gate_off", at: new Date().toISOString() };
+  try {
+    return await checker.check();
+  } catch (e) {
+    return { checked: false, why: "harness_error", harnessCode: String(e.code ?? "").slice(0, 60) || null, at: new Date().toISOString() };
+  }
 }
 
 function clientIp(req) {
@@ -375,6 +428,15 @@ const server = createServer(async (req, res) => {
   if (url.pathname === "/api/agent.json") {
     return send(res, 200, JSON.stringify(agentStatus()));
   }
+  if (url.pathname === "/api/freshness.json") {
+    // Cache read only: an answer has to be asked before the desk spends a request,
+    // so the panel's own poll of this route never can. The boot prime started the
+    // first probe; a page load only reads what it returned.
+    const loaded = loadAgentTools();
+    if (!loaded) return send(res, 503, JSON.stringify({ error: "QLOO_REQUIRED", message: "No panel; nothing to attest." }));
+    const checker = freshnessCheckerFor(loaded, { prime: false });
+    return send(res, 200, JSON.stringify(checker ? checker.peek() : { checked: false, why: freshnessGateReason() ?? "live_gate_off", live: false }));
+  }
   if (url.pathname === "/api/ask") {
     if (req.method !== "POST") return send(res, 405, JSON.stringify({ error: "METHOD_NOT_ALLOWED", message: "POST a JSON body { question }." }));
     const loaded = loadAgentTools();
@@ -389,9 +451,21 @@ const server = createServer(async (req, res) => {
     const question = String(body?.question ?? "").trim();
     if (!question) return send(res, 400, JSON.stringify({ error: "EMPTY_QUESTION" }));
     if (question.length > LIMITS.maxQuestionChars) return send(res, 400, JSON.stringify({ error: "QUESTION_TOO_LONG", max: LIMITS.maxQuestionChars }));
+    const checker = freshnessCheckerFor(loaded);
     const key = `${loaded.revision}|${question.toLowerCase()}`;
     const hit = askCache.get(key);
-    if (hit) return send(res, 200, JSON.stringify({ ...hit, cached: true }));
+    if (hit) {
+      // The answer text may be reused; the attestation may not be. A cached answer
+      // is still re-attested, and the checker's own book cache means that costs a
+      // request at most once every cacheMinutes, not once per click.
+      const freshness = await attestation(checker);
+      return send(res, 200, JSON.stringify({
+        ...hit,
+        cached: true,
+        freshness,
+        receipts: collectReceipts({ desk: loaded.desk, revision: loaded.revision, trace: hit.trace, freshness }),
+      }));
+    }
     const limit = askAllowed(clientIp(req), Date.now());
     if (!limit.ok) {
       res.setHeader("retry-after", String(limit.retryAfter));
@@ -401,23 +475,41 @@ const server = createServer(async (req, res) => {
     try {
       const live = liveStatus();
       const tools = live.enabled ? withLiveTools(loaded.tools, { desk: loaded.desk, state: { liveCalls: 0 } }) : loaded.tools;
+      // Asked at the same moment as the model, so its round trip is never added to
+      // the answer's latency; the await below only waits for whatever is left.
+      const freshP = attestation(checker);
       const out = await askQuestion({ question, tools, providers: AGENT_PROVIDERS });
+      const freshness = await freshP;
       const { failures, ...clean } = out;
       if (failures?.length) console.log(`agent: provider fallbacks — ${failures.join(" | ")}`);
-      const payload = { ...clean, ms: Date.now() - started, cached: false, readOnly: true, live: liveStatus().enabled, limits: agentStatus().limits };
+      const receipts = collectReceipts({ desk: loaded.desk, revision: loaded.revision, trace: clean.trace, freshness });
+      const payload = { ...clean, freshness, receipts, ms: Date.now() - started, cached: false, readOnly: true, live: liveStatus().enabled, limits: agentStatus().limits };
+      // What is cached is the text and its trace, never the attestation: the next
+      // answer must carry one asked after it, not one from the first.
+      const { freshness: _omitF, receipts: _omitR, ...storable } = payload;
       if (askCache.size >= ASK_CACHE_MAX) askCache.delete(askCache.keys().next().value);
-      askCache.set(key, payload);
-      console.log(`agent: ${question.length} chars, ${clean.toolCalls} tools, ${clean.rounds} rounds, ${clean.provider}, ${payload.ms}ms`);
+      askCache.set(key, storable);
+      console.log(`agent: ${question.length} chars, ${clean.toolCalls} tools, ${clean.rounds} rounds, ${clean.provider}, ${payload.ms}ms, freshness ${freshness.checked ? `checked ${freshness.verdict} (${freshness.requests} qloo reqs)` : `not checked: ${freshness.why}`}`);
       return send(res, 200, JSON.stringify(payload));
     } catch (e) {
       const status = e.code === "AGENT_UNAVAILABLE" ? 502 : 500;
-      console.log(`agent: failed ${e.code ?? e.message} after ${Date.now() - started}ms`);
+      console.log(`agent: failed ${e.code ?? e.message} after ${Date.now() - started}ms${e.details ? ` — ${e.details.join(" | ")}` : ""}`);
       return send(res, status, JSON.stringify({ error: e.code || "AGENT_FAILED", message: "The analyst could not answer; the desk numbers are unchanged." }));
     }
   }
   if (url.pathname === "/api/series.json") {
     const f = resolve(OUT, "series.json");
     if (!existsSync(f)) return send(res, 503, JSON.stringify({ error: "QLOO_REQUIRED", message: "No series without Qloo." }));
+    return send(res, 200, readFileSync(f));
+  }
+  if (url.pathname === "/api/mde.json") {
+    const f = resolve(OUT, "mde.json");
+    if (!existsSync(f)) return send(res, 503, JSON.stringify({ error: "QLOO_REQUIRED", message: "No detectability bounds without the committed panel. Run node scripts/mde.mjs." }));
+    return send(res, 200, readFileSync(f));
+  }
+  if (url.pathname === "/api/basket-sensitivity.json") {
+    const f = resolve(OUT, "basket-sensitivity.json");
+    if (!existsSync(f)) return send(res, 503, JSON.stringify({ error: "QLOO_REQUIRED", message: "No basket-construction sensitivity without the committed panel. Run node scripts/basket-sensitivity.mjs." }));
     return send(res, 200, readFileSync(f));
   }
   if (url.pathname === "/api/evidence.json") {
@@ -510,4 +602,8 @@ const server = createServer(async (req, res) => {
   send(res, 404, "not found", "text/plain");
 });
 
-server.listen(PORT, () => console.log(`Cultural beta desk on http://localhost:${server.address().port}`));
+server.listen(PORT, () => {
+  console.log(`Cultural beta desk on http://localhost:${server.address().port}`);
+  const loaded = loadAgentTools();
+  if (loaded) freshnessCheckerFor(loaded);
+});

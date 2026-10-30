@@ -7,7 +7,7 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { ROOT } from "../src/env.mjs";
 
-const FLEET_ENV = process.env.FLEET_ENV || "C:/Users/USER/Documents/FPL/.env.external";
+const FLEET_ENV = process.env.FLEET_ENV || resolve(ROOT, ".env.panel");
 const env = {};
 if (existsSync(FLEET_ENV)) {
   for (const line of readFileSync(FLEET_ENV, "utf8").split("\n")) {
@@ -57,7 +57,30 @@ const FREE = [
     gap: 20000,
   },
 ];
+// Verified 2026-10-30 with GET /v1/models: opus.abhibots.com serves
+// claude-opus-5-5, claude-fable-5-1, claude-opus-5. oxionai.com answers 526 and
+// no longer serves a model, so it is out of the panel rather than a silent failure.
 const FULL = [
+  {
+    id: "claude-opus-5-5",
+    label: "Abhibots / Claude Opus 5.5",
+    endpoint: "https://opus.abhibots.com/v1/chat/completions",
+    keyVar: "ABHIBOTS_API_KEY",
+    model: "claude-opus-5-5",
+    maxTokens: 8000,
+    gap: 20000,
+    extraHeaders: {},
+  },
+  {
+    id: "claude-fable-5-1",
+    label: "Abhibots / Claude Fable 5.1",
+    endpoint: "https://opus.abhibots.com/v1/chat/completions",
+    keyVar: "ABHIBOTS_API_KEY",
+    model: "claude-fable-5-1",
+    maxTokens: 8000,
+    gap: 20000,
+    extraHeaders: {},
+  },
   {
     id: "claude-opus-5",
     label: "Abhibots / Claude Opus 5",
@@ -69,15 +92,23 @@ const FULL = [
     extraHeaders: {},
   },
   {
-    id: "claude-opus-5.5",
-    label: "Oxion / Claude Opus 5.5",
-    endpoint: "https://oxionai.com/v1/chat/completions",
-    keyVar: "OXION_API_KEY",
-    model: "claude-opus-5.5",
+    id: "minimax-m2.7",
+    label: "dahl / MiniMax M2.7",
+    endpoint: "https://inference.dahl.global/v1/chat/completions",
+    keyVar: "DAHL_API_KEY",
+    model: "MiniMaxAI/MiniMax-M2.7",
     maxTokens: 8000,
     gap: 20000,
   },
-  ...FREE,
+  {
+    id: "glm-5.3-flash",
+    label: "BeatAPI / GLM 5.3 Flash (free)",
+    endpoint: "https://api.beatapi.io/v1/chat/completions",
+    keyVar: "BEATAPI_API_KEY",
+    model: "glm-5.3-flash-free",
+    maxTokens: 8000,
+    gap: 65000,
+  },
 ];
 const PANEL = arg("panel", "free") === "full" ? FULL : FREE;
 

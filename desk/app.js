@@ -7,6 +7,9 @@ const pval = (p) => p == null ? "—" : p < 0.001 ? "< 0.001" : p.toFixed(3);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 let DESK = null, SERIES = null, EVIDENCE = null, MARKET = null, BUDGET = null, AGENT = null;
+let BOOTING = true;
+let MDE = null, BASKET = null;
+let FRESH = null;
 let ASK = { q: "", busy: false, res: null, err: null };
 let sortKey = "culturalQ", sortDir = 1, sectorFilter = "all";
 
@@ -26,10 +29,15 @@ const liveTone = () => isStub() ? "warn" : "ok";
 const get = async (p) => { const r = await fetch(p); return { ok: r.ok, data: r.ok ? await r.json() : null }; };
 
 async function load() {
-  const [d, s, e, m, b, a] = await Promise.all([get("/api/desk.json"), get("/api/series.json"), get("/api/evidence.json"), get("/api/market-only.json"), get("/api/budget.json"), get("/api/agent.json")]);
+  const [d, s, e, m, b, a, f, md, bs] = await Promise.all([get("/api/desk.json"), get("/api/series.json"), get("/api/evidence.json"), get("/api/market-only.json"), get("/api/budget.json"), get("/api/agent.json"), get("/api/freshness.json"), get("/api/mde.json"), get("/api/basket-sensitivity.json")]);
   DESK = d.ok ? d.data : null; SERIES = s.ok ? s.data : null; EVIDENCE = e.ok ? e.data : null; MARKET = m.ok ? m.data : null;
-  BUDGET = b.ok ? b.data : null; AGENT = a.ok ? a.data : null;
+  BUDGET = b.ok ? b.data : null; AGENT = a.ok ? a.data : null; FRESH = f.ok ? f.data : null;
+  // Two optional analyses: a 503 or a missing file leaves them null and the sections
+  // that read them print "not computed" rather than a guess.
+  MDE = md.ok ? md.data : null; BASKET = bs.ok ? bs.data : null;
+  BOOTING = false;
   route();
+  document.body.dataset.ready = "1";
 }
 
 /* ---------- small stats helpers (client-side) ---------- */
@@ -651,6 +659,14 @@ function chips(grade, flagged, va) {
   </div>`;
 }
 
+function bootView() {
+  return `<div class="head"><div class="lede-col">
+    <h1>Taste is a <span class="thin">risk factor.</span></h1>
+    <p class="sub">Reading the panel — the book, the taste baskets and the read-only analyst load together.</p>
+  </div></div>
+  <p class="caption" data-audit="boot">No number is shown until its file has arrived.</p>`;
+}
+
 function deskView() {
   if (!DESK) {
     if (!MARKET) return `<div class="head"><div class="lede-col"><h1>Taste is a <span class="thin">risk factor.</span></h1>
@@ -1058,6 +1074,8 @@ function evidenceView(tick) {
     ${robustBand(EVIDENCE.valueAdd)}
     ${pooledBand(EVIDENCE.valueAdd)}
     ${dispersionBand(EVIDENCE.valueAdd)}
+    ${mdeBand()}
+    ${basketBand()}
     ${sentimentBand(EVIDENCE.valueAdd)}
     ${ablationBand(EVIDENCE.valueAdd)}
     ${costBand(EVIDENCE.valueAdd)}
@@ -1154,6 +1172,144 @@ function dispersionBand(va) {
   </section>`;
 }
 
+/* ---------- what this window could have detected ---------- */
+// A zero flag count is only a result next to the effect size the design could have
+// flagged, and only a robust one next to the alternative constructions that were also
+// tried. Both bands read a committed analysis file served by the desk: nothing here is
+// re-derived in the browser, and a missing file prints as "not computed".
+const nf = (x, d = 2) => (x == null || !Number.isFinite(Number(x)) ? "—" : Number(x).toFixed(d));
+const npc = (x, d = 1) => (x == null ? "—" : (Number(x) * 100).toFixed(d) + "%");
+
+function mdeBand() {
+  if (!MDE) {
+    return `<section class="robust full" aria-label="Detectability">
+    <div class="rb-head"><h2>What this window could have detected <span class="stubtag">not computed</span></h2>
+      <p class="rb-sub">The bound is not on this build: <code>/api/mde.json</code> served no file. <code>node scripts/mde.mjs</code> re-derives it from the committed panel and the cached responses, and makes zero Qloo requests.</p></div>
+  </section>`;
+  }
+  const mo = MDE.method ?? {};
+  const b = MDE.book ?? {};
+  const o = b.observed ?? {};
+  const s = MDE.source ?? {};
+  const fs = MDE.frozenSlice ?? null;
+  const sim = MDE.simulation ?? {};
+  const arms = sim.analyticVsSimulated ?? [];
+  const nullArm = arms.find((r) => r.ncp === 0);
+  const mdeArm = arms.find((r) => r.ncp != null && Math.abs(r.ncp - (mo.ncpMDE ?? NaN)) < 1e-3);
+  const req = (MDE.designRequirement?.rows ?? []).slice().sort((a, r) => (r.weeks ?? 0) - (a.weeks ?? 0));
+  const selfCheck = req.find((r) => /self-check/i.test(String(r.label ?? "")));
+  const cell = (k, v, sub, tone = "") => `<div class="rb-test"><div class="rb-k">${k}</div><div class="rb-v ${tone}">${v}</div>${sub ? `<div class="rb-se">${sub}</div>` : ""}</div>`;
+  const obsCell = (r, caption) => r ? cell(`Largest ${caption} in the book <b>${esc(r.ticker)}</b>`, `t ${nf(r.t, 3)}`, `β ${nf(r.beta)} · q ${nf(r.q, 3)} · its in-sample increment ${nf(r.deltaR2Pts)} pts is <b>${npc(r.shareOfMde)}</b> of the detectable one, and the rule would flag it ${npc(r.powerAtObserved)} of the time at that effect`) : "";
+  const rows = req.map((r) => `<tr>
+      <td class="th-left" data-l="Effect">${esc(r.label)}</td>
+      <td class="num" data-l="ΔR²">${nf(r.deltaR2Pts)} pts</td>
+      <td class="num" data-l="Weeks">${r.weeks == null ? "—" : Number(r.weeks).toLocaleString("en-US")}</td>
+      <td class="num" data-l="Years">${r.years == null ? "—" : r.years}</td>
+      <td class="num" data-l="× panel">${r.multipleOfCurrentPanel == null ? "—" : r.multipleOfCurrentPanel + "×"}</td>
+      <td class="th-left" data-l="Source">${esc(r.source ?? "")}${r.reason ? ` · ${esc(r.reason)}` : ""}</td>
+    </tr>`).join("");
+  return `<section class="robust full" aria-label="Detectability">
+    <div class="rb-head"><h2>What this window could have detected <span class="stubtag">design bound · post-hoc as a choice of effect size</span></h2>
+      <p class="rb-sub">"0 of ${b.names ?? "the"} names flagged" is only a result next to the effect size the design could have flagged. This is that number: the <b>minimum detectable effect</b> — the increment over the market-only fit a name would need for the pre-registered rule (negative β, |t| ≥ ${mo.flagRule?.absT ?? "2"}, Benjamini–Hochberg q ≤ ${mo.flagRule?.qMax ?? "0.1"}) to flag it ${npc(mo.powerTarget, 0)} of the time, computed on that name's own design: ${mo.weeks} weeks, its own residual scale, its own basket's own variance. ${esc(mo.singleDiscoveryLevelRule ?? "")} It uses no observed t-statistic at all, which is why it can be published beside the null rather than chosen by it. ${esc(MDE.preRegistered?.note ?? "")}</p></div>
+    <div class="rb-grid four">
+      ${cell("Detectable increment, median name", `${nf(b.medianDeltaR2Pts)} pts`, `IQR ${nf(b.iqr?.[0])} – ${nf(b.iqr?.[1])} · range ${nf(b.minDeltaR2Pts)} – ${nf(b.maxDeltaR2Pts)} across ${b.names} names · median |β| ${nf(b.medianBetaMDE)} slope units, comparable inside a sub-sector only`)}
+      ${cell("The same bound as a partial correlation", nf(b.minPartialCorrelation, 3), `partial R² ${nf(b.partialR2MDEpts)} pts · required noncentrality ${nf(mo.ncpMDE, 4)} at t<sub>crit</sub> ${nf(mo.tCrit, 4)}, df ${mo.df}${mo.singleDiscoveryLevel == null ? "" : ` · lone-discovery level ${mo.singleDiscoveryLevel}`}`)}
+      ${cell("What the book actually shows", `${nf(o.meanDeltaR2Pts)} pts`, `mean in-sample increment over ${mo.weeks} aligned weeks · largest single reading ${nf(o.largestAbsT?.deltaR2Pts)} pts`)}
+      ${cell("Flagged names", String(o.flaggedNames ?? "—"), `power at the median observed reading ${npc(b.powerAtMedianObserved, 2)} — at the spread the book shows, this rule finds essentially nothing`, "bad")}
+    </div>
+    <div class="rb-window"><span>The two largest readings, against the bound</span><span class="rb-span">the rule screens for a negative slope, so the two are not the same test</span></div>
+    <div class="rb-grid two">
+      ${obsCell(o.largestAbsT, "|t|")}
+      ${obsCell(o.largestNegativeAbsT, "negative |t|")}
+    </div>
+    <p class="rb-line"><b>Read as a bound.</b> This design could have flagged a taste effect worth about <b>${nf(b.medianDeltaR2Pts)} ΔR² points</b> for the median name — ${nf(b.minDeltaR2Pts)} to ${nf(b.maxDeltaR2Pts)} across the book, depending on each name's own residual scale and market share — a partial correlation near <b>${nf(b.minPartialCorrelation, 3)}</b>. It could not have flagged anything at the scale this panel shows: the book's mean increment is ${nf(o.meanDeltaR2Pts)} pts and the largest reading in the book, ${esc(o.largestAbsT?.ticker ?? "—")} at ${nf(o.largestAbsT?.deltaR2Pts)} pts, sits at ${npc(o.largestAbsT?.shareOfMde)} of the required effect. ${o.largestAbsT && o.largestAbsT.beta > 0 ? `That reading is also a <i>positive</i> slope, so the pre-registered direction screen excludes it before multiplicity is ever reached; the closest this study came is ${esc(o.largestNegativeAbsT?.ticker ?? "—")} at ${npc(o.largestNegativeAbsT?.shareOfMde)} of the required effect.` : ""}Everything the null result is worth is worth less than what the design could see, and that is the sentence the desk owes a reader.</p>
+    ${rows ? `<div class="rb-window"><span>How many weeks an effect of each size would need</span><span class="rb-span">${npc(mo.powerTarget, 0)} flag probability under the pre-registered rule${MDE.designRequirement?.postHoc ? " · post-hoc as a choice of effect size, pre-registered as a rule" : ""}</span></div>
+    <div class="tw"><table class="live" data-audit="mde">
+      <thead><tr><th class="th-left">Effect</th><th><span class="th">ΔR²</span></th><th><span class="th">Weeks</span></th><th><span class="th">Years</span></th><th><span class="th">× this panel</span></th><th class="th-left">How the size was chosen</th></tr></thead>
+      <tbody>${rows}</tbody></table></div>
+    <p class="rb-line">The effect is held fixed in ΔR² at each name's own market share of variance, so these rows are a statement about sample size only — never that a taste signal of that size would persist over the decades such a panel would span. The last row is the guard rail: asking this table to return the increment the ${mo.weeks}-week design can detect answers ${selfCheck?.weeks ?? "—"} weeks, so the table is calibrated against itself.</p>` : ""}
+    ${nullArm && mdeArm ? `<p class="rb-line"><b>Checked against simulation</b> (seed ${sim.seed}, ${sim.draws?.iid ?? "—"} draws iid, ${sim.draws?.block ?? "—"} in ${sim.blockWeeks}-week circular blocks). At the published bound the analytic flag probability is ${nf(mdeArm.analytic, 3)} and the iid arm returns ${nf(mdeArm.iid, 3)}, so the formula, the quadrature and the Benjamini–Hochberg implementation agree. The block arm returns ${nf(mdeArm.block, 3)}: with dependence allowed inside a resampled block, the ordinary-least-squares standard error understates the slope's spread, and the same arm over-rejects under the null — ${nf(nullArm.block, 5)} against the nominal ${nf(nullArm.analytic, 5)}. Read the ${npc(mo.powerTarget, 0)} power claim as about ${Math.round((mdeArm.block ?? 0) * 100)}% on a dependence-preserving design; the gap is reported, not reconciled away.</p>` : ""}
+    ${fs ? `<p class="rb-line"><b>And the held-out arm is not a low-power test — it is not a test.</b> ${fs.computable ? "This build reports it as computable." : `Its ${fs.weeks} scored weeks contain <b>${fs.nonzeroRegressorWeeks} weeks in which the taste regressor moves</b>: ${esc(fs.reason)}. ${esc(fs.powerAtAnyEffect ?? "")} Worked example ${esc(fs.workedExample?.ticker ?? "—")}: ${fs.workedExample?.scoredWeeks} scored weeks, ${fs.workedExample?.nonzeroWeeks} non-zero regressor weeks, basket residual sum of squares ${fs.workedExample?.basketResidualSsq}, while the same name shows ${nf(fs.workedExample?.observedInSampleDeltaR2Pts)} points in sample where the basket does move. That is a statement about the vendor's carry-forward cadence, and the arm becomes testable the moment the series moves again.`}</p>` : ""}
+    <p class="rb-line"><b>Provenance.</b> <code>output/mde.json</code>, generated ${esc(MDE.generatedAt ?? "—")} from panel revision <code>${esc(s.deskRevision ?? "—")}</code> (${s.deskBytes ?? "—"} bytes, ${s.deskWindow?.weeks ?? "—"} weeks ${esc(s.deskWindow?.start ?? "—")} → ${esc(s.deskWindow?.end ?? "—")}). Integrity checks inside the file: ${s.integrity?.rebuiltDesignsMatchPublishedFit ?? "—"} rebuilt designs match the published fit, ${s.integrity?.outputSeriesCrossChecked ?? "—"} output series cross-checked, ${s.integrity?.entityRosterRows ?? "—"} roster rows read. <b>${s.qlooRequests ?? "—"} Qloo requests</b> — every input was already on disk. Post-hoc fields: ${esc((mo.postHocFields ?? []).join(", ") || "none")}.</p>
+  </section>`;
+}
+
+/* ---------- does the answer depend on how the basket is built? ---------- */
+// The falsification request two reviewers made in the same words. The same estimator
+// on the same calendar under seven alternative baskets: what moves is the point
+// estimate, and the desk prints both that and the fact that nothing gets flagged.
+function basketBand() {
+  if (!BASKET) {
+    return `<section class="robust full" aria-label="Basket construction">
+    <div class="rb-head"><h2>Does the answer depend on how the basket is built? <span class="stubtag">not computed</span></h2>
+      <p class="rb-sub">The sensitivity re-run is not on this build: <code>/api/basket-sensitivity.json</code> served no file. <code>node scripts/basket-sensitivity.mjs</code> re-runs the identical estimator on the cached responses and makes zero Qloo requests.</p></div>
+  </section>`;
+  }
+  const g = BASKET.gate ?? {};
+  const cov = BASKET.coverage ?? {};
+  const cmp = BASKET.comparisons ?? {};
+  const consts = BASKET.constructions ?? [];
+  const label = (id) => consts.find((c) => c.id === id)?.label ?? id;
+  const screen = Object.entries(cmp).flatMap(([id, v]) => (v.screenPassesBeforeBH ?? []).map((x) => ({ ...x, id })));
+  const best = screen.length ? Math.min(...screen.map((x) => x.q)) : null;
+  const clears = [...new Set(screen.map((x) => x.ticker))];
+  const cell = (k, v, sub, tone = "") => `<div class="rb-test"><div class="rb-k">${k}</div><div class="rb-v ${tone}">${v}</div>${sub ? `<div class="rb-se">${sub}</div>` : ""}</div>`;
+  const rows = Object.entries(cmp).map(([id, v]) => `<tr>
+      <td class="th-left" data-l="Construction">${esc(v.label ?? label(id))}</td>
+      <td class="num" data-l="Fitted">${v.compared ?? cov[id]?.fitted ?? "—"}</td>
+      <td class="num" data-l="Degenerate">${cov[id]?.degenerate ?? 0}</td>
+      <td class="num" data-l="Median |Δβ|">${nf(v.medianAbsDBeta)}</td>
+      <td class="num" data-l="p90 |Δβ|">${nf(v.p90AbsDBeta)}</td>
+      <td class="num" data-l="Median |Δt|">${nf(v.medianAbsDT, 3)}</td>
+      <td class="num" data-l="Max |Δt|">${nf(v.maxAbsDT, 3)}</td>
+      <td class="num" data-l="Spearman ρ">${nf(v.rankCorrSpearman, 3)}</td>
+      <td class="th-left" data-l="Clears the screen">${(v.screenPassesBeforeBH ?? []).length ? (v.screenPassesBeforeBH ?? []).map((x) => `${esc(x.ticker)} t ${nf(x.t, 2)}, q ${nf(x.q, 2)}`).join(" · ") : "none"}</td>
+      <td class="num" data-l="Flagged after BH">${(v.flaggedVariant ?? []).length}</td>
+    </tr>`).join("");
+  const biggest = (BASKET.perName ?? []).reduce((a, r) => (Math.abs(r.committedBeta ?? 0) > Math.abs(a?.committedBeta ?? 0) ? r : a), null);
+  const flips = (BASKET.totals?.flipsAcrossAllVariants ?? []).length;
+  return `<section class="robust full" aria-label="Basket construction">
+    <div class="rb-head"><h2>Does the answer depend on how the basket is built?</h2>
+      <p class="rb-sub">${esc(BASKET.note ?? "")} The request two reviewers made in the same words was whether the basket's construction decides the result, so the identical estimator was re-run on the identical ${BASKET.window?.weeks ?? "—"}-week cut calendar (${esc(BASKET.window?.start ?? "")} → ${esc(BASKET.window?.end ?? "—")}, revision weeks ${esc((BASKET.window?.revisionWeeksCut ?? []).join(", "))}) against the identical committed prices, under ${consts.length} constructions — the committed one and ${Object.keys(cmp).length} alternatives — with Benjamini–Hochberg <b>recomputed inside each variant's own fitted family</b> rather than reused from the published table.</p></div>
+    <div class="rb-grid four">
+      ${cell("Rebuild gate", g.reproduced ? "reproduces" : "does not reproduce", `${g.namesChecked ?? "—"} names re-fit from the cached responses: max |Δβ| ${g.maxAbsDBetaVsDesk ?? "—"} and max |Δt| ${g.maxAbsDTVsDesk ?? "—"} against the published panel — so what follows compares constructions, not implementations.`, g.reproduced ? "good" : "bad")}
+      ${cell("Names flagged under any construction", BASKET.totals?.someConstructionFlagsAName ? "≥ 1" : "0", `${esc(BASKET.flagRule?.method ?? "")} · flag flips against the committed flag set: ${flips}`, BASKET.totals?.someConstructionFlagsAName ? "bad" : "good")}
+      ${cell("Changing the weighting", `${nf(cmp.equalWeights?.medianAbsDBeta, 3)} pts`, `median |Δβ| when the committed members take equal weight instead of Qloo's affinity rank · Spearman ρ of the book's betas ${nf(cmp.equalWeights?.rankCorrSpearman, 3)} — the same answer with different furniture`)}
+      ${cell("Shortening the basket", `${nf(cmp.seeds3?.medianAbsDBeta)} pts`, `median |Δβ| for a 3-member basket · Spearman ρ ${nf(cmp.seeds3?.rankCorrSpearman, 2)} — here the per-name number is a property of its basket, not of the ticker`)}
+    </div>
+    <div class="rb-window"><span>Every construction against the committed one</span><span class="rb-span">${BASKET.perName?.length ?? "—"} priced names · ${BASKET.window?.weeks ?? "—"} weeks</span></div>
+    <div class="tw"><table class="live" data-audit="basket">
+      <thead><tr><th class="th-left">Construction</th><th><span class="th">Fitted</span></th><th><span class="th">Degenerate</span></th><th><span class="th">Median |Δβ|</span></th><th><span class="th">p90 |Δβ|</span></th><th><span class="th">Median |Δt|</span></th><th><span class="th">Max |Δt|</span></th><th><span class="th">Spearman ρ</span></th><th class="th-left">Clears β&lt;0, |t|≥2</th><th><span class="th">Flagged after BH</span></th></tr></thead>
+      <tbody>${rows}</tbody></table></div>
+    <p class="rb-line"><b>Both statements are true, and the desk prints both.</b> The <i>inference</i> is construction-insensitive: no basket the cached Qloo responses support flags a name, so the null is a property of the data rather than of the committed 8-member affinity-weighted choice. The <i>magnitudes</i> are not: a per-name cultural beta changes with the basket that priced it${biggest ? ` — the largest committed reading in the book, ${esc(biggest.ticker)} at ${nf(biggest.committedBeta)}, reads ${nf(biggest.seeds5?.beta)} under a 5-member basket and ${nf(biggest.seeds3?.beta)} under a 3-member one` : ""}. ${clears.length ? `Across all ${Object.keys(cmp).length} alternatives the only names that ever reach β &lt; 0 with |t| ≥ ${BASKET.flagRule?.absT ?? "2"} are ${clears.map((t) => esc(t)).join(", ")}, and the best q any of them gets is <b>${nf(best, 2)}</b> against a ${BASKET.flagRule?.qMax ?? "0.1"} ceiling — single draws from a ${cov.baseline?.fitted ?? "80"}-name family that look exactly like what the correction exists to discard.` : ""} ${cov.brandsOnly?.degenerate ? `The brands-only arm carries the sharpest caveat: it fits ${cov.brandsOnly.fitted} of ${cov.baseline?.fitted ?? "the"} names, and for its ${cov.brandsOnly.degenerate} degenerate rows the brand-only basket is constant across the window, so the slope is not identified and <b>no beta is printed</b> for them — a different construction there is not a different answer, it is no answer.` : ""}</p>
+    <p class="rb-line">What that means for how to read a row: the finding is stated at the level of the test — nothing in this book separates from chance under any basket we can re-derive — and never as ${BASKET.perName?.length ?? "80"} independent ticker-level exposures. The basket choice decides what a beta <i>is</i>; it does not decide what is <i>significant</i>.</p>
+    <p class="rb-line"><b>Provenance.</b> <code>output/basket-sensitivity.json</code> · ${BASKET.provenance?.qlooRequestsMade ?? "—"} Qloo requests, built from ${BASKET.provenance?.cacheFilesRead?.length ?? "—"} cached response files under <code>fixtures/qloo/</code> · ${esc(BASKET.provenance?.method ?? "")}</p>
+  </section>`;
+}
+
+/* ---------- the same two analyses, in plain English ---------- */
+// The read page states them as sentences; the evidence page carries the tables and
+// the provenance. Both read the committed JSON, so a missing file says so here too.
+function mdeProse() {
+  if (!MDE) return `<p>The detectability bound is not computed on this build. <code>node scripts/mde.mjs</code> re-derives it from the committed panel and the cached responses — no Qloo request — and the desk prints it whenever the file is present.</p>`;
+  const b = MDE.book ?? {};
+  const o = b.observed ?? {};
+  const mo = MDE.method ?? {};
+  const req = MDE.designRequirement?.rows ?? [];
+  const near = (v) => (req.find((r) => Math.abs((r.deltaR2Pts ?? 1e9) - v) < 0.01) ?? null);
+  const bookRow = near(o.meanDeltaR2Pts);
+  const topRow = near(o.largestAbsT?.deltaR2Pts);
+  return `<p><b>Could this study have found a taste effect at all?</b> The desk prints ${o.flaggedNames ?? "0"} of ${b.names ?? "the"} names flagged, and that number only means something beside the size of effect the study <i>could</i> have flagged. On this design — ${mo.weeks ?? "102"} weeks, each name's own residual scale, its own basket's own variance, and the pre-registered rule (negative β, |t| ≥ ${mo.flagRule?.absT ?? 2}, Benjamini–Hochberg q ≤ ${mo.flagRule?.qMax ?? 0.1}) — a name needs an increment of about <b>${nf(b.medianDeltaR2Pts)} points of R²</b>, a partial correlation near <b>${nf(b.minPartialCorrelation, 3)}</b>, before the rule fires ${npc(mo.powerTarget, 0)} of the time. The book's mean increment is <b>${nf(o.meanDeltaR2Pts)} points</b>, and the largest single reading in the whole book — ${esc(o.largestAbsT?.ticker ?? "—")} at ${nf(o.largestAbsT?.deltaR2Pts)} points — is <b>${npc(o.largestAbsT?.shareOfMde)}</b> of the required size and would have been caught only <b>${npc(o.largestAbsT?.powerAtObserved)}</b> of the time even if it were exactly true. ${topRow ? `An effect that size would need about ${topRow.weeks} weeks (${topRow.years} years) to be flagged reliably; this panel has ${mo.weeks ?? 102}.` : ""}${bookRow ? ` An effect the size the average name actually displays would need roughly ${bookRow.weeks.toLocaleString("en-US")} weeks — ${bookRow.years} years, ${bookRow.multipleOfCurrentPanel}× the window in hand.` : ""} So "no names flagged" is a statement about what this design could see, and the design was not built to see anything at this scale. The bound is a property of the design, not of the readings: it uses no observed t-statistic, which is why it can be published beside a null instead of being chosen by it.${MDE.frozenSlice && MDE.frozenSlice.computable === false ? ` The held-out arm is a separate and worse case: its taste regressor moves in ${MDE.frozenSlice.nonzeroRegressorWeeks} of ${MDE.frozenSlice.weeks} scored weeks, so it is not a weak test — it is not a test.` : ""} Checked against simulation at seed ${MDE.simulation?.seed ?? "—"}: the analytic claim reproduces on independent errors and reads lower when dependence inside a block is preserved, and the desk prints both numbers.</p>`;
+}
+
+function basketProse() {
+  if (!BASKET) return `<p>The basket-construction sensitivity is not computed on this build. <code>node scripts/basket-sensitivity.mjs</code> re-runs the identical estimator on the cached responses — no Qloo request — and prints it whenever the file is present.</p>`;
+  const c = BASKET.comparisons ?? {};
+  const cov = BASKET.coverage ?? {};
+  const t = BASKET.totals ?? {};
+  return `<p><b>Does the answer depend on which brands went into the basket?</b> Two reviewers asked for exactly this, so the desk re-ran the identical estimator on the identical ${BASKET.window?.weeks ?? 102}-week calendar against the identical prices, under ${Object.keys(c).length} alternative baskets — 3, 5, 7 and 10 members by affinity, equal weights instead of Qloo's affinity ranks, brands only, and one leave-the-heaviest-member-out jackknife — recomputing the multiplicity correction inside each variant's own family. The rebuild gate first reproduces the published panel exactly (${BASKET.gate?.namesChecked ?? "—"} names, max |Δβ| ${BASKET.gate?.maxAbsDBetaVsDesk ?? "—"}), so this is a comparison of constructions rather than of implementations. The answer splits in two, and both are printed. The <i>verdict</i> does not move: no construction flags a name${t.someConstructionFlagsAName ? "" : " — the flagged set is empty under every one of them"} — so the null is a property of the data, not of the committed 8-member affinity-weighted choice. The <i>magnitudes</i> do: re-weighting the same members moves the median name's beta by ${nf(c.equalWeights?.medianAbsDBeta, 3)} units and leaves the book's ranking essentially unchanged (rank correlation ${nf(c.equalWeights?.rankCorrSpearman, 3)}), while a 3-member basket moves it by ${nf(c.seeds3?.medianAbsDBeta)} units and leaves the ranking nearly uncorrelated with the committed table (${nf(c.seeds3?.rankCorrSpearman, 2)}).${cov.brandsOnly?.degenerate ? ` A brands-only basket is the limit case: ${cov.brandsOnly.fitted} of ${cov.baseline?.fitted ?? "the"} names still price, and for the other ${cov.brandsOnly.degenerate} the regressor never moves, so no beta is printed at all rather than a spurious one.` : ""} Read a per-name cultural beta as a reading against a stated basket; read the desk's finding — nothing clears q ≤ ${BASKET.flagRule?.qMax ?? "0.1"} under any basket the cached Qloo responses support — as the result.</p>`;
+}
+
 /* ---------- cost, printed as the number it is ---------- */
 function costBand(va) {
   const p = BUDGET?.planned;
@@ -1245,6 +1401,8 @@ function readView() {
     <p>A per-name slope spends ${va?.pooled?.weeks ?? 102} weeks of data on a basket that moves in about ${DESK?.factorSparsity?.medianActive ?? 29} of them, so the estimate is wide and the sign can be large. The desk therefore also reads the same data <b>pooled</b>: name fixed effects swept out, one market slope for the book, one cultural slope per sub-sector, errors clustered by week because every name shares a calendar. ${va?.pooled ? `On this book the pooled within-ΔR² is ${bare(va.pooled.deltaR2)}, the date-permutation null reads p ${pval(va.pooled.null.p)}, and the sub-sector with the largest |t| is ${(() => { const s = va.pooled.sectors.reduce((a, b) => (Math.abs(b.t) > Math.abs(a.t) ? b : a)); return `${esc(s.id)} at ${s.beta.toFixed(2)} (t ${s.t.toFixed(2)})`; })()}.` : ""} The pooled reading was added after an external review rather than pre-registered, and it is labelled that way wherever it appears. It answers a <b>different estimand</b> from the per-name table: one slope per sub-sector is a statement about the sub-sector, and it cannot confirm or refute a claim about an individual name — a flat sector slope and two names moving in opposite directions are perfectly compatible. ${va?.pooledNameMarket ? `The pooling also forces one market slope on every name, which an external reviewer pointed out could manufacture the answer; that restriction is removed in a second arm, where each name keeps its own market loading, and the within-ΔR² comes out the same (${bare(va.pooledNameMarket.deltaR2)}, permutation p ${pval(va.pooledNameMarket.null.p)}). The loadings themselves span ${va.pooledNameMarket.market.min.toFixed(2)} to ${va.pooledNameMarket.market.max.toFixed(2)}, so the restriction was real; it just was not what produced the null.` : ""} It is reported for the same reason as everything else here: if it had disagreed with the per-name table, that disagreement would be the most interesting number on the page.</p>
     <h2>Are the names actually different from each other?</h2>
     <p>A near-zero average beta has two very different readings. Either every name has roughly the same cultural exposure and the per-name column is noise, or names genuinely pull in opposite directions — some hedges, some headwinds — and the mean cancels while the spread does not. The second reading is the one that would make a per-name desk worth having, so it is tested rather than assumed: the spread of the ${va?.dispersion?.names ?? 80} per-name cultural betas is compared with what estimation noise alone would produce, calibrated by rotating each name's basket <b>independently</b> — every basket keeps its own shape and loses only its timing, which leaves noise in place and removes any name-specific signal. ${va?.dispersion ? `On this book the spread across names is ${va.dispersion.variance.toFixed(0)} against ${va.dispersion.samplingVariance.toFixed(0)} from noise alone, the independent-rotation null averages ${va.dispersion.nullMean.toFixed(0)} and reads p ${pval(va.dispersion.p)} in the upper tail and ${pval(va.dispersion.pLow)} in the lower — ${va.dispersion.readsAs === "excess-dispersion" ? "the names genuinely differ" : va.dispersion.readsAs === "no-dispersion" ? "the spread is <b>smaller</b> than noise, the signature of one number plus scatter" : va.dispersion.readsAs === "uninformative" ? "no excess dispersion is detected, and — as the calibration below shows — this window cannot turn that into a finding" : "the spread is <b>no larger</b> than noise"}. The two noise benchmarks are ${Math.abs((va.dispersion.benchmarkGap ?? 0) * 100).toFixed(0)}% apart, and the null settles which one to use: inside its own draws the analytic figure overshoots the cross-sectional variance by ${Math.abs((va.dispersion.gapInNull ?? 0) * 100).toFixed(0)}%, and that gap has two candidate channels the null cannot separate: eighty marginal variances treated as if the names were independent, and a shared calendar, common shocks or correlated residuals that make the cross-section move together. Every p here is read against the rotation null, which carries both. But no dispersion being detected is not the same as there being none, so the reading is keyed to a disclosed power curve: planting known spreads of ${(va.dispersion.power ?? []).map((r) => r.sd).join(", ")} and re-running the test gives detection rates of ${(va.dispersion.power ?? []).map((r) => Math.round(r.power * 100) + "%").join(", ")}, against a pre-specified 80% bar. ${va.dispersion.detectable ? `It only reaches usable power at a spread of about ${va.dispersion.detectable.sd}, which is larger than anything this book could plausibly contain — so the test is <b>uninformative</b> here rather than a refutation of heterogeneity, and it is printed as such. The consequence is direct: this book cannot detect a taste exposure of any size a portfolio would act on, so read the per-name column as a number with its error, not as a ranking of which names carry more cultural risk.` : "It never reaches usable power, so the test is uninformative here rather than a refutation of heterogeneity — this book cannot detect a taste exposure of any practical size, and the per-name column is a reading with its error rather than a ranking."} If the power curve is read at the spread the book actually shows rather than at a plant, the answer is <b>${va.dispersion.powerObserved == null ? "—" : Math.round(va.dispersion.powerObserved * 100) + "%"}</b>: that is how often this test would find a genuine spread this size, and at zero the non-detection carries no information either way. That is the honest limit of the per-name column: it is a reading with its error, not evidence that beauty and restaurants respond to taste differently.` : "The test is not computed on this build."}</p>
+    ${mdeProse()}
+    ${basketProse()}
     <h2>How sure are these numbers?</h2>
     ${(() => {
       const sc = va?.oos?.scoring;
@@ -1302,6 +1460,84 @@ const ASK_SUGGESTIONS = [
   "Where does the Disney basket come from?",
 ];
 
+// The freshness attestation is obtained by the server at answer time, so the page
+// only ever prints what it was handed. An unchecked attestation prints the reason,
+// never a date: there is no state in which a plausible-looking freshness date can be
+// rendered without a Qloo response behind it.
+const FRESH_WHY = {
+  live_gate_off: "the live Qloo gate is off on this deployment",
+  qloo_key_missing: "the server process has no Qloo key",
+  budget_exhausted: "today's live Qloo budget is spent",
+  no_reference_entity: "the panel has no committed reference entity to ask about",
+  freshness_timeout: "the Qloo probe did not answer in time",
+  harness_error: "the Qloo harness refused the probe",
+  no_trend_points: "Qloo returned no weekly points for the reference entity",
+  not_checked_yet: "no answer has been asked since this server started",
+};
+
+const hhmm = (iso) => (iso ? String(iso).slice(11, 16) + "Z" : "—");
+const shortId = (s) => {
+  const v = String(s ?? "");
+  return v.length > 14 ? `${v.slice(0, 8)}…${v.slice(-4)}` : v;
+};
+
+function freshBlock(f, { standing = false } = {}) {
+  if (!f || f.checked !== true) {
+    const why = FRESH_WHY[f?.why] ?? (f?.why ? esc(String(f.why).slice(0, 60)) : "no attestation was returned with this answer");
+    return `<div class="fresh off" data-audit="freshness" role="status">
+      <span class="fresh-k">Freshness not checked</span>
+      <span class="fresh-v">— ${why}${f?.harnessCode ? ` <code>${esc(String(f.harnessCode).slice(0, 40))}</code>` : ""}.</span>
+    </div>`;
+  }
+  const newer = f.verdict === "qloo_has_a_newer_revision";
+  const tail = `panel last revision ${esc(f.panel?.lastRevision ?? "—")}`;
+  const line = [
+    `asked ${hhmm(f.respondedAt ?? f.requestedAt)} on ${esc(String(f.respondedAt ?? "").slice(0, 10) || "—")}`,
+    `${esc(f.entityName ?? "reference entity")} (${esc(f.entityType ?? "entity")})`,
+    f.latestWeek ? `newest week ${esc(f.latestWeek)}` : "no weekly point returned",
+    f.latestRevision ? `last change ${esc(f.latestRevision)}` : `no change in the ${f.weeksPulled ?? 0} weeks pulled`,
+    newer ? "NEWER THAN THE PANEL" : "nothing newer than the panel tail",
+    tail,
+    `${f.requests ?? 0} Qloo request${f.requests === 1 ? "" : "s"}`,
+    f.fromCache ? `served from the ${Math.round((f.cachedSeconds ?? 0) / 60)}-minute attestation cache` : "",
+    f.fromCachedPage ? `page cache replay${f.cachedResponseFetchedAt ? ` of the response fetched ${hhmm(f.cachedResponseFetchedAt)}` : ""}` : "",
+  ].filter(Boolean).join(" · ");
+  return `<div class="fresh ${newer ? "warn" : "ok"}" data-audit="freshness" role="status">
+    <span class="fresh-k">Qloo freshness ${standing ? "(last answer)" : "at answer time"}</span>
+    <span class="fresh-v">${line}</span>
+    ${f.correlationIds?.length ? `<span class="fresh-cid">correlation ${f.correlationIds.map((c) => `<code>${esc(shortId(c))}</code>`).join(" ")}</span>` : ""}
+    <p class="fresh-plain">${esc(f.plain ?? "")}</p>
+  </div>`;
+}
+
+function receiptLine(rc) {
+  if (rc.kind === "panel") {
+    return `<div class="rc"><b>panel</b><span>${esc(rc.file ?? "output/desk.json")} · revision ${esc(String(rc.revision ?? "").slice(0, 19))} · ${rc.rows ?? "—"} rows · window ${esc(rc.window?.start ?? "—")} → ${esc(rc.window?.end ?? "—")} (${rc.window?.weeks ?? "—"} weeks)</span></div>`;
+  }
+  if (rc.kind === "freshness") {
+    if (!rc.checked) {
+      return `<div class="rc"><b>freshness</b><span>not asked — ${esc(FRESH_WHY[rc.why] ?? String(rc.why ?? "unknown").slice(0, 60))}${rc.requests ? ` · ${rc.requests} request(s) spent before failing` : ""}</span></div>`;
+    }
+    return `<div class="rc"><b>freshness</b><span>${esc(rc.operation ?? "exec trends")} · entity <code>${esc(rc.entity ?? "—")}</code> (${esc(rc.entityName ?? "")}) · ${rc.requests ?? 0} request${rc.requests === 1 ? "" : "s"} · correlation ${rc.correlationIds?.length ? rc.correlationIds.map((c) => `<code>${esc(c)}</code>`).join(" ") : "none returned"} · asked ${esc(String(rc.requestedAt ?? "").slice(0, 19))} · answered ${esc(String(rc.respondedAt ?? "").slice(0, 19))}${rc.fromAttestationCache ? ` · this attestation reused for ${rc.attestationCacheSeconds ?? 0}s of the 15-minute book cache` : ""}${rc.fromCachedPage ? " · replayed from the page cache" : ""} · files ${rc.files?.length ? rc.files.map((f) => `<code>${esc(f)}</code>`).join(" ") : "—"}</span></div>`;
+  }
+  if (rc.kind === "live") {
+    const ents = (rc.entities ?? []).slice(0, 6).map((e) => `<code>${esc(shortId(e))}</code>`).join(" ");
+    return `<div class="rc"><b>live · ${esc(rc.tools?.join(", ") ?? rc.operation ?? "qloo")}</b><span>${esc(rc.operation ?? "exec trends")} · ${rc.entities?.length ?? 0} entity id(s) ${ents}${(rc.entities?.length ?? 0) > 6 ? ` +${rc.entities.length - 6} more` : ""} · ${rc.requests ?? 0} request(s)${rc.replayedPages ? `, ${rc.replayedPages} page(s) replayed from cache` : ""} · correlation ${rc.correlationIds?.length ? rc.correlationIds.map((c) => `<code>${esc(c)}</code>`).join(" ") : "none returned"} · requested ${esc(String(rc.requestedAt ?? "").slice(0, 19))} · files ${(rc.files ?? []).slice(0, 4).map((f) => `<code>${esc(f)}</code>`).join(" ")}${(rc.files?.length ?? 0) > 4 ? ` +${rc.files.length - 4} more` : ""}</span></div>`;
+  }
+  const files = (rc.files ?? []).map((f) => `<code>${esc(f)}</code>`).join(" ");
+  return `<div class="rc"><b>committed · ${esc(rc.tools?.join(", ") ?? "panel tool")}</b><span>${esc(rc.ticker ?? "")} ${esc(rc.label ?? "")} · ${esc(rc.status ?? "")} · entity <code>${esc(rc.entity ?? "no Qloo entity")}</code>${rc.basketScope ? ` · basket ${esc(rc.basketScope)}` : ""} · request ${esc(rc.request?.operation ?? "—")}${rc.request?.path ? ` ${esc(rc.request.path)}` : ""}${rc.request?.types?.length ? ` [${rc.request.types.map(esc).join(", ")}]` : ""}${rc.request?.signals?.length ? ` · signals ${rc.request.signals.map((s) => shortId(s)).join(", ")}` : ""} · cached response ${files || "—"}</span></div>`;
+}
+
+function receiptBlock(list) {
+  const rc = Array.isArray(list) ? list : [];
+  if (!rc.length) return "";
+  return `<div class="receipts" data-audit="receipts">
+  <div class="rc-head">Qloo receipt for this answer · ${rc.length} entr${rc.length === 1 ? "y" : "ies"}</div>
+  ${rc.map(receiptLine).join("")}
+  <p class="rc-note">File names, entity ids and the harness's own correlation ids — never the contents of a cached response, and never a key: the Qloo key stays in the server's environment and is not sent to the browser.</p>
+</div>`;
+}
+
 function askView() {
   const ready = AGENT ? Boolean(AGENT.configured) : true;
   const disabled = ASK.busy || !DESK || !ready;
@@ -1311,14 +1547,15 @@ function askView() {
     r.provider ? esc(r.provider) : "",
     r.model ? esc(r.model) : "",
   ].filter(Boolean).join(" · ") : "";
+  const freshEl = r ? freshBlock(r.freshness) : freshBlock(FRESH, { standing: true });
   return `<div class="head">
     <div class="lede-col">
       <h1>Ask the <em>desk</em>.</h1>
-      <p class="sub">An analyst that reads the committed panel${AGENT?.live?.enabled ? ", and may make one bounded live Qloo read per answer" : " and the Qloo responses behind it"}. Read-only: it cannot run the pipeline or move a number.</p>
+      <p class="sub">An analyst that reads the committed panel${AGENT?.live?.enabled ? ", and may make one bounded live Qloo read per answer" : " and the Qloo responses behind it"}. Read-only: it cannot run the pipeline or move a number.${AGENT?.live?.enabled ? " Its currency is not its own claim: before every answer the server asks Qloo one bounded trend page and prints what came back, checked or not." : ""}</p>
     </div>
     <div class="side">
       ${DESK ? windowPill(DESK.window) : ""}
-      <div class="state ${ready ? "ok" : "warn"}">${ready ? (AGENT?.live?.enabled ? "read-only · one live Qloo read per answer" : "read-only · no Qloo spend") : "analyst not configured"}</div>
+      <div class="state ${ready ? "ok" : "warn"}">${ready ? (AGENT?.live?.enabled ? "read-only · one live Qloo read per answer · server freshness attestation on each" : "read-only · no Qloo spend") : "analyst not configured"}</div>
     </div>
   </div>
   ${!DESK ? `<div class="notice"><span class="dot"></span><span class="notice-text"><b>No panel to read.</b> This deployment has no Qloo data, and the analyst refuses rather than answer from a stub.</span></div>` : ""}
@@ -1332,14 +1569,16 @@ function askView() {
       </div>
     </form>
     <div class="ask-chips">${ASK_SUGGESTIONS.map((s) => `<button class="qchip" type="button" data-q="${esc(s)}" ${disabled ? "disabled" : ""}>${esc(s)}</button>`).join("")}</div>
+    ${freshEl}
     ${ASK.err ? `<p class="ask-err">${esc(ASK.err)}</p>` : ""}
     ${r ? `<div class="ask-answer" data-audit="agent-answer">
       <p class="ask-q">${esc(ASK.q)}</p>
       ${String(r.answer).split(/\n{2,}/).map((p) => `<p>${esc(p).replace(/\n/g, "<br>")}</p>`).join("")}
       <p class="ask-meta">${meta}</p>
+      ${receiptBlock(r.receipts)}
       ${r.trace?.length ? `<details class="trace"><summary>What the analyst read (${r.trace.length})</summary>${r.trace.map((t) => `<div class="tr"><b>${esc(t.name)}</b> <code>${esc(JSON.stringify(t.args))}</code><pre>${esc((JSON.stringify(t.result) || "").slice(0, 1600))}</pre></div>`).join("")}</details>` : ""}
-      <p class="ask-note">Generated from the tool results above, not from the estimator: the betas themselves have no model in them. Check any number against the <a href="#/evidence">evidence page</a>.${r.trace?.some((t) => String(t.name).startsWith("live_")) ? " A live Qloo read is listed in the trace; the rest of the answer is the committed panel." : ""}</p>
-    </div>` : `<div class="ask-empty"><p>${ASK.busy ? "Reading the panel — a tool-using answer takes up to a minute; the calls it made will be listed with the answer." : "Answers are limited to what this book contains: a holding, a basket, a null, or the source of a number."}</p>
+      <p class="ask-note">Generated from the tool results above, not from the estimator: the betas themselves have no model in them. Check any number against the <a href="#/evidence">evidence page</a>.${r.trace?.some((t) => String(t.name).startsWith("live_")) ? " A live Qloo read is listed in the trace; the rest of the answer is the committed panel." : ""}${r.freshness?.checked ? ` The freshness line above is the server's own Qloo ask, not the analyst's.` : ""}</p>
+    </div>` : `<div class="ask-empty">${ASK.busy ? `<p class="ask-wait" data-audit="ask-busy"><b>Reading the panel</b> — <span class="ask-clock">0 s</span><span class="ask-stage"></span>. It picks its own tools, then writes from what they returned; the desk asks Qloo for its freshness attestation at the same moment. The calls it made are listed with the answer.</p>` : `<p>Answers are limited to what this book contains: a holding, a basket, a null, or the source of a number.</p>`}
       <p class="ask-tools"><b>Tools it chooses between</b> — desk summary · one holding · a sub-sector basket · the weekly taste series · the book-level nulls · Qloo provenance${AGENT?.live?.enabled ? " · a live brand read · a live beta re-run" : ""}. Every call and its result is shown with the answer. The estimator has no model in it; this page does.</p></div>`}
   </section>`;
 }
@@ -1360,6 +1599,10 @@ function route() {
   let h = location.hash || "#/";
   document.body.dataset.mode = DESK ? "live" : "cold";
   const v = $("#view");
+  // Nine JSON reads stand between an empty #view and the desk. Paint the frame and
+  // the tab state on the first tick; a slow connection then reads "reading the panel"
+  // instead of a blank page with no tabs marked.
+  if (BOOTING) { v.innerHTML = bootView(); setTabs(h); return; }
   if (DESK && h.startsWith("#/holding/")) v.innerHTML = holdingView(decodeURIComponent(h.split("/")[2] || ""));
   else if (DESK && h.startsWith("#/map")) v.innerHTML = mapView();
   else if (h.startsWith("#/read")) v.innerHTML = readView();
@@ -1399,19 +1642,35 @@ function wire(hash) {
     const run = async (q) => {
       const question = String(q ?? $("#ask-q")?.value ?? "").trim();
       if (!question || ASK.busy) return;
-      ASK = { q: question, busy: true, res: null, err: null };
+      ASK = { q: question, busy: true, res: null, err: null, started: Date.now() };
       route();
+      // A silent spinner for fifty seconds reads as a hang. Count the wait out loud
+      // and name the stage; nothing here claims progress the desk cannot see.
+      const waitTimer = setInterval(() => {
+        const el = document.querySelector(".ask-wait");
+        if (!el || !ASK.busy) { clearInterval(waitTimer); return; }
+        const secs = Math.round((Date.now() - (ASK.started ?? Date.now())) / 1000);
+        const clock = el.querySelector(".ask-clock");
+        if (clock) clock.textContent = `${secs} s`;
+        const stage = el.querySelector(".ask-stage");
+        const text = secs < 8 ? " · selecting a tool" : secs < 25 ? " · reading the rows it picked" : secs < 55 ? " · writing the answer" : " · still writing; a long think, not a hang";
+        if (stage && stage.textContent !== text) stage.textContent = text;
+      }, 1000);
       try {
         const r = await fetch("/api/ask", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ question }) });
+        clearInterval(waitTimer);
         const j = await r.json().catch(() => ({}));
-        if (r.ok) ASK = { q: question, busy: false, res: j, err: null };
-        else ASK = {
+        if (r.ok) {
+          if (j.freshness) FRESH = j.freshness;
+          ASK = { q: question, busy: false, res: j, err: null };
+        } else ASK = {
           q: question, busy: false, res: null,
           err: j.error === "AGENT_NOT_CONFIGURED" ? "The analyst is not configured on this deployment. The desk is unaffected."
             : j.error === "RATE_LIMITED" ? `Slow down — try again in ${j.retryAfter}s.`
               : (j.message || j.error || "The analyst failed."),
         };
       } catch {
+        clearInterval(waitTimer);
         ASK = { q: question, busy: false, res: null, err: "Could not reach the analyst endpoint." };
       }
       route();
@@ -1456,4 +1715,6 @@ function refreshNote(text) {
 }
 
 window.addEventListener("hashchange", route);
+// The boot frame is the first paint; load() replaces it when the files arrive.
+route();
 load();

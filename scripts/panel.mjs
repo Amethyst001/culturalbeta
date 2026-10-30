@@ -9,7 +9,7 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { ROOT } from "../src/env.mjs";
 
-const envPath = process.env.PANEL_ENV || "C:/Users/USER/Documents/FPL/.env.external";
+const envPath = process.env.PANEL_ENV || resolve(ROOT, ".env.panel");
 const env = {};
 if (existsSync(envPath)) {
   for (const line of readFileSync(envPath, "utf8").split(/\r?\n/)) {

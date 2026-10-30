@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createDeskTools, readProviders, askQuestion, LIMITS } from "../src/agent.mjs";
+import { createDeskTools, readProviders, askQuestion, collectReceipts, LIMITS } from "../src/agent.mjs";
 
 const desk = {
   window: { start: "2024-10-14", end: "2026-10-26", weeks: 102 },
@@ -111,6 +111,17 @@ test("get_nulls reports the three nulls and the power curve", () => {
   assert.equal(n.dispersion.powerAtObservedSpread, 0);
 });
 
+test("rank_holdings answers a widest-interval question from the book, not from memory", () => {
+  const out = tools.get("rank_holdings").run({ metric: "ci90_width_slope", limit: 2 });
+  // DIS: 2*1.6449*13.84 = 45.5 slope units; ELF: 2*1.6449*6.2 = 20.4; NOQ is unpriced
+  assert.deepEqual(out.ranked.map((r) => r.ticker), ["DIS", "ELF"]);
+  assert.equal(out.ranked[0].value, 45.53);
+  assert.match(out.units, /slope units/);
+  assert.match(out.note, /not a ranking/);
+  assert.equal(out.universe, 2, "an unpriced name is not ranked");
+  assert.match(tools.get("rank_holdings").run({ metric: "made_up" }).error, /unknown metric/);
+});
+
 /* ---------- the loop ---------- */
 const provider = (label) => ({ label, baseUrl: "https://example.test/v1", apiKey: "test", model: "test-model" });
 const reply = (message) => ({ ok: true, json: async () => ({ choices: [{ message }] }) });
@@ -173,6 +184,65 @@ test("a 429 is retried once on the same provider instead of dropping to the fall
   assert.deepEqual(out.failures, []);
 });
 
+test("a model that keeps calling tools is made to answer on the last round", async () => {
+  const choices = [];
+  const fetchImpl = async (_url, opts) => {
+    const body = JSON.parse(opts.body);
+    choices.push(body.tool_choice);
+    return body.tool_choice === "none" ? reply(final("Answering from the evidence already returned.")) : reply(call("desk_summary", {}, "c" + choices.length));
+  };
+  const out = await askQuestion({ question: "x", tools, providers: [provider("one")], fetchImpl, limits: { maxRounds: 3 } });
+  assert.deepEqual(choices, ["auto", "auto", "none"]);
+  assert.equal(out.answer, "Answering from the evidence already returned.");
+  assert.equal(out.rounds, 3);
+});
+
+test("a stalled call is retried on the same provider before the fallback is tried", async () => {
+  let n = 0;
+  const fetchImpl = async () => {
+    n++;
+    if (n === 1) {
+      const e = new Error("The operation was aborted due to timeout");
+      e.name = "TimeoutError";
+      throw e;
+    }
+    return reply(final("answered after the stall"));
+  };
+  const out = await askQuestion({ question: "x", tools, providers: [provider("first"), provider("second")], fetchImpl });
+  assert.equal(out.answer, "answered after the stall");
+  assert.equal(out.provider, "first");
+  assert.equal(n, 2);
+});
+
+test("the chain stops before a provider once its total budget is spent", async () => {
+  let calls = 0;
+  const fetchImpl = async () => { calls++; return reply(final("should not be reached")); };
+  await assert.rejects(
+    askQuestion({ question: "x", tools, providers: [provider("a"), provider("b")], fetchImpl, limits: { askDeadlineMs: 0 } }),
+    (e) => e.code === "AGENT_UNAVAILABLE" && /a: ASK_DEADLINE/.test(e.details.join(" ")),
+  );
+  assert.equal(calls, 0);
+});
+
+test("a provider that misses its deadline is abandoned without spending the next round", async () => {
+  let slowCalls = 0;
+  const fetchImpl = async (url) => {
+    if (String(url).includes("slow.example")) {
+      slowCalls++;
+      await new Promise((r) => setTimeout(r, 60));
+      return reply(call("desk_summary", {}));
+    }
+    return reply(final("answered by the provider that answers"));
+  };
+  const slow = { ...provider("slow"), baseUrl: "https://slow.example/v1" };
+  const fast = { ...provider("fast"), baseUrl: "https://fast.example/v1" };
+  const out = await askQuestion({ question: "x", tools, providers: [slow, fast], fetchImpl, limits: { providerDeadlineMs: 40 } });
+  assert.equal(out.answer, "answered by the provider that answers");
+  assert.equal(out.provider, "fast");
+  assert.equal(slowCalls, 1, "no second round is spent on a provider past its deadline");
+  assert.match(out.failures.join(" "), /slow: PROVIDER_DEADLINE/);
+});
+
 test("all providers failing is AGENT_UNAVAILABLE, with no provider detail in the public error", async () => {
   await assert.rejects(
     askQuestion({ question: "x", tools, providers: [provider("a"), provider("b")], fetchImpl: async () => ({ ok: false, status: 500, json: async () => ({}) }) }),
@@ -184,6 +254,30 @@ test("question guards", async () => {
   await assert.rejects(askQuestion({ question: "  ", tools, providers: [provider("a")], fetchImpl: async () => reply(final("x")) }), (e) => e.code === "EMPTY_QUESTION");
   await assert.rejects(askQuestion({ question: "x".repeat(LIMITS.maxQuestionChars + 1), tools, providers: [provider("a")], fetchImpl: async () => reply(final("x")) }), (e) => e.code === "QUESTION_TOO_LONG");
   await assert.rejects(askQuestion({ question: "x", tools, providers: [], fetchImpl: async () => reply(final("x")) }), (e) => e.code === "AGENT_NOT_CONFIGURED");
+});
+
+test("the trace an answer ran becomes its receipt list", async () => {
+  const queue = [
+    reply(call("get_holding", { ticker: "DIS" })),
+    reply(final("Disney is not flagged.")),
+  ];
+  const out = await askQuestion({ question: "Why is Disney not flagged?", tools, providers: [provider("one")], fetchImpl: async () => queue.shift() });
+  const receipts = collectReceipts({ desk, revision: "rev-1", trace: out.trace, freshness: { checked: false, why: "live_gate_off" } });
+  assert.equal(receipts[0].kind, "panel");
+  assert.equal(receipts[0].revision, "rev-1");
+  const fresh = receipts.find((r) => r.kind === "freshness");
+  assert.equal(fresh.checked, false);
+  assert.equal(fresh.why, "live_gate_off");
+  assert.equal(fresh.latestWeek, undefined, "an unchecked attestation contributes no date to the receipt");
+  for (const k of ["latestRevision", "verdict", "panel", "cachedResponseFetchedAt"]) {
+    assert.equal(fresh[k], undefined, `an unchecked receipt must not carry a ${k} field at all`);
+  }
+  const committed = receipts.find((r) => r.kind === "committed");
+  assert.equal(committed.ticker, "DIS");
+  assert.deepEqual(committed.files, ["fixtures/qloo/search-DIS.json"]);
+  assert.equal(committed.entity, "ENTITY-DIS");
+  assert.equal(committed.request.operation, "recommend");
+  assert.ok(!JSON.stringify(receipts).includes("QLOO_API_KEY"), "a receipt names files and ids, never credentials");
 });
 
 test("readProviders only accepts complete, non-empty configuration", () => {

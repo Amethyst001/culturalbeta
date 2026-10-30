@@ -1,6 +1,8 @@
 // Automated UI + functionality audit. Drives a real headless Chrome over CDP,
 // checks layout, copy, accessibility basics, routing and the no-fake-number
 // guard at desktop and phone widths, and saves screenshots as evidence.
+// One pass asks the analyst a question for real, because the freshness attestation
+// and the per-answer Qloo receipt are only provable underneath an answer.
 //
 // usage: node scripts/audit.mjs [--url http://localhost:8788] [--out review]
 import { spawn } from "node:child_process";
@@ -79,8 +81,9 @@ async function connectPage(browserWs) {
   return { cdp, ws };
 }
 
-const AUDIT_JS = (EXPECT) => String.raw`(async () => {
+const AUDIT_JS = (EXPECT, ASKQ) => String.raw`(async () => {
   const EXPECT = ${JSON.stringify(EXPECT)};
+  const ASKQ = ${JSON.stringify(ASKQ)};
   await document.fonts.ready;
   await new Promise(r => setTimeout(r, 500));
   const out = [];
@@ -208,6 +211,75 @@ const AUDIT_JS = (EXPECT) => String.raw`(async () => {
     add("ask-form-or-refusal", (!!input && !input.disabled) || !!notice, notice ? "refusal notice" : "enabled form");
     add("ask-suggestions", chips >= 3 || !!notice, chips + " suggestion chips");
     add("ask-no-answer-before-question", !view.querySelector('[data-audit="agent-answer"]'), "no answer rendered cold");
+
+    // Freshness attestation: the desk must show one without a question ever being
+    // asked, and it must never show a date the server did not get from Qloo.
+    const chip = view.querySelector('[data-audit="freshness"]');
+    const chipText = chip ? chip.innerText.replace(/\s+/g, " ").trim() : "";
+    add("ask-freshness-attestation", !!chip || !!notice, chipText.slice(0, 150) || "no attestation rendered");
+    const unchecked = !!chip && /freshness not checked/i.test(chipText);
+    add("ask-unchecked-attestation-carries-no-date", !unchecked || !/20\d\d-\d\d-\d\d/.test(chipText),
+      unchecked ? "reason shown, no date: " + chipText.slice(0, 100) : "attestation is checked");
+    // Its date has to be the server's date, read back from the cache-only endpoint
+    // that never spends a request.
+    let FJ = null;
+    try { const fr = await fetch("/api/freshness.json"); if (fr.ok) FJ = await fr.json(); } catch {}
+    add("ask-freshness-endpoint-present", !!FJ || !!notice, FJ ? "checked=" + FJ.checked + (FJ.why ? " why=" + FJ.why : "") : "no /api/freshness.json");
+    if (chip && FJ && FJ.checked && !unchecked) {
+      add("ask-freshness-date-matches-the-server", !FJ.latestWeek || chipText.includes(String(FJ.latestWeek)),
+        "chip " + (chipText.match(/newest week (\S+)/) || ["—"])[0] + " vs server " + (FJ.latestWeek ?? "—"));
+      add("ask-freshness-backed-by-a-real-call", (FJ.correlationIds || []).length > 0 || (FJ.fromCachedPage && !!FJ.cachedResponseFetchedAt),
+        "correlation " + (FJ.correlationIds || []).length + " · replayed " + !!FJ.fromCachedPage + " · " + (FJ.requests ?? 0) + " request(s)");
+      add("ask-freshness-scoped-to-one-page", (FJ.requests ?? 0) <= (EXPECT.maxRequests ?? 2), (FJ.requests ?? 0) + " Qloo requests behind it");
+    }
+
+    // Then ask a question for real, so the receipt below the answer exists on screen
+    // and not only in a payload nobody looked at.
+    if (ASKQ && input && !input.disabled) {
+      input.value = ASKQ;
+      form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+      const until = Date.now() + 90000;
+      while (Date.now() < until && !view.querySelector('[data-audit="agent-answer"]') && !view.querySelector(".ask-err")) await new Promise((r) => setTimeout(r, 400));
+    }
+    const answered = !!view.querySelector('[data-audit="agent-answer"]');
+    const refused = !!view.querySelector(".ask-err") || !!notice;
+    add("ask-answer-arrives", answered || refused, answered ? "answered" : refused ? (view.querySelector(".ask-err")?.innerText.trim().slice(0, 90) ?? "refused") : "no answer and no refusal");
+    const rcBlock = view.querySelector('[data-audit="receipts"]');
+    const rows = rcBlock ? [...rcBlock.querySelectorAll(".rc")] : [];
+    const headOf = (n) => (n.querySelector("b")?.innerText.trim() || "");
+    const rowText = (n) => n.innerText.replace(/\s+/g, " ").trim();
+    const codesOf = (n) => [...n.querySelectorAll("code")].map((c) => c.innerText.trim());
+    add("ask-receipt-block", answered ? rows.length >= 2 : !rcBlock, rows.length ? rows.map(headOf).join(", ") + " (" + rcBlock.querySelector(".rc-head")?.innerText.trim() + ")" : "no receipt block");
+    const panelRow = rows.find((n) => headOf(n) === "panel");
+    add("ask-receipt-names-the-panel-and-revision", answered ? !!panelRow && /output\/desk\.json/.test(rowText(panelRow)) && /revision 20\d\d/.test(rowText(panelRow)) : true,
+      panelRow ? rowText(panelRow).slice(0, 150) : "no panel entry");
+    const freshRow = rows.find((n) => headOf(n) === "freshness");
+    add("ask-receipt-carries-the-attestation", answered ? !!freshRow : true, freshRow ? rowText(freshRow).slice(0, 160) : "no freshness entry");
+    if (freshRow && FJ && FJ.checked) {
+      add("ask-receipt-correlation-id-is-the-servers", (codesOf(freshRow).some((c) => (FJ.correlationIds || []).includes(c))) || FJ.fromCachedPage,
+        codesOf(freshRow).join(" ").slice(0, 120) || "no correlation id in the receipt");
+      add("ask-receipt-names-response-files", freshRow.querySelectorAll("code").length >= 1 && /page-|live-freshness-|series|\.json/.test(rowText(freshRow)),
+        codesOf(freshRow).filter((c) => /\.json/.test(c)).join(" ").slice(0, 120) || "no file named");
+    }
+    const evidenceRows = rows.filter((n) => /^live ·|^committed/.test(headOf(n)));
+    const traceRows = view.querySelectorAll(".trace .tr").length;
+    add("ask-receipt-not-invented", answered ? evidenceRows.length <= traceRows : true,
+      evidenceRows.length + " call entries against " + traceRows + " trace rows");
+    add("ask-receipt-each-call-names-a-response", evidenceRows.every((n) => codesOf(n).some((c) => /\.json/.test(c))),
+      evidenceRows.map((n) => headOf(n) + ":" + (codesOf(n).some((c) => /\.json/.test(c)) ? "file" : "NO FILE")).join(", ") || "none");
+    add("ask-receipt-no-credential", rows.every((n) => !/api[_ -]?key|bearer|access[_ -]?token|secret|sk-[a-z0-9]/i.test(rowText(n))),
+      rows.length + " entries swept for credential-shaped text");
+    const traceEl = view.querySelector(".trace");
+    const rcSpanEl = rcBlock?.querySelector(".rc span") || null;
+    const rcBeforeTrace = !rcBlock || !traceEl || (rcBlock.compareDocumentPosition(traceEl) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
+    add("ask-receipt-in-the-desks-language", !rcBlock || !rcSpanEl ? !answered : (
+      !/[\u{1F000}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/u.test(rcBlock.innerText)
+      && /mono/i.test(getComputedStyle(rcSpanEl).fontFamily) && rcBeforeTrace),
+      rcSpanEl ? getComputedStyle(rcSpanEl).fontFamily.split(",")[0] + " · receipt sits above the trace: " + rcBeforeTrace : "no block");
+    if (answered) add("answered-no-horizontal-overflow", document.documentElement.scrollWidth <= vw + 1,
+      "scrollWidth " + document.documentElement.scrollWidth + " / viewport " + vw + " with the receipt open");
+    if (rcBlock) add("answered-receipt-rows-readable", rows.every((n) => n.scrollWidth <= n.clientWidth + 1),
+      rows.map((n) => n.scrollWidth + "/" + n.clientWidth).join(" "));
   }
   if (mode === "live" && location.hash.startsWith("#/map")) {
     const dots = view.querySelectorAll(".card svg circle").length;
@@ -324,6 +396,17 @@ const AUDIT_JS = (EXPECT) => String.raw`(async () => {
     const cr = ratio(cs.color, bg);
     add("contrast-secondary", cr >= 4.5, cr.toFixed(2) + ":1 " + cs.color + " on " + bg);
   }
+  // the receipt and the attestation are the smallest text on the desk, so they are
+  // measured against the same bar rather than assumed to inherit it
+  for (const [id, sel] of [["provenance-body-contrast", ".receipts .rc span"], ["provenance-head-contrast", ".receipts .rc b"], ["provenance-chip-contrast", ".fresh-v"]]) {
+    const el = view.querySelector(sel);
+    if (!el) continue;
+    const cs2 = getComputedStyle(el);
+    let bgEl2 = el, bg2 = "rgba(0, 0, 0, 0)";
+    while (bgEl2 && (bg2 === "rgba(0, 0, 0, 0)" || bg2 === "transparent")) { bg2 = getComputedStyle(bgEl2).backgroundColor; bgEl2 = bgEl2.parentElement; }
+    const cr2 = ratio(cs2.color, bg2);
+    add(id, cr2 >= 4.5, sel + " " + cr2.toFixed(2) + ":1 at " + cs2.fontSize + " " + cs2.color + " on " + bg2);
+  }
 
   // tap targets (phone only matters, measured anyway)
   const small = [...view.querySelectorAll("a, button")].filter((el) => {
@@ -350,6 +433,9 @@ const ROUTES = [
   { hash: "#/holding/ELF", name: "holding" },
   { hash: "#/read", name: "read" },
   { hash: "#/ask", name: "ask" },
+  // The receipt block only exists under an answer, so one pass asks a question for
+  // real and audits the answer the way a reviewer would read it.
+  { hash: "#/ask", name: "ask-answered", ask: "Why is Disney not flagged?" },
 ];
 const VIEWPORTS = [
   { width: 1440, height: 1100, name: "desktop" },
@@ -357,29 +443,52 @@ const VIEWPORTS = [
   { width: 390, height: 844, name: "phone", mobile: true },
 ];
 
-let EXPECT = { rows: 0, total: 0, stub: false, weeks: 0 };
+let EXPECT = { rows: 0, total: 0, stub: false, weeks: 0, maxRequests: 2 };
 try {
   const meta = await (await fetch(`${URL_BASE}/api/market-only.json`)).json();
-  let stub = false, weeks = 0;
+  let stub = false, weeks = 0, maxRequests = 2;
   try { const d = await (await fetch(`${URL_BASE}/api/desk.json`)).json(); stub = d.source?.kind === "stub harness"; weeks = d.window?.weeks ?? 0; } catch {}
-  EXPECT = { rows: meta.rows?.length ?? 0, total: meta.universe?.total ?? meta.rows?.length ?? 0, stub, weeks };
+  try { const a = await (await fetch(`${URL_BASE}/api/agent.json`)).json(); maxRequests = a.freshness?.maxRequests ?? 2; } catch {}
+  EXPECT = { rows: meta.rows?.length ?? 0, total: meta.universe?.total ?? meta.rows?.length ?? 0, stub, weeks, maxRequests };
 } catch { /* server down: the page checks report the failure */ }
 
 const { child, browserWs, profile } = await startChrome();
 const results = [];
+let navCount = 0;
 try {
   const { cdp, ws } = await connectPage(browserWs);
   for (const vp of VIEWPORTS) {
     await cdp.send("Emulation.setDeviceMetricsOverride", { width: vp.width, height: vp.height, deviceScaleFactor: 1, mobile: Boolean(vp.mobile) });
     for (const route of ROUTES) {
-      await cdp.send("Page.navigate", { url: `${URL_BASE}/${route.hash}` });
-      await sleep(1400);
-      const res = await cdp.send("Runtime.evaluate", { expression: AUDIT_JS(EXPECT), awaitPromise: true, returnByValue: true });
+      // A unique query makes every route a real document load. Navigating between
+      // hash routes alone reuses the SPA's state, so a later route would be graded
+      // against DOM and in-memory answers left by an earlier one.
+      const nonce = `${vp.name}-${route.name}-${++navCount}`;
+      await cdp.send("Page.navigate", { url: `${URL_BASE}/?r=${nonce}${route.hash}` });
+      // Wait for the desk's own ready flag rather than a fixed sleep: the panel is
+      // nine files and a slow link must not be graded as a missing headline.
+      const waitReady = async () => {
+        const readyUntil = Date.now() + 30000;
+        while (Date.now() < readyUntil) {
+          const st = await cdp.send("Runtime.evaluate", { expression: "document.body?.dataset.ready === '1'", returnByValue: true });
+          if (st.result?.value === true) return true;
+          await sleep(250);
+        }
+        return false;
+      };
+      if (!(await waitReady())) {
+        // One connection reset on a small shared host is a flake, not a finding: load
+        // the document once more and grade the second attempt. A page that never
+        // becomes ready twice still fails every check it should.
+        await cdp.send("Page.navigate", { url: `${URL_BASE}/?retry=${nonce}${route.hash}` });
+        await waitReady();
+      }
+      const res = await cdp.send("Runtime.evaluate", { expression: AUDIT_JS(EXPECT, route.ask ?? ""), awaitPromise: true, returnByValue: true });
       const value = res.result?.value ?? { checks: [{ id: "evaluate", ok: false, detail: res.exceptionDetails?.text || "no value" }] };
       const shot = await cdp.send("Page.captureScreenshot", { format: "png" });
       const file = resolve(shotDir, `${vp.name}-${route.name}.png`);
       writeFileSync(file, Buffer.from(shot.data, "base64"));
-      if (route.name === "desk" || route.name === "evidence") {
+      if (route.name === "desk" || route.name === "evidence" || route.name === "ask-answered") {
         const full = await cdp.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: true });
         writeFileSync(resolve(shotDir, `${vp.name}-${route.name}-full.png`), Buffer.from(full.data, "base64"));
       }

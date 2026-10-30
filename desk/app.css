@@ -389,7 +389,10 @@ footer .verify code{font:10px ui-monospace,Consolas,monospace}
 .ask-answer p{font-size:16.5px;line-height:1.6;max-width:780px}
 .ask-meta{margin:16px 0 0;font:10.5px/1.5 ui-monospace,Consolas,monospace;color:var(--muted);letter-spacing:.01em}
 .ask-note{font:12px/1.6 ui-sans-serif,system-ui,sans-serif;color:var(--muted);max-width:780px;margin-top:10px}
-.ask-note a{color:var(--accent);text-decoration:none;border-bottom:1px solid #c8a79b}
+.ask-wait{font:13px/1.65 ui-sans-serif,system-ui,sans-serif;color:var(--ink,#2a211c);max-width:720px}
+.ask-clock{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--accent);font-variant-numeric:tabular-nums}
+.ask-stage{color:var(--muted)}
+.ask-note a{color:var(--accent);text-decoration:none;border-bottom:1px solid #c8a79b;display:inline-block;padding-block:4px;margin-block:-4px}
 .ask-err{color:var(--accent);font-size:13.5px;margin-top:16px}
 .ask-empty{margin-top:18px;color:var(--muted);font-size:14px}
 .ask-tools{margin:0;font-size:12.5px;line-height:1.65;max-width:760px}
@@ -405,8 +408,35 @@ footer .verify code{font:10px ui-monospace,Consolas,monospace}
   font:10.5px/1.55 ui-monospace,Consolas,monospace;white-space:pre-wrap;word-break:break-word;
   max-height:220px;overflow:auto;
 }
+/* The freshness attestation and the per-answer Qloo receipt: hairline-ruled,
+   monospaced, no colour beyond the desk's two. Provenance, not a dashboard. */
+.fresh{margin-top:16px;border:1px solid var(--hairline);border-left:3px solid var(--good);
+  background:var(--card);padding:11px 13px}
+.fresh.warn{border-left-color:var(--accent);background:var(--warn-bg)}
+.fresh.off{border-left-color:var(--muted);border-style:dashed;background:transparent}
+.fresh-k{display:block;font:600 10px/1.3 ui-sans-serif,system-ui,sans-serif;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ink)}
+.fresh-v,.fresh-cid{display:block;margin-top:5px;font:10.5px/1.65 ui-monospace,Consolas,monospace;
+  color:var(--muted);word-break:break-word}
+.fresh .fresh-plain,.ask-answer .fresh .fresh-plain{margin:9px 0 0;font:12.5px/1.65 Georgia,serif;
+  color:var(--muted);max-width:780px}
+.receipts{margin-top:16px;border-top:1px solid var(--hairline);padding-top:11px}
+.rc-head{font:10.5px/1.4 ui-sans-serif,system-ui,sans-serif;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--muted)}
+.rc{display:grid;grid-template-columns:168px 1fr;gap:12px;margin-top:10px;padding-bottom:10px;
+  border-bottom:1px dotted var(--hairline)}
+.rc b{font:10.5px/1.6 ui-monospace,Consolas,monospace;font-weight:600;color:var(--ink);letter-spacing:.01em;
+  word-break:break-word}
+.rc span{font:10.5px/1.7 ui-monospace,Consolas,monospace;color:var(--muted);word-break:break-word}
+.rc code{background:var(--paper);border:1px solid var(--hairline);border-radius:2px;padding:0 4px;
+  font:10px/1.6 ui-monospace,Consolas,monospace;color:var(--ink);word-break:break-all}
+.fresh code{background:var(--paper);border:1px solid var(--hairline);border-radius:2px;padding:0 4px;
+  font:10px/1.6 ui-monospace,Consolas,monospace;color:var(--ink);word-break:break-all}
+.receipts .rc-note{margin:11px 0 0;max-width:780px;font:11.5px/1.6 ui-sans-serif,system-ui,sans-serif;
+  color:var(--muted)}
 @media (max-width:880px){
   .ask-row{flex-direction:column}
   .ask-row .btn{width:100%;padding:12px 13px}
   .ask-answer p{font-size:15.5px}
+  .rc{grid-template-columns:1fr;gap:3px}
 }
