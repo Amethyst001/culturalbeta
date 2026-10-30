@@ -1461,3 +1461,66 @@ text and `innerText` returns the transformed string; the check now compares uppe
 text, and the three verdict regexes were made case-insensitive for the same reason.
 Shots: `review/shots-2026-10-30T16-22-18/desktop-desk.png`,
 `review/roster-unresolved.png`, `review/roster-unresolved-phone.png`.
+
+## 16. Rounds 6–10 — from "explain the number" to "prove the feed is still the feed"
+
+The panels from 17:13 to 21:52 were run against the same product, sharpening one
+question each time: does anything here need Qloo at runtime, or is it a statistics
+package with a logo? The scores and the recorded verdicts, verbatim from each
+`review/panel-*/index.json`:
+
+| run (UTC) | model | verdict | score | what it asked for |
+|---|---|---|---|---|
+| 17:13 | Nemotron 3.5 Super | FIX FIRST | 38 | the same fatal — nothing Qloo does is load-bearing at inference |
+| 17:13 | GLM 5.3 Flash | FIX FIRST | 74 | receipts with correlation ids; an actual live read per answer |
+| 21:11 | GLM 5.3 Flash | FIX FIRST | 87 | — (its best score of the day) |
+| 21:29 | Claude Opus 5 | FIX FIRST | 66 | a live read the model cannot skip; a per-answer receipt |
+| 21:29 | GLM 5.3 Flash | SHIP | **85** | — (its highest verdict; the round-9 brief had closed the objection) |
+| 21:52 | Claude Opus 5 | FIX FIRST | 78 | the attestation must *change* the answer, not sit beside it |
+| 21:52 | GLM 5.3 Flash | FIX FIRST | 67 | "required, but decorative": Qloo must be an input, not a witness |
+
+MiniMax M2.7, Claude Opus 5.5 and Claude Fable 5.1 were unavailable for most of this
+window: 429 from the Abhibots host ("the load is at its peak right now"), and 502
+from MiniMax's edge. Their absences are recorded in each `index.json`, not filled in.
+
+### 16.1 What round 9 changed
+
+A mandatory, model-independent attestation ran on the server, outside the tool loop,
+concurrently with the model call, with a receipt and a correlation id per answer. That
+is what took GLM from 74 to 85 and Opus to 66 — the gap between them was the same
+objection stated differently.
+
+### 16.2 What round 10 changed
+
+Both reviewers converged on one sentence: *the attestation is a witness, not an input*.
+GLM: "the model's output would be identical if Qloo returned a change tomorrow". Opus:
+"the attestation proves freshness, not that inference depends on Qloo". Two changes
+followed, both in the product rather than the prose:
+
+- **The attestation now gates the answer.** `attestationGate()` hashes exactly the
+  fields a reader can see into a stamp (`att-<12 hex>`), and the answer carries one of
+  three states. `moved` — any attested entity reporting a third-party revision after
+  the panel's last revision — prints a warning above the answer text saying the numbers
+  below predate the feed. `unattested` prints in the same place, so a check that could
+  not run can never read as a pass. `pass` states what was read and when.
+- **"What would flip this verdict."** A four-condition band on the evidence page: a
+  Qloo revision (checked automatically, per answer), an effect at least as large as the
+  design could detect (13.7 ΔR² pts against 0.67 measured), a ranking that survives
+  the basket it was built from, and a flag that survives 80 tests at q ≤ 0.10. Each row
+  prints today's value and who checks it.
+
+**A defect found in the review harness itself.** Opus returned `quality_of_idea: 29`
+against a /25 criterion and a total that only balanced because of it. Both numbers are
+preserved in the record; the honest rubric total for that review is **74/100**, not 78.
+`src/rubric.mjs` now flags out-of-range scores and totals that are not the sum, the
+brief says a number above 25 is rejected, and the schema asks for a per-criterion
+justification plus "what would add five points" so a score like 16 can no longer arrive
+without an argument.
+
+**A defect in the audit harness, second time in this feature.** The new gate check
+matched the attestation paragraph as "the answer", so "is the gate above the answer"
+read false while the check still passed. The check now selects the first prose
+paragraph and the assertion requires the ordering.
+
+Verification after both: `npm test` **160/160**; CDP audit **566/566** before the
+falsification band, and the post-band run recorded in §17.

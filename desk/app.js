@@ -1079,6 +1079,7 @@ function evidenceView(tick) {
     ${pooledBand(EVIDENCE.valueAdd)}
     ${dispersionBand(EVIDENCE.valueAdd)}
     ${mdeBand()}
+    ${flipBand(EVIDENCE.valueAdd)}
     ${basketBand()}
     ${sentimentBand(EVIDENCE.valueAdd)}
     ${ablationBand(EVIDENCE.valueAdd)}
@@ -1242,6 +1243,71 @@ function mdeBand() {
 // The falsification request two reviewers made in the same words. The same estimator
 // on the same calendar under seven alternative baskets: what moves is the point
 // estimate, and the desk prints both that and the fact that nothing gets flagged.
+// A null is only worth publishing if the author can say what would end it. Each row
+// is a condition, today's value against it, and who checks — three need data that
+// does not exist yet, and the first is checked by the desk on every answer.
+function flipBand(va) {
+  const med = MDE?.book?.medianDeltaR2Pts ?? null;
+  const obs = va?.meanDeltaR2 ?? null;
+  const req = (MDE?.designRequirement?.rows ?? []).find((r) => /mean/i.test(String(r.label ?? ""))) ?? null;
+  const cmp = Object.values(BASKET?.comparisons ?? {})[0] ?? null;
+  const latestRevision = va?.oos?.scoring?.lastMove ?? null;
+  const fresh = FRESH ?? null;
+  const freshNow = fresh?.checked
+    ? `last check ${String(fresh.respondedAt ?? fresh.at ?? "").slice(11, 16)}Z · ${fresh.verdict === "qloo_has_a_newer_revision" ? "REVISED" : freshestVerdict(fresh.verdict)}`
+    : fresh?.why ? `not checked — ${FRESH_WHY[fresh.why] ?? fresh.why}` : "checked on every answer";
+  const rows = [
+    {
+      n: "1",
+      what: "Qloo revises a basket after the panel's last revision",
+      now: latestRevision ? `no revision since ${latestRevision}` : "no revision dated",
+      take: "nothing to build — the desk already asks Qloo on every answer and stamps the answer \"Qloo has moved\" when one entity reports a newer revision",
+      who: `<a href="#/ask">the desk, per answer</a>`,
+      state: freshNow,
+    },
+    {
+      n: "2",
+      what: "A taste effect at least as large as the design could detect",
+      now: med != null && obs != null ? `detectable ${nf(med)} ΔR² pts · measured ${nf(obs)}` : "bound not on this build",
+      take: med != null && obs != null ? `${nf(med / obs, 1)}× the measured effect; at the measured size the same rule needs ${nf(req?.weeks ?? null, 0) ?? "—"} weeks (${nf(req?.years ?? null, 1) ?? "—"} years)` : "run scripts/mde.mjs",
+      who: "a longer panel or a larger effect",
+      state: "not reachable at this vintage",
+    },
+    {
+      n: "3",
+      what: "A ranking that survives the basket it was built from",
+      now: cmp ? `β moves a median ${nf(cmp.medianAbsDBeta, 1)} pts across constructions (p90 ${nf(cmp.p90AbsDBeta, 1)}, rank ρ ${nf(cmp.rankCorrSpearman, 2)})` : "sensitivity not on this build",
+      take: "a name would have to clear the same tests in all four constructions; none does today, and no construction flags one",
+      who: "the construction re-run, on cache",
+      state: "0 of 80 either way",
+    },
+    {
+      n: "4",
+      what: "A flag that survives the book-wide correction",
+      now: "0 of 80 names at Benjamini–Hochberg q ≤ 0.10",
+      take: MDE?.book?.tCrit ? `a single-name |t| of ${nf(MDE.book.tCrit, 2)} to be a discovery at this book size, before the correction` : "a per-name t large enough to survive 80 tests",
+      who: "the multiplicity rule",
+      state: "none today",
+    },
+  ];
+  return `<section class="robust full" aria-label="Falsification" data-audit="flip-band">
+    <div class="rb-head"><h2>What would flip this verdict</h2>
+      <p class="rb-sub">Four conditions, each with today's value. A null that cannot name the evidence that would end it is an opinion; three of these need data that does not exist yet, and the first is checked automatically, from the deployed host, on every answer.</p></div>
+    <div class="flip">
+      ${rows.map((r) => `<div class="fl"><div class="fl-n">${r.n}</div><div class="fl-b">
+        <b>${esc(r.what)}</b>
+        <span class="fl-now"><span class="fl-k">today</span>${esc(r.now)}</span>
+        <span class="fl-take"><span class="fl-k">what it takes</span>${esc(r.take)}</span>
+        <span class="fl-who"><span class="fl-k">checked by</span>${r.who} · ${esc(r.state)}</span>
+      </div></div>`).join("")}
+    </div>
+  </section>`;
+}
+
+function freshestVerdict(v) {
+  return v === "newer_weeks_no_change" ? "newer weeks, no newer signal" : v === "nothing_newer_than_panel_tail" ? "nothing newer than the panel tail" : String(v ?? "no verdict").replaceAll("_", " ");
+}
+
 function basketBand() {
   if (!BASKET) {
     return `<section class="robust full" aria-label="Basket construction">
@@ -1521,6 +1587,21 @@ function freshBlock(f, { standing = false } = {}) {
   </div>`;
 }
 
+// The attestation in front of the answer rather than beside it: the same stamp the
+// receipt carries, and — when the check found a revision after the panel — a line
+// that says the numbers below are behind the feed. That case is the whole point:
+// a check that can never change the answer is decoration.
+function attestationBlock(att) {
+  if (!att || !att.stamp) return "";
+  if (att.state === "moved") {
+    return `<div class="att att-moved" data-audit="attestation-gate" data-state="moved"><b>Qloo has moved since this panel was built.</b> ${esc(att.note ?? "")} <code>${esc(att.stamp)}</code></div>`;
+  }
+  if (att.state === "unattested") {
+    return `<div class="att att-none" data-audit="attestation-gate" data-state="unattested"><b>Unattested.</b> ${esc(att.note ?? "")} <code>${esc(att.stamp)}</code></div>`;
+  }
+  return `<p class="att att-pass" data-audit="attestation-gate" data-state="pass">${esc(att.note ?? "")} <code>${esc(att.stamp)}</code></p>`;
+}
+
 function receiptLine(rc) {
   if (rc.kind === "panel") {
     return `<div class="rc"><b>panel</b><span>${esc(rc.file ?? "output/desk.json")} · revision ${esc(String(rc.revision ?? "").slice(0, 19))} · ${rc.rows ?? "—"} rows · window ${esc(rc.window?.start ?? "—")} → ${esc(rc.window?.end ?? "—")} (${rc.window?.weeks ?? "—"} weeks)</span></div>`;
@@ -1529,7 +1610,7 @@ function receiptLine(rc) {
     if (!rc.checked) {
       return `<div class="rc"><b>freshness</b><span>not asked — ${esc(FRESH_WHY[rc.why] ?? String(rc.why ?? "unknown").slice(0, 60))}${rc.requests ? ` · ${rc.requests} request(s) spent before failing` : ""}</span></div>`;
     }
-    return `<div class="rc"><b>freshness</b><span>${esc(rc.operation ?? "exec trends")} · entity <code>${esc(rc.entity ?? "—")}</code> (${esc(rc.entityName ?? "")})${rc.entities?.length > 1 ? ` · set ${rc.entities.map((e) => `${esc(e.ticker ?? "?")}:${e.checked ? esc(e.latestWeek ?? "—") : "not read"}`).join(" ")}` : ""} · ${rc.requests ?? 0} request${rc.requests === 1 ? "" : "s"} · correlation ${rc.correlationIds?.length ? rc.correlationIds.map((c) => `<code>${esc(c)}</code>`).join(" ") : "none returned"} · asked ${esc(String(rc.requestedAt ?? "").slice(0, 19))} · answered ${esc(String(rc.respondedAt ?? "").slice(0, 19))}${rc.fromAttestationCache ? ` · this attestation reused for ${rc.attestationCacheSeconds ?? 0}s of the 15-minute book cache` : ""}${rc.fromCachedPage ? " · replayed from the page cache" : ""} · files ${rc.files?.length ? rc.files.map((f) => `<code>${esc(f)}</code>`).join(" ") : "—"}</span></div>`;
+    return `<div class="rc"><b>freshness</b><span>${esc(rc.operation ?? "exec trends")} · entity <code>${esc(rc.entity ?? "—")}</code> (${esc(rc.entityName ?? "")})${rc.entities?.length > 1 ? ` · set ${rc.entities.map((e) => `${esc(e.ticker ?? "?")}:${e.checked ? esc(e.latestWeek ?? "—") : "not read"}`).join(" ")}` : ""} · ${rc.requests ?? 0} request${rc.requests === 1 ? "" : "s"} · correlation ${rc.correlationIds?.length ? rc.correlationIds.map((c) => `<code>${esc(c)}</code>`).join(" ") : "none returned"} · asked ${esc(String(rc.requestedAt ?? "").slice(0, 19))} · answered ${esc(String(rc.respondedAt ?? "").slice(0, 19))}${rc.fromAttestationCache ? ` · this attestation reused for ${rc.attestationCacheSeconds ?? 0}s of the 15-minute book cache` : ""}${rc.fromCachedPage ? " · replayed from the page cache" : ""} · gate ${esc(rc.gate ?? "—")} <code>${esc(rc.stamp ?? "unsigned")}</code> · files ${rc.files?.length ? rc.files.map((f) => `<code>${esc(f)}</code>`).join(" ") : "—"}</span></div>`;
   }
   if (rc.kind === "live") {
     const ents = (rc.entities ?? []).slice(0, 6).map((e) => `<code>${esc(shortId(e))}</code>`).join(" ");
@@ -1584,6 +1665,7 @@ function askView() {
     ${ASK.err ? `<p class="ask-err">${esc(ASK.err)}</p>` : ""}
     ${r ? `<div class="ask-answer" data-audit="agent-answer">
       <p class="ask-q">${esc(ASK.q)}</p>
+      ${attestationBlock(r.attestation)}
       ${String(r.answer).split(/\n{2,}/).map((p) => `<p>${esc(p).replace(/\n/g, "<br>")}</p>`).join("")}
       <p class="ask-meta">${meta}</p>
       ${receiptBlock(r.receipts)}

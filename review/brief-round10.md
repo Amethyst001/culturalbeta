@@ -50,7 +50,9 @@ Round 9's decisive objection, from both reviewers independently: *"a single boun
 
 ## Output
 
-Return a single JSON object, no markdown fence, no commentary:
+Return a single JSON object, no markdown fence, no commentary.
+
+**Every criterion is scored out of 25. A number above 25 is rejected by the harness**, and so is a `score_total` that is not the exact sum of the four. If you believe a criterion deserves more than 25, that is a statement about the other criteria — write it in `criterion_notes` and lower the other three, do not raise the cap.
 
 ```json
 {
@@ -61,6 +63,18 @@ Return a single JSON object, no markdown fence, no commentary:
     "design": 0,
     "potential_impact": 0,
     "quality_of_idea": 0
+  },
+  "criterion_notes": {
+    "technological_implementation": "why this number and not 5 higher or 5 lower — the single fact that sets it",
+    "design": "same: what specifically holds it here",
+    "potential_impact": "same",
+    "quality_of_idea": "same — if this is your lowest score, say what a higher-scoring version of the idea would be, in one sentence"
+  },
+  "raise_each_by_five": {
+    "technological_implementation": "the change that would add ~5 points, or 'not reachable this cycle' with the reason",
+    "design": "same",
+    "potential_impact": "same",
+    "quality_of_idea": "same"
   },
   "would_make_top3": false,
   "agentic_gap_closed": false,

@@ -245,8 +245,6 @@ const AUDIT_JS = (EXPECT, ASKQ) => String.raw`(async () => {
     // actually submits a question can be asked whether an answer arrived.
     const answered = !!view.querySelector('[data-audit="agent-answer"]');
     const refused = !!view.querySelector(".ask-err") || !!notice;
-    // The bare #/ask route asks nothing: its form is graded above. Only a route that
-    // actually submits a question can be asked whether an answer arrived.
     if (ASKQ) add("ask-answer-arrives", answered || refused, answered ? "answered" : refused ? (view.querySelector(".ask-err")?.innerText.trim().slice(0, 90) ?? "refused") : "no answer and no refusal");
     const rcBlock = view.querySelector('[data-audit="receipts"]');
     const rows = rcBlock ? [...rcBlock.querySelectorAll(".rc")] : [];
@@ -265,6 +263,18 @@ const AUDIT_JS = (EXPECT, ASKQ) => String.raw`(async () => {
       add("ask-receipt-names-response-files", freshRow.querySelectorAll("code").length >= 1 && /page-|fresh-|series|\.json/.test(rowText(freshRow)),
         codesOf(freshRow).filter((c) => /\.json/.test(c)).join(" ").slice(0, 120) || "no file named");
     }
+    // The gate is the difference between a receipt beside the answer and one the
+    // answer acts on: it must be visible above the answer text, carry a stamp, and
+    // state which of the three outcomes it reached.
+    const gateEl = view.querySelector('[data-audit="attestation-gate"]');
+    const gateState = gateEl?.getAttribute("data-state") ?? "";
+    // The answer's first prose paragraph, not the attestation line that sits above it.
+    const answerEl = [...view.querySelectorAll(".ask-answer p")].find((p) => !p.classList.contains("ask-q") && !p.classList.contains("att")) || null;
+    const gateBeforeAnswer = !!(gateEl && answerEl && (gateEl.compareDocumentPosition(answerEl) & Node.DOCUMENT_POSITION_FOLLOWING));
+    add("ask-attestation-gate", answered ? !!gateEl && gateBeforeAnswer && /^(pass|moved|unattested)$/.test(gateState) && /att-[0-9a-f]{12}/.test(gateEl.innerText) : true,
+      gateEl ? gateState + " · " + (gateEl.innerText.match(/att-[0-9a-f]{12}/) || ["no stamp"])[0] + " · above the answer: " + gateBeforeAnswer : "no gate element");
+    add("ask-attestation-gate-is-not-a-pass-without-a-reading", !(gateState === "pass") || !!(FJ && FJ.checked),
+      FJ ? "gate " + gateState + " vs check " + FJ.checked : "no freshness payload to compare");
     const evidenceRows = rows.filter((n) => /^live ·|^committed/.test(headOf(n)));
     const traceRows = view.querySelectorAll(".trace .tr").length;
     add("ask-receipt-not-invented", answered ? evidenceRows.length <= traceRows : true,

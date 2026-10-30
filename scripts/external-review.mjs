@@ -6,6 +6,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { ROOT } from "../src/env.mjs";
+import { RUBRIC, auditScores } from "../src/rubric.mjs";
 
 const FLEET_ENV = process.env.FLEET_ENV || resolve(ROOT, ".env.panel");
 const env = {};
@@ -184,8 +185,12 @@ for (const r of results) {
   if (!r.ok) { lines.push(`_Unavailable: ${r.status ?? ""} ${r.error ?? ""}_`, ""); continue; }
   if (!r.verdict) { lines.push("_No parsable JSON verdict; raw answer in the .txt file._", ""); continue; }
   const v = r.verdict;
-  lines.push(`- verdict: **${v.verdict ?? "?"}** · total **${v.score_total ?? "?"}/100**`);
+  const audit = auditScores(v);
+  lines.push(`- verdict: **${v.verdict ?? "?"}** · total **${v.score_total ?? "?"}/100**${audit.inRange ? "" : ` · **rubric total ${audit.rubricTotal ?? "invalid"} — returned scores break the 0–25 rule**`}`);
   if (v.scores) lines.push(`- scores: TI ${v.scores.technological_implementation}/25 · Design ${v.scores.design}/25 · Impact ${v.scores.potential_impact}/25 · Idea ${v.scores.quality_of_idea}/25`);
+  if (audit.errors.length) lines.push(`- **rubric errors:** ${audit.errors.join("; ")}`);
+  for (const k of RUBRIC) if (v.criterion_notes?.[k]) lines.push(`- ${k} (${v.scores?.[k] ?? "?"}/25): ${v.criterion_notes[k]}`);
+  for (const k of RUBRIC) if (v.raise_each_by_five?.[k]) lines.push(`- +5 on ${k}: ${v.raise_each_by_five[k]}`);
   lines.push(`- fatal: ${v.fatal ?? "—"}`);
   lines.push(`- best next construction: ${v.best_next_model_construction ?? "—"}`);
   lines.push(`- headline rewrite: ${v.headline_rewrite ?? "—"}`);
@@ -201,5 +206,7 @@ writeFileSync(resolve(outDir, "summary.md"), lines.join("\n"));
 console.log(`\nwrote ${outDir}`);
 for (const r of results) {
   console.log(`\n=== ${r.label} ===`);
-  console.log(r.verdict ? `${r.verdict.verdict} ${r.verdict.score_total}/100 · fatal: ${r.verdict.fatal}` : `(no verdict) ${(r.content ?? r.error ?? "").slice(0, 300)}`);
+  if (!r.verdict) { console.log(`(no verdict) ${(r.content ?? r.error ?? "").slice(0, 300)}`); continue; }
+  const audit = auditScores(r.verdict);
+  console.log(`${r.verdict.verdict} ${r.verdict.score_total}/100${audit.errors.length ? ` · RUBRIC ${audit.rubricTotal ?? "INVALID"} (${audit.errors.join("; ")})` : " · rubric ok"} · fatal: ${r.verdict.fatal}`);
 }
