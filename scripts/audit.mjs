@@ -258,7 +258,7 @@ const AUDIT_JS = (EXPECT, ASKQ) => String.raw`(async () => {
     if (freshRow && FJ && FJ.checked) {
       add("ask-receipt-correlation-id-is-the-servers", (codesOf(freshRow).some((c) => (FJ.correlationIds || []).includes(c))) || FJ.fromCachedPage,
         codesOf(freshRow).join(" ").slice(0, 120) || "no correlation id in the receipt");
-      add("ask-receipt-names-response-files", freshRow.querySelectorAll("code").length >= 1 && /page-|live-freshness-|series|\.json/.test(rowText(freshRow)),
+      add("ask-receipt-names-response-files", freshRow.querySelectorAll("code").length >= 1 && /page-|fresh-|series|\.json/.test(rowText(freshRow)),
         codesOf(freshRow).filter((c) => /\.json/.test(c)).join(" ").slice(0, 120) || "no file named");
     }
     const evidenceRows = rows.filter((n) => /^live ·|^committed/.test(headOf(n)));

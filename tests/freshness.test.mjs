@@ -106,7 +106,7 @@ test("the check spends one page, reports the verdict, and refunds the reservatio
   assert.equal(readBudget(budget).requests, 1, "the reservation is refunded to what was spent");
   assert.equal(q.seen.n, 1);
   // one page of twenty weekly points must be enough: the window is sized to it
-  assert.ok(/live-freshness-/.test(q.seen.args[0].cacheName));
+  assert.ok(/fresh-/.test(q.seen.args[0].cacheName));
   assert.equal(q.seen.args[0].ids.join(","), "51AC9AB8-EF60-42AF-878C-D9EB34B50721");
   assert.ok(out.plain.includes("nothing newer than the panel tail"));
   assert.ok(out.files.length >= 1 && out.correlationIds[0] === "cid-77af-0001");
@@ -223,7 +223,7 @@ test("every answer carries the panel, the attestation and the calls behind it", 
   assert.deepEqual(fresh.correlationIds, ["cid-77af-0001"], "the harness's own correlation id is in the receipt");
   assert.equal(fresh.entity, "51AC9AB8-EF60-42AF-878C-D9EB34B50721");
   assert.equal(fresh.requests, 1);
-  assert.ok(fresh.files.some((f) => /live-freshness-/.test(f)));
+  assert.ok(fresh.files.some((f) => /fresh-/.test(f)));
   const committed = out.filter((r) => r.kind === "committed");
   assert.equal(committed.length, 1, "two tools on one name are one receipt");
   assert.deepEqual(committed[0].tools, ["get_holding", "get_basket"]);
