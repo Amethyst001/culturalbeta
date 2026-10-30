@@ -23,7 +23,7 @@ import { ols } from "../src/ols.mjs";
 import { loadUniverse } from "../src/universe.mjs";
 import { computeBudget, spentFromCache } from "../src/budget.mjs";
 import { createDeskTools, readProviders, askQuestion, collectReceipts, LIMITS } from "../src/agent.mjs";
-import { withLiveTools, liveStatus, createFreshnessChecker, freshnessGateReason, FRESHNESS, LIVE } from "../src/live-qloo.mjs";
+import { withLiveTools, liveStatus, createFreshnessChecker, freshnessGateReason, FRESHNESS, LIVE, entitiesFor, tickersInQuestion } from "../src/live-qloo.mjs";
 
 const PORT = Number(process.env.PORT || 8811);
 const OUT = process.env.CULTURALBETA_OUTPUT_DIR ? resolve(process.env.CULTURALBETA_OUTPUT_DIR) : resolve(ROOT, "output");
@@ -319,10 +319,11 @@ function agentStatus() {
       enabled: live.enabled,
       onEveryAnswer: true,
       cacheMinutes: FRESHNESS.cacheMinutes,
-      maxRequests: FRESHNESS.maxRequests,
+      maxRequests: FRESHNESS.maxEntities * FRESHNESS.maxRequests,
+      maxEntities: FRESHNESS.maxEntities,
       drawnFromDailyBudget: LIVE.dailyRequests,
       note: live.enabled
-        ? `Before answering, the server asks Qloo one bounded trend page for one committed basket entity and attests what it got; the attestation is cached ${FRESHNESS.cacheMinutes} minutes for the whole book and never prints a date without a response behind it. If it cannot run, the answer says it was not checked and why.`
+        ? `Before answering, the server asks Qloo one bounded trend page for each of up to ${FRESHNESS.maxEntities} committed basket entities — the names the question cites, otherwise one per sub-sector — and attests what each returned. The attestation is cached ${FRESHNESS.cacheMinutes} minutes per entity set and never prints a date without a response behind it. If it cannot run, the answer says it was not checked and why.`
         : "The live gate is off on this deployment, so no answer can carry a freshness attestation; every answer says so.",
     },
     receipts: {
@@ -373,10 +374,10 @@ function freshnessCheckerFor(loaded, { prime = true } = {}) {
 }
 
 // An attestation that could not be obtained degrades to a reason, never to a date.
-async function attestation(checker) {
+async function attestation(checker, refs = null) {
   if (!checker) return { checked: false, why: freshnessGateReason() ?? "live_gate_off", at: new Date().toISOString() };
   try {
-    return await checker.check();
+    return await checker.check(refs);
   } catch (e) {
     return { checked: false, why: "harness_error", harnessCode: String(e.code ?? "").slice(0, 60) || null, at: new Date().toISOString() };
   }
@@ -458,7 +459,7 @@ const server = createServer(async (req, res) => {
       // The answer text may be reused; the attestation may not be. A cached answer
       // is still re-attested, and the checker's own book cache means that costs a
       // request at most once every cacheMinutes, not once per click.
-      const freshness = await attestation(checker);
+      const freshness = await attestation(checker, entitiesFor(loaded.desk, tickersInQuestion(question, loaded.desk)));
       return send(res, 200, JSON.stringify({
         ...hit,
         cached: true,
@@ -477,7 +478,10 @@ const server = createServer(async (req, res) => {
       const tools = live.enabled ? withLiveTools(loaded.tools, { desk: loaded.desk, state: { liveCalls: 0 } }) : loaded.tools;
       // Asked at the same moment as the model, so its round trip is never added to
       // the answer's latency; the await below only waits for whatever is left.
-      const freshP = attestation(checker);
+      // The names the question cites, so the receipt matches the claim; one row per
+      // sub-sector otherwise, so a question about the book is attested by the book.
+      const refs = entitiesFor(loaded.desk, tickersInQuestion(question, loaded.desk));
+      const freshP = attestation(checker, refs);
       const out = await askQuestion({ question, tools, providers: AGENT_PROVIDERS });
       const freshness = await freshP;
       const { failures, ...clean } = out;

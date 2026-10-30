@@ -241,9 +241,13 @@ const AUDIT_JS = (EXPECT, ASKQ) => String.raw`(async () => {
       const until = Date.now() + 90000;
       while (Date.now() < until && !view.querySelector('[data-audit="agent-answer"]') && !view.querySelector(".ask-err")) await new Promise((r) => setTimeout(r, 400));
     }
+    // The bare #/ask route asks nothing: its form is graded above. Only a route that
+    // actually submits a question can be asked whether an answer arrived.
     const answered = !!view.querySelector('[data-audit="agent-answer"]');
     const refused = !!view.querySelector(".ask-err") || !!notice;
-    add("ask-answer-arrives", answered || refused, answered ? "answered" : refused ? (view.querySelector(".ask-err")?.innerText.trim().slice(0, 90) ?? "refused") : "no answer and no refusal");
+    // The bare #/ask route asks nothing: its form is graded above. Only a route that
+    // actually submits a question can be asked whether an answer arrived.
+    if (ASKQ) add("ask-answer-arrives", answered || refused, answered ? "answered" : refused ? (view.querySelector(".ask-err")?.innerText.trim().slice(0, 90) ?? "refused") : "no answer and no refusal");
     const rcBlock = view.querySelector('[data-audit="receipts"]');
     const rows = rcBlock ? [...rcBlock.querySelectorAll(".rc")] : [];
     const headOf = (n) => (n.querySelector("b")?.innerText.trim() || "");

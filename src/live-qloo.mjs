@@ -156,6 +156,9 @@ export const FRESHNESS = {
   cacheMinutes: 15,
   failureCacheSeconds: 60,
   maxRequests: 2,
+  // Up to three entities per attestation: the names the question cites, else one
+  // per sub-sector, so the panel-level claim does not rest on a single basket.
+  maxEntities: 3,
   // Grid weeks the probe will step back through looking for points, bounded by the
   // two requests the reservation covers.
   maxAttempts: 2,
@@ -195,19 +198,71 @@ export function freshnessGateReason(env = process.env) {
   return null;
 }
 
-// The reference entity is read out of the panel, never invented: a weighted member
-// of the reference row's own basket, whose id and creative type Qloo returned and
-// whose weekly levels the desk already priced against. Brands are preferred
-// because they carry the deepest history in the trend endpoint.
+// Every attested entity is read out of the panel, never invented: a weighted member
+// of that row's own basket, whose id and creative type Qloo returned and whose
+// weekly levels the desk already priced against. Brands are preferred because they
+// carry the deepest history in the trend endpoint.
+export function basketEntity(row) {
+  const usable = (row?.basket ?? []).filter((m) => m.id && m.type);
+  if (!usable.length) return null;
+  const w = (m) => (Number.isFinite(m.weight) ? m.weight : 0);
+  const member = [...usable].sort((a, b) => (a.type === "brand" ? 0 : 1) - (b.type === "brand" ? 0 : 1) || w(b) - w(a))[0];
+  return { ticker: row.ticker, sector: row.sector ?? null, id: member.id, name: member.name, type: member.type, weight: num(w(member), 4) };
+}
+
 export function referenceEntity(desk) {
   const rows = desk?.rows ?? [];
-  const usable = (r) => (r.basket ?? []).filter((m) => m.id && m.type);
-  const named = rows.find((r) => String(r.ticker).toUpperCase() === FRESHNESS.referenceTicker && usable(r).length);
-  const row = named ?? rows.find((r) => usable(r).length);
-  if (!row) return null;
-  const w = (m) => (Number.isFinite(m.weight) ? m.weight : 0);
-  const member = [...usable(row)].sort((a, b) => (a.type === "brand" ? 0 : 1) - (b.type === "brand" ? 0 : 1) || w(b) - w(a))[0];
-  return { ticker: row.ticker, id: member.id, name: member.name, type: member.type, weight: num(w(member), 4) };
+  const named = rows.find((r) => String(r.ticker).toUpperCase() === FRESHNESS.referenceTicker && basketEntity(r));
+  return basketEntity(named ?? rows.find((r) => basketEntity(r))) ?? null;
+}
+
+// A ticker named in the question, so the attestation can be asked about the name the
+// answer is about instead of a fixed basket member. Only whole-word tickers and full
+// labels count: a substring match would attest the wrong company on a stray "ELF".
+export function tickersInQuestion(question, desk) {
+  const text = String(question ?? "");
+  if (!text) return [];
+  const out = [];
+  for (const row of desk?.rows ?? []) {
+    const ticker = String(row.ticker ?? "").toUpperCase();
+    const label = String(row.label ?? "");
+    const byTicker = ticker.length >= 2 && new RegExp(`(^|[^A-Za-z0-9])${ticker}([^A-Za-z0-9]|$)`).test(text);
+    const byLabel = label.length >= 4 && new RegExp(`(^|[^A-Za-z0-9])${label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}([^A-Za-z0-9]|$)`, "i").test(text);
+    if ((byTicker || byLabel) && !out.includes(ticker)) out.push(ticker);
+  }
+  return out.slice(0, FRESHNESS.maxEntities);
+}
+
+// Up to three attested entities per answer. When the question names names, those
+// rows are attested; otherwise one row per sub-sector, so the panel-level claim
+// rests on three baskets rather than one. The order is deterministic: rows in the
+// order the panel lists them, so two runs attest the same three names.
+export function entitiesFor(desk, tickers = []) {
+  const rows = desk?.rows ?? [];
+  const picked = [];
+  const take = (row) => {
+    const e = basketEntity(row);
+    if (!e || picked.some((p) => p.id === e.id)) return false;
+    picked.push(e);
+    return true;
+  };
+  for (const t of tickers) {
+    const row = rows.find((r) => String(r.ticker).toUpperCase() === String(t).toUpperCase());
+    if (row && picked.length < FRESHNESS.maxEntities) take(row);
+  }
+  if (picked.length) return picked;
+  // The reference row always leads, so a desk with no sector labels still attests
+  // the same name it always did; the rest are one row per sector it does not repeat.
+  const ref = referenceEntity(desk);
+  const refRow = ref ? rows.find((r) => String(r.ticker).toUpperCase() === String(ref.ticker).toUpperCase()) : null;
+  if (refRow) take(refRow);
+  const sectors = [...new Set(rows.map((r) => r.sector ?? "unknown"))];
+  for (const sector of sectors) {
+    if (picked.length >= FRESHNESS.maxEntities) break;
+    if (picked.some((p) => (p.sector ?? "unknown") === sector)) continue;
+    for (const row of rows.filter((r) => (r.sector ?? "unknown") === sector)) if (take(row)) break;
+  }
+  return picked;
 }
 
 // The desk's own carry-forward reading: a week is a revision when the value differs
@@ -244,10 +299,15 @@ function freshnessSentence(ref, reading, panel, when) {
   return `Qloo was asked ${when} about ${ref.name} (${ref.type}), an entity in the ${ref.ticker} basket: its newest weekly point is ${reading.latestWeek ?? "absent"} and ${reading.latestRevision ? `the last week its percentile moved is ${reading.latestRevision}` : `no percentile moved in the ${reading.weeksPulled} weeks pulled`} — nothing newer than ${tail}.`;
 }
 
-// One entity, one page: this attests that the feed is still frozen at the book
-// level, not that every basket member is still, and it never claims a date it did
-// not receive.
-function freshnessScope() {
+// One page per entity: this attests that the feed is still frozen for the names the
+// answer is about — the names it cited when it cited any, otherwise one per
+// sub-sector — and never claims a date it did not receive.
+function freshnessScope(entities) {
+  const n = entities?.length ?? 0;
+  const sectors = new Set((entities ?? []).map((e) => e.entity?.sector).filter(Boolean)).size;
+  if (n > 1) {
+    return `${n} entities${sectors ? ` across ${sectors} sub-sectors` : ""}, one trend page each — the names the question cited when it cited any, otherwise one per sub-sector. Not a re-pull of the book's baskets. A "nothing newer" reading is the expected state at this vintage and is printed as a passing attestation.`;
+  }
   return "One reference entity and one trend page, not a re-pull of the book's baskets. A \"nothing newer\" reading is the expected state at this vintage and is printed as a passing attestation.";
 }
 
@@ -268,35 +328,12 @@ function withTimeout(promise, ms, code) {
   return Promise.race([promise, guard]).finally(() => clearTimeout(timer));
 }
 
-export async function runFreshnessCheck({ desk, series = null, qloo = {}, budgetFile = BUDGET_FILE, cap = LIVE.dailyRequests, clock = () => Date.now() } = {}) {
-  const blocked = freshnessGateReason();
-  const at = iso(clock());
-  if (blocked) return { checked: false, why: blocked, at };
-  const ref = referenceEntity(desk);
-  if (!ref) return { checked: false, why: "no_reference_entity", at };
-  const panel = { lastRevision: desk?.valueAdd?.oos?.scoring?.lastMove ?? null, windowEnd: desk?.window?.end ?? null };
-  const basket = series?.[ref.ticker];
-  const basketMoves = Array.isArray(basket?.basket) && Array.isArray(basket?.dates)
-    ? basket.dates.filter((d, i) => Math.abs(basket.basket[i] ?? 0) > 0).sort()
-    : [];
-  const panelBasketLastMove = basketMoves.at(-1) ?? null;
-
-  const reserved = await reserve(FRESHNESS.maxRequests, { file: budgetFile, cap });
-  if (!reserved.ok) {
-    return { checked: false, why: "budget_exhausted", used: reserved.requests, cap: reserved.cap, at, entity: ref, panel };
-  }
-  // The newest weekly grid point Qloo could be answering for, not today's date:
-  // between grid days the endpoint returns an empty page, which would read as
-  // "Qloo has nothing" when it really means "ask me on the grid".
-  const gridEnd = nextTrendWeek(new Date(clock()).toISOString().slice(0, 10));
-  const requestedAt = iso(clock());
-  const seriesFn = qloo.series ?? qlooTrendPage;
+async function probeEntity(ref, { gridEnd, requestedAt, seriesFn, panel, clock }) {
   // The newest grid week first; if it answers with no points at all, one step back
-  // to the week before it. Two attempts, because that is all that was reserved.
+  // to the week before it. Two attempts per entity, because that is what is reserved.
   let attempts = [];
   let spent = 0;
   let ops = 0;
-  let res = null;
   let points = [];
   let failed = null;
   for (let i = 0; i < FRESHNESS.maxAttempts; i++) {
@@ -317,18 +354,11 @@ export async function runFreshnessCheck({ desk, series = null, qloo = {}, budget
     spent += calls.filter((c) => !c.replayed).length;
     ops += calls.length;
     attempts.push({ end, start, cacheName, calls });
-    res = one;
     points = pointsFor(one.byEntity, ref.id);
     if (points.length) break;
   }
   const last = attempts.at(-1) ?? null;
   const window = last ? { start: last.start, end: last.end } : { start: shiftDays(gridEnd, -FRESHNESS.lookbackDays), end: gridEnd };
-  await settle({ reserved: FRESHNESS.maxRequests, spent, ops }, { file: budgetFile });
-  if (failed) {
-    const known = ["freshness_timeout", "budget_exhausted", "no_reference_entity"];
-    return { checked: false, why: known.includes(failed.code) ? failed.code : "harness_error", harnessCode: known.includes(failed.code) ? null : String(failed.code ?? "").slice(0, 60) || null, requestedAt, at: iso(clock()), entity: ref, window, panel };
-  }
-
   const calls = attempts.flatMap((a) => a.calls);
   const provenance = {
     entity: ref,
@@ -337,58 +367,141 @@ export async function runFreshnessCheck({ desk, series = null, qloo = {}, budget
     requestedAt,
     respondedAt: iso(clock()),
     requests: spent,
+    ops,
     pages: calls.length,
     // A replayed page is a real Qloo response, but it was fetched earlier, so the
     // attestation says when: the page cache must never read as a live ask.
     fromCachedPage: spent === 0 && calls.length > 0,
     correlationIds: calls.map((c) => c.correlationId).filter(Boolean),
-    files: [...new Set([last.cacheName, ...calls.map((c) => c.cacheName)].filter(Boolean))],
+    files: [...new Set([last?.cacheName, ...calls.map((c) => c.cacheName)].filter(Boolean))],
   };
   if (provenance.fromCachedPage) {
     const page = readCache(calls[0].cacheName);
     provenance.cachedResponseFetchedAt = page?.fetchedAt ?? null;
   }
-  if (!points.length) {
-    return { checked: false, why: "no_trend_points", ...provenance, panel };
+  if (failed) {
+    const known = ["freshness_timeout", "budget_exhausted", "no_reference_entity"];
+    return { ...provenance, checked: false, why: known.includes(failed.code) ? failed.code : "harness_error", harnessCode: known.includes(failed.code) ? null : String(failed.code ?? "").slice(0, 60) || null };
   }
+  if (!points.length) return { ...provenance, checked: false, why: "no_trend_points" };
   const reading = qlooFreshnessReading({ points, panelLastRevision: panel.lastRevision, panelWindowEnd: panel.windowEnd });
   const when = `${provenance.respondedAt.slice(11, 16)}Z${provenance.fromCachedPage ? ` (response fetched ${String(provenance.cachedResponseFetchedAt ?? "earlier").slice(11, 16)}Z, replayed from the page cache)` : ""}`;
   return {
+    ...provenance,
     checked: true,
     ...reading,
     panel,
-    panelBasketLastMove,
-    ...provenance,
     plain: freshnessSentence(ref, reading, panel, when),
-    scope: freshnessScope(),
   };
 }
 
-// One checker per panel revision, so the whole book shares one attestation and one
-// cache slot. A failure is held for a minute rather than fifteen, and never retried
+function multiSentence(entities, panel, when, primary) {
+  const read = entities.filter((e) => e.checked);
+  if (read.length <= 1) return read[0]?.plain ?? primary?.plain ?? "";
+  const sectors = new Set(read.map((e) => e.entity?.sector).filter(Boolean)).size;
+  const parts = read.map((e) => `${e.entity?.name ?? e.entity?.id} (${e.entity?.type ?? "entity"}, ${e.entity?.ticker} basket) newest week ${e.latestWeek ?? "absent"}, ${e.verdict === "qloo_has_a_newer_revision" ? `changed on ${e.latestRevision}` : e.verdict === "newer_weeks_no_change" ? "no change from the week before it" : "nothing newer than the panel tail"}`);
+  const missed = entities.filter((e) => !e.checked).map((e) => `${e.entity?.name ?? e.entity?.id} (${e.entity?.ticker} basket): ${e.why ?? "no reading"}`);
+  const verdict = read.some((e) => e.verdict === "qloo_has_a_newer_revision")
+    ? `At least one entity has moved since the panel's last revision ${panel.lastRevision ?? "—"}; the held-out slice frozen at that date is stale against it.`
+    : `None has moved since the panel's last revision ${panel.lastRevision ?? "—"}: newer weeks, no newer signal at this vintage.`;
+  return `Qloo was asked ${when} about ${read.length} entities${sectors ? ` across ${sectors} sub-sectors` : ""} — ${parts.join("; ")}. ${verdict}${missed.length ? ` Not read: ${missed.join("; ")}.` : ""}`;
+}
+
+export async function runFreshnessCheck({ desk, refs = null, series = null, qloo = {}, budgetFile = BUDGET_FILE, cap = LIVE.dailyRequests, clock = () => Date.now() } = {}) {
+  const blocked = freshnessGateReason();
+  const at = iso(clock());
+  if (blocked) return { checked: false, why: blocked, at };
+  const chosen = (Array.isArray(refs) && refs.length ? refs : entitiesFor(desk)).slice(0, FRESHNESS.maxEntities);
+  const primary = chosen[0] ?? referenceEntity(desk);
+  if (!primary) return { checked: false, why: "no_reference_entity", at };
+  const panel = { lastRevision: desk?.valueAdd?.oos?.scoring?.lastMove ?? null, windowEnd: desk?.window?.end ?? null };
+  const basket = series?.[primary.ticker];
+  const basketMoves = Array.isArray(basket?.basket) && Array.isArray(basket?.dates)
+    ? basket.dates.filter((d, i) => Math.abs(basket.basket[i] ?? 0) > 0).sort()
+    : [];
+  const panelBasketLastMove = basketMoves.at(-1) ?? null;
+
+  // One reservation for the whole set, settled down to what it actually spent.
+  const reserved = chosen.length * FRESHNESS.maxRequests;
+  const budget = await reserve(reserved, { file: budgetFile, cap });
+  if (!budget.ok) {
+    return { checked: false, why: "budget_exhausted", used: budget.requests, cap: budget.cap, at, entity: primary, panel };
+  }
+  // The newest weekly grid point Qloo could be answering for, not today's date:
+  // between grid days the endpoint returns an empty page, which would read as
+  // "Qloo has nothing" when it really means "ask me on the grid".
+  const gridEnd = nextTrendWeek(new Date(clock()).toISOString().slice(0, 10));
+  const requestedAt = iso(clock());
+  const seriesFn = qloo.series ?? qlooTrendPage;
+  const entities = await Promise.all(chosen.map((ref) => probeEntity(ref, { gridEnd, requestedAt, seriesFn, panel, clock })));
+  const spent = entities.reduce((a, e) => a + (e.requests ?? 0), 0);
+  const ops = entities.reduce((a, e) => a + (e.ops ?? 0), 0);
+  await settle({ reserved, spent, ops }, { file: budgetFile });
+
+  const head = entities.find((e) => e.entity?.id === primary.id) ?? entities[0];
+  const read = entities.filter((e) => e.checked);
+  if (!read.length) {
+    const first = entities.find((e) => e.why) ?? entities[0];
+    return { ...first, checked: false, entities, requests: spent, panel, at: iso(clock()), scope: freshnessScope(entities) };
+  }
+  const lead = read[0];
+  const when = `${String(lead.respondedAt ?? "").slice(11, 16)}Z${lead.fromCachedPage ? ` (response fetched ${String(lead.cachedResponseFetchedAt ?? "earlier").slice(11, 16)}Z, replayed from the page cache)` : ""}`;
+  const verdict = read.some((e) => e.verdict === "qloo_has_a_newer_revision")
+    ? "qloo_has_a_newer_revision"
+    : read.every((e) => e.verdict === "newer_weeks_no_change") ? "newer_weeks_no_change" : "nothing_newer_than_panel_tail";
+  return {
+    ...head,
+    checked: true,
+    verdict,
+    latestWeek: read.map((e) => e.latestWeek).filter(Boolean).sort().at(-1) ?? null,
+    entities,
+    requests: spent,
+    pages: entities.reduce((a, e) => a + (e.pages ?? 0), 0),
+    fromCachedPage: spent === 0 && entities.some((e) => e.pages > 0),
+    correlationIds: entities.flatMap((e) => e.correlationIds ?? []),
+    files: [...new Set(entities.flatMap((e) => e.files ?? []))],
+    panel,
+    panelBasketLastMove,
+    plain: multiSentence(entities, panel, when, head),
+    scope: freshnessScope(entities),
+    at: iso(clock()),
+  };
+}
+
+// One checker per panel revision with one cache slot per entity set: the panel-wide
+// set and each set a question names are cached separately, so two answers about the
+// same names share a reading and two answers about different names do not overwrite
+// each other. A failure is held for a minute rather than fifteen, and never retried
 // inside an answer.
 export function createFreshnessChecker(options = {}) {
   const clock = options.clock ?? (() => Date.now());
   const minutes = options.cacheMinutes ?? FRESHNESS.cacheMinutes;
-  let entry = null;
-  let inflight = null;
   const holdMs = (value) => (value.checked ? minutes : FRESHNESS.failureCacheSeconds / 60) * 60000;
-  const run = () => {
-    const p = runFreshnessCheck({ ...options, clock });
-    inflight = p;
+  const entries = new Map();
+  const inflight = new Map();
+  const keyOf = (refs) => (refs?.length ? refs.map((r) => r.id).sort().join(",") : "panel");
+  const run = (refs) => {
+    const key = keyOf(refs);
+    const p = runFreshnessCheck({ ...options, refs: refs ?? null, clock });
+    inflight.set(key, p);
     return p.then(
-      (value) => { if (inflight === p) inflight = null; entry = { at: clock(), value }; return value; },
-      (e) => { if (inflight === p) inflight = null; throw e; },
+      (value) => { if (inflight.get(key) === p) inflight.delete(key); entries.set(key, { at: clock(), value }); return value; },
+      (e) => { if (inflight.get(key) === p) inflight.delete(key); throw e; },
     );
   };
+  const fresh = (key) => {
+    const entry = entries.get(key);
+    if (!entry || clock() - entry.at >= holdMs(entry.value)) return null;
+    return { ...entry.value, fromCache: true, cachedSeconds: Math.round((clock() - entry.at) / 1000) };
+  };
   return {
-    async check() {
-      if (entry && clock() - entry.at < holdMs(entry.value)) {
-        return { ...entry.value, fromCache: true, cachedSeconds: Math.round((clock() - entry.at) / 1000) };
-      }
-      // One probe at a time: an answer that arrives while a probe is still in the
-      // air joins it rather than spending a second request on the same attestation.
-      const value = await (inflight ?? run());
+    async check(refs = null) {
+      const key = keyOf(refs);
+      const cached = fresh(key);
+      if (cached) return cached;
+      // One probe at a time per set: an answer that arrives while a probe is still
+      // in the air joins it rather than spending a second request on the same set.
+      const value = await (inflight.get(key) ?? run(refs));
       return { ...value, fromCache: false };
     },
     // The first probe of a new trend week is a cold live call — measured at 26 s on
@@ -400,14 +513,15 @@ export function createFreshnessChecker(options = {}) {
     // never spends anything here.
     prime() {
       if (freshnessGateReason()) return null;
-      if (entry && clock() - entry.at < holdMs(entry.value)) return null;
-      return inflight ?? run().catch(() => null);
+      if (fresh("panel")) return null;
+      return inflight.get("panel") ?? run(null).catch(() => null);
     },
-    // What an answer already established. It never makes a request: a page load
-    // must not be able to spend the Qloo budget.
+    // What an answer already established for the panel-wide set. It never makes a
+    // request: a page load must not be able to spend the Qloo budget.
     peek() {
       const blocked = freshnessGateReason();
       if (blocked) return { checked: false, why: blocked, live: false };
+      const entry = entries.get("panel");
       if (!entry) return { checked: false, why: "not_checked_yet", live: true };
       return { ...entry.value, fromCache: true, stale: clock() - entry.at >= holdMs(entry.value), ageSeconds: Math.round((clock() - entry.at) / 1000) };
     },
