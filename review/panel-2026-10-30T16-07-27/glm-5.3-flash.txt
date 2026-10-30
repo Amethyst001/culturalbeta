@@ -1,0 +1,29 @@
+{
+  "verdict": "PASS",
+  "score_total": 61,
+  "scores": { "technological_implementation": 17, "design": 16, "potential_impact": 12, "quality_of_idea": 16 },
+  "fatal": "none",
+  "must_fix": [
+    "Relabel the headline grade from NO SIGNAL to 'NO SIGNAL — held-out untestable on this vintage'; the third state exists in the UI but the grade word still implies a test ran and returned nothing.",
+    "Give the post-hoc cadence diagnostic a median-based block-bootstrap interval that resamples only moving weeks (or a signed-rank test on moving weeks), or cut the mean/range and print only the median and % positive — the −8.42 mean against a −127.5 outlier is not interpretable as shipped.",
+    "Print the 35 frozen scored weeks explicitly on the evidence page next to the OOS ΔR² cell so no reader can quote the −0.05/−0.56/+0.28 numbers without seeing 'no test'.",
+    "State the basket-build circularity limit: the rotation and date permutation nulls preserve whatever low-frequency structure the Qloo trending series shares across entities, so they rule out less than 'p 0.898' reads to a naive judge."
+  ],
+  "method_objections": [
+    "The untestability claim is correct and follows: the regressor is identically zero on all 35 scored weeks (last movement 2025-12-22 vs window end 2026-10-26), so OLS identification fails exactly there and power equals size by construction; the perturbation framing of the OOS/refit intervals is the right one.",
+    "Max-of-p is described as 'conservative by construction', which is true for the union-of-failure-modes reading but the three nulls are highly dependent (same data, same calendar), so the effective test is closer to one null than three; do not let the multiplicity framing imply extra stringency it does not have.",
+    "The dispersion test's 'analytic benchmark is the miscalibrated one' inverts the usual burden: with sd 0.55 slope dispersion and dependent calendar shocks, the rotation null itself can be mis-sized; 805 vs 1352 vs 1869 is consistent with 'nothing detectable', and the power column (0% at planted sd ≤ 10) says so plainly — the defensible claim is 'uninformative', which is what the brief says, so this objection is that the attribution to two named channels is asserted, not tested.",
+    "The peer-ablation rotation p 0.126 with 206/400 valid draws is near-significance on a reduced draw set, and marking it 'perturbation, not a test' on frozen-slice grounds is right — but a judge will ask why the one comparison where taste underperforms a no-Qloo basket gets a validity discount while the taste-favouring cells keep full printing; the symmetric rule should be stated once and applied to all arms."
+  ],
+  "overstatements": [
+    "'The desk therefore ... computes it once in src/robustness.mjs' — the freeze makes the refit interval [−2.12, +0.64] a perturbation artefact, yet it is still printed with four significant figures on the read page; label it 'meaningless on this vintage' or drop it from the graded view.",
+    "'median name's basket moves in 0 of them' combined with 'the basket moves in 19–31 of 102 weeks per name' — both are true, but the brief's identification sentence implies per-name variation exists in-sample; state that identification comes entirely from ≤ the 2025-12-22 boundary, not spread across the window.",
+    "'a market beta ... does not measurably report in this sample' (pitch) — with zero flags, ΔR² of 0.67 pts and a null OOS arm, the honest pitch is 'no measurable taste channel found on this Qloo vintage', not a positive framing of what beta fails to report."
+  ],
+  "untestable_label_verdict": "Yes — the arm should stay, labelled untestable, because a regressor that is identically zero on every scored week makes 'no test possible' a mathematical fact, not a narrative choice, and removing the arm would hide the pre-registration rather than honour it.",
+  "cadence_diagnostic_verdict": "Ship it labelled, but only the median and % positive with a moving-weeks-only sign test; the mean and −127.5 outlier are result-shopping-adjacent noise on 9 moving weeks, and the null result it shows (negative median) actually argues against the team's own thesis, which is the best evidence it is not cherry-picked.",
+  "grade_label_verdict": "No — 'NO SIGNAL' alone is now misleading because no held-out signal test ran; 'NO SIGNAL (in-sample) — held-out untestable on this vintage' costs five words and removes the misread.",
+  "best_next_model_construction": "Re-run the pooled per-name-loading panel restricted to the 58 informative weeks with the split inside 2024-10-21→2025-12-22 as the pre-registered test on the next Qloo vintage refresh, dropping the dead tail entirely rather than treating it as an appendix.",
+  "headline_rewrite": "On 80 priced names and one Qloo trending vintage, no measurable taste beta emerges in-sample — and the pre-registered held-out test is untestable because Qloo's series freezes 44 weeks before the price window ends.",
+  "judge_60s": "A judge will most likely misread the printed −0.05 pts OOS ΔR² and its confidence interval as a real null result from a real test, missing that every scored week was a frozen carry-forward — the chip and column exist but sit one click below the numbers everyone reads first."
+}

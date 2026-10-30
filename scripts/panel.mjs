@@ -40,7 +40,7 @@ const ROSTER = [
     slot: "reviewer-1 · structure",
     tie: "information architecture, hierarchy, what a judge sees in the first 15 seconds",
     candidates: [
-      { label: "Abhibots · Claude Opus 5.5", provider: "abhibots", model: "claude-opus-5-5", keys: keys("ABHIBOTS_API_KEY", "OPUS_PROXY_KEY"), vision: true },
+      { label: "Abhibots · Claude Opus 5.5", provider: "abhibots", model: "claude-opus-5-5", keys: keys("ABHIBOTS_API_KEY", "OPUS_PROXY_KEY"), vision: true, timeout: 420000 },
       { label: "NVIDIA · Nemotron 3.5 Super VL 120B", provider: "nvidia", model: "nvidia/nemotron-3.5-super-vl-120b-a12b", keys: keys("NVIDIA_API_KEY"), vision: true },
       { label: "Groq · GPT-OSS 120B", provider: "groq", model: "openai/gpt-oss-120b", keys: keys("GROQ_API_KEY", "GROQ_API_KEY_2") },
       { label: "Groq · Qwen 3.8 27B", provider: "groq", model: "qwen/qwen3.8-27b", keys: keys("GROQ_API_KEY", "GROQ_API_KEY_2"), compact: true },
@@ -50,7 +50,7 @@ const ROSTER = [
     slot: "reviewer-2 · product",
     tie: "does this read as a desk a consumer-equity PM would actually use; what is missing or bloated",
     candidates: [
-      { label: "Abhibots · Claude Fable 5.1", provider: "abhibots", model: "claude-fable-5-1", keys: keys("ABHIBOTS_API_KEY", "OPUS_PROXY_KEY"), vision: true },
+      { label: "Abhibots · Claude Fable 5.1", provider: "abhibots", model: "claude-fable-5-1", keys: keys("ABHIBOTS_API_KEY", "OPUS_PROXY_KEY"), vision: true, timeout: 420000 },
       { label: "Groq · GPT-OSS 120B", provider: "groq", model: "openai/gpt-oss-120b", keys: keys("GROQ_API_KEY", "GROQ_API_KEY_2") },
       { label: "NVIDIA · Nemotron 3.5 Super VL 120B", provider: "nvidia", model: "nvidia/nemotron-3.5-super-vl-120b-a12b", keys: keys("NVIDIA_API_KEY"), vision: true },
       { label: "Groq · Qwen 3.8 27B", provider: "groq", model: "qwen/qwen3.8-27b", keys: keys("GROQ_API_KEY", "GROQ_API_KEY_2"), compact: true },
@@ -60,7 +60,7 @@ const ROSTER = [
     slot: "reviewer-3 · craft",
     tie: "typography, colour, chart craft, mobile, and what looks amateur",
     candidates: [
-      { label: "Abhibots · Claude Sonnet 5", provider: "abhibots", model: "claude-sonnet-5", keys: keys("ABHIBOTS_API_KEY", "OPUS_PROXY_KEY"), vision: true },
+      { label: "Abhibots · Claude Sonnet 5", provider: "abhibots", model: "claude-sonnet-5", keys: keys("ABHIBOTS_API_KEY", "OPUS_PROXY_KEY"), vision: true, timeout: 420000 },
       { label: "NVIDIA · Nemotron 3.5 Super VL 120B", provider: "nvidia", model: "nvidia/nemotron-3.5-super-vl-120b-a12b", keys: keys("NVIDIA_API_KEY"), vision: true },
       { label: "Groq · Qwen 3.8 27B", provider: "groq", model: "qwen/qwen3.8-27b", keys: keys("GROQ_API_KEY", "GROQ_API_KEY_2"), compact: true },
       { label: "Groq · GPT-OSS 120B", provider: "groq", model: "openai/gpt-oss-120b", keys: keys("GROQ_API_KEY", "GROQ_API_KEY_2"), compact: true },
@@ -78,17 +78,33 @@ if (!briefPath) { console.error("usage: node scripts/panel.mjs --brief review/br
 const brief = readFileSync(resolve(ROOT, briefPath), "utf8");
 const imagePaths = (arg("images", "") || "").split(",").map((s) => s.trim()).filter(Boolean);
 
+// Standing directive prepended to every reviewer's prompt. The wording is fixed
+// by the team's instruction: "Exercise abstract thinking" must appear verbatim,
+// and the review itself must be asked for in the prompt, not assumed.
+const STANDING = `Exercise abstract thinking. Before scoring, reason about the entry at the level of its abstract claim, not only its screens: what exactly is being measured, what would falsify it, whether the instrument, the estimator and the control actually establish what the entry says they establish, and what the product is worth if the answer comes back negative. Then review: give a real critical review of the substance and the execution, not a summary of the brief, and answer every numbered request at the end of the brief.
+
+---
+
+`;
+
 function contentFor(model, prior, withImages) {
   const parts = [];
   const priorText = prior.length
     ? "\n\n---\nEARLIER REVIEWERS (critique them: sharpen, disagree where you must, name who you agree with and why; do not restate them):\n" +
       prior.map((p) => `\n### ${p.label}\n${p.text}`).join("\n")
     : "";
-  parts.push({ type: "text", text: brief + priorText });
+  // The images go in as a block with one manifest before them. Interleaving a
+  // caption between images made models bind the caption to the wrong picture and
+  // describe the desk as the branch card, so the order is stated once and the
+  // images follow unlabelled.
+  const manifest = withImages
+    ? "\n\n---\nSCREENSHOTS FOLLOW\n" + imagePaths.length + " images, in this order, with no captions between them:\n" +
+      imagePaths.map((p, i) => `${i + 1}. ${p.split("/").pop()}`).join("\n") + "\n"
+    : "";
+  parts.push({ type: "text", text: STANDING + brief + priorText + manifest });
   if (withImages) {
     for (const p of imagePaths) {
       const b64 = readFileSync(resolve(ROOT, p)).toString("base64");
-      parts.push({ type: "text", text: `\nScreenshot: ${p}` });
       parts.push({ type: "image_url", image_url: { url: `data:image/png;base64,${b64}` } });
     }
   }
@@ -110,7 +126,7 @@ function degenerate(text) {
   return false;
 }
 
-async function ask(cand, prior, timeoutMs = 240000) {
+async function ask(cand, prior, timeoutMs = cand.timeout ?? 240000) {
   if (!cand.keys.length) return { ok: false, text: "no key" };
   const vision = Boolean(cand.vision && imagePaths.length);
   const opts = cand.compact ? { compact: true, maxTokens: 2200 } : {};
@@ -192,7 +208,7 @@ for (const slot of ROSTER) {
   });
 }
 
-const header = `# Review panel — ${new Date().toISOString()}\n\nImages: ${imagePaths.length ? imagePaths.join(", ") : "none"}\nBrief: ${briefPath}\n\n## Attempts\n${log.map((l) => "- " + l).join("\n")}\n`;
+const header = `# Review panel — ${new Date().toISOString()}\n\nImages: ${imagePaths.length ? imagePaths.join(", ") : "none"}\nBrief: ${briefPath}\n\n## Standing directive (prepended to every reviewer)\n${STANDING.trim().split("\n---")[0]}\n\n## Attempts\n${log.map((l) => "- " + l).join("\n")}\n`;
 const body = verdicts.map((v) => `\n---\n\n## ${v.slot}\n**Model:** ${v.label} (${v.provider}/${v.model})${v.vision ? " · saw the screenshots" : " · text only"}${v.usedReasoning ? " · answer taken from reasoning channel" : ""}${v.note ? ` · ${v.note}` : ""}\n**Charter:** ${v.tie}\n**Latency:** ${v.ms} ms\n\n${v.text}\n`).join("");
 const outMd = resolve(ROOT, `review/panel-${stamp}.md`);
 writeFileSync(outMd, header + body);

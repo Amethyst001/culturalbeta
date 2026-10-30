@@ -1,0 +1,26 @@
+{
+ "harness": {
+  "version": "0.1.26",
+  "surface": "api search"
+ },
+ "request": {
+  "argv": [
+   "search",
+   "--query",
+   "Archer-Daniels-Midland",
+   "--type",
+   "brand",
+   "--take",
+   "10"
+  ]
+ },
+ "fetchedAt": "2026-10-30T09:14:56.139Z",
+ "response": [
+  {
+   "entity_id": "urn:entity:brand:stub-archer-daniels-midland",
+   "name": "Archer-Daniels-Midland",
+   "type": "urn:entity:brand",
+   "subtype": "urn:entity:brand"
+  }
+ ]
+}

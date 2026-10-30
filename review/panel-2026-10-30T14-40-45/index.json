@@ -1,0 +1,88 @@
+[
+  {
+    "id": "nemotron-3.5-super",
+    "label": "NVIDIA NIM / Nemotron 3.5 Super VL 120B",
+    "endpoint": "https://integrate.api.nvidia.com/v1/chat/completions",
+    "keyVar": "NVIDIA_API_KEY",
+    "model": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+    "maxTokens": 12000,
+    "gap": 5000,
+    "ok": true,
+    "verdict": {
+      "verdict": "FIX FIRST",
+      "score_total": 58,
+      "scores": {
+        "technological_implementation": 16,
+        "design": 17,
+        "potential_impact": 9,
+        "quality_of_idea": 16
+      },
+      "fatal": "none",
+      "must_fix": [
+        "Re-specify the estimation window so its end date (2026-10-26) does not exceed available price and Qloo coverage; re-run all statistics on a window fully inside the data.",
+        "Replace observed-spread power with a pre-specified minimum culturally meaningful dispersion (SESOI) and print the minimum detectable effect; declare the test uninformative if power at SESOI is below 80%.",
+        "Add an explicit disclosure that NO SIGNAL is not evidence of absence and is statistically indistinguishable from FAILS at this power, on the grade page and README.",
+        "Exclude the frozen tail (~8 weeks) from the out-of-sample evaluation, or disclose that the OOS score is partly computed against a Qloo regressor that has not refreshed."
+      ],
+      "method_objections": [
+        "Observed-spread power is circular post-hoc power: it anchors on the estimate being tested and returns 0% because the observed spread is small, so it cannot validate the test or distinguish a null from a miss.",
+        "The 25% analytic/null mismatch does not prove the analytic benchmark is miscalibrated; shared-calendar dependence mechanically depresses cross-sectional variance below mean marginal variance, and the independent-rotation null may itself understate dispersion by destroying common factors.",
+        "The intersection-union rule is not binding here (all p >> 0.10), but with 0% power at the observed spread, NO SIGNAL is indistinguishable from FAILS or a small true effect; presenting it as a grade implies evidential weight it does not have.",
+        "The OOS ΔR² is scored over the last 35 weeks while the Qloo regressor is frozen for the newest ~8 weeks, so part of the out-of-sample evaluation uses stale regressor values and is not a clean out-of-sample test of the cultural channel."
+      ],
+      "overstatements": [
+        "\"the analytic benchmark is the miscalibrated one\" — it is not miscalibrated; it estimates marginal precision and is the wrong benchmark for cross-sectional dispersion under shared-calendar dependence.",
+        "\"NO SIGNAL — the factor was looked for and not detectable at this window length\" — this reads as evidence of absence; the correction is \"NO SIGNAL — the test has zero power at the observed dispersion, so the result is uninformative and does not establish the absence of an effect.\"",
+        "\"the wider interval bounds what the window can exclude, which here is only effects larger than ~2.1 pts\" — the refit 90% interval is [−2.12, +0.64], so it excludes effects above +0.64 or below −2.12, not merely effects larger than 2.1."
+      ],
+      "dispersion_verdict": "yes — the uninformative label is correct because power at the observed spread is 0%, but the test is uninformative for the wrong reason: its minimum detectable effect is far above the observed sd 28.4, so the observed-spread criterion is circular rather than diagnostic.",
+      "power_criterion_verdict": "no — observed-spread power is post-hoc and anchors on the estimate being tested; a pre-specified SESOI/MDE criterion is correct, and here it would show the test cannot detect any dispersion below roughly sd 25–50.",
+      "best_next_model_construction": "A two-way fixed-effects panel using name-specific Qloo entity exposures (affinity-weighted trending by entity, not sub-sector baskets), with week fixed effects to absorb the shared calendar, estimated only on weeks where the Qloo series has actually refreshed.",
+      "headline_rewrite": "Qloo taste adds no detectable weekly alpha to SPY across 80 consumer names; the cultural beta is statistically indistinguishable from zero and the test is underpowered to rule out anything but a very large effect.",
+      "judge_60s": "A Qloo judge skimming will see 72 cached basket calls and a server-side API and assume Qloo is load-bearing, then miss that the basket regressor changes in only a median of 29 of 102 weeks and the OOS score is partly computed against a frozen 8-week tail, so the null reads as a Qloo failure rather than a data-cadence limitation."
+    },
+    "finish": "stop",
+    "usage": {
+      "prompt_tokens": 3855,
+      "completion_tokens": 10367,
+      "total_tokens": 14222,
+      "prompt_tokens_details": {
+        "audio_tokens": null,
+        "cached_tokens": 0
+      },
+      "completion_tokens_details": {
+        "accepted_prediction_tokens": null,
+        "audio_tokens": null,
+        "reasoning_tokens": 9359,
+        "rejected_prediction_tokens": null
+      }
+    },
+    "ms": 293546
+  },
+  {
+    "id": "glm-5.3-flash",
+    "label": "BeatAPI / GLM 5.3 Flash (free)",
+    "endpoint": "https://api.beatapi.io/v1/chat/completions",
+    "keyVar": "BEATAPI_API_KEY",
+    "model": "glm-5.3-flash-free",
+    "maxTokens": 8000,
+    "gap": 65000,
+    "ok": false,
+    "status": 429,
+    "error": "{\"error\":{\"code\":\"rate_limit_exceeded\",\"message\":\"Rate limit exceeded: this model allows at most 1 successful requests per minute per account. Retry after 60 seconds. After your first top-up, this free model allows up to 10 successful requests per minute. Your top-up balance can also be used for pai",
+    "ms": 896
+  },
+  {
+    "id": "minimax-m2.7",
+    "label": "dahl / MiniMax M2.7",
+    "endpoint": "https://inference.dahl.global/v1/chat/completions",
+    "keyVar": "DAHL_API_KEY",
+    "model": "MiniMaxAI/MiniMax-M2.7",
+    "maxTokens": 8000,
+    "gap": 20000,
+    "ok": false,
+    "status": 502,
+    "error": "<!DOCTYPE html>\n<!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 7]>    <html class=\"no-js ie7 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 8]>    <html class=\"no-js ie8 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if gt IE 8]><!--> <html class=\"no-js\" lang=\"en-US\"> <!",
+    "ms": 120617
+  }
+]

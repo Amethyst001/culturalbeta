@@ -1,0 +1,137 @@
+{
+ "harness": {
+  "version": "0.1.26",
+  "surface": "exec recommend"
+ },
+ "input": {
+  "target_type": "brand",
+  "signals": [
+   "urn:entity:brand:stub-tide",
+   "urn:entity:brand:stub-oreo",
+   "urn:entity:brand:stub-heinz",
+   "urn:entity:brand:stub-cheerios",
+   "urn:entity:brand:stub-kellogg-s",
+   "urn:entity:brand:stub-hershey-s",
+   "urn:entity:brand:stub-campbell-s",
+   "urn:entity:brand:stub-jif",
+   "urn:entity:brand:stub-healthy-choice",
+   "urn:entity:brand:stub-lamb-weston"
+  ],
+  "limit": 10
+ },
+ "fetchedAt": "2026-10-30T09:15:50.279Z",
+ "correlationId": "exec-stub-recommend",
+ "response": {
+  "status": "ok",
+  "interpretation": {
+   "target_type": "brand",
+   "signals": [
+    "urn:entity:brand:stub-tide",
+    "urn:entity:brand:stub-oreo",
+    "urn:entity:brand:stub-heinz",
+    "urn:entity:brand:stub-cheerios",
+    "urn:entity:brand:stub-kellogg-s",
+    "urn:entity:brand:stub-hershey-s",
+    "urn:entity:brand:stub-campbell-s",
+    "urn:entity:brand:stub-jif",
+    "urn:entity:brand:stub-healthy-choice",
+    "urn:entity:brand:stub-lamb-weston"
+   ]
+  },
+  "results": [
+   {
+    "entity_id": "urn:entity:brand:stub-urn-entity-brand-stub-tide-0",
+    "name": "Stub brand 0",
+    "type": "urn:entity:brand",
+    "affinity": 0.6
+   },
+   {
+    "entity_id": "urn:entity:brand:stub-urn-entity-brand-stub-tide-1",
+    "name": "Stub brand 1",
+    "type": "urn:entity:brand",
+    "affinity": 0.59
+   },
+   {
+    "entity_id": "urn:entity:brand:stub-urn-entity-brand-stub-tide-2",
+    "name": "Stub brand 2",
+    "type": "urn:entity:brand",
+    "affinity": 0.58
+   },
+   {
+    "entity_id": "urn:entity:brand:stub-urn-entity-brand-stub-tide-3",
+    "name": "Stub brand 3",
+    "type": "urn:entity:brand",
+    "affinity": 0.57
+   },
+   {
+    "entity_id": "urn:entity:brand:stub-urn-entity-brand-stub-tide-4",
+    "name": "Stub brand 4",
+    "type": "urn:entity:brand",
+    "affinity": 0.56
+   },
+   {
+    "entity_id": "urn:entity:brand:stub-urn-entity-brand-stub-tide-5",
+    "name": "Stub brand 5",
+    "type": "urn:entity:brand",
+    "affinity": 0.55
+   },
+   {
+    "entity_id": "urn:entity:brand:stub-urn-entity-brand-stub-tide-6",
+    "name": "Stub brand 6",
+    "type": "urn:entity:brand",
+    "affinity": 0.54
+   },
+   {
+    "entity_id": "urn:entity:brand:stub-urn-entity-brand-stub-tide-7",
+    "name": "Stub brand 7",
+    "type": "urn:entity:brand",
+    "affinity": 0.53
+   },
+   {
+    "entity_id": "urn:entity:brand:stub-urn-entity-brand-stub-tide-8",
+    "name": "Stub brand 8",
+    "type": "urn:entity:brand",
+    "affinity": 0.52
+   },
+   {
+    "entity_id": "urn:entity:brand:stub-urn-entity-brand-stub-tide-9",
+    "name": "Stub brand 9",
+    "type": "urn:entity:brand",
+    "affinity": 0.51
+   }
+  ],
+  "result_count": 10,
+  "provenance": {
+   "source": "stub",
+   "endpoint": "/v2/insights",
+   "documentation": "stub",
+   "requests": [
+    {
+     "method": "GET",
+     "path": "/v2/insights",
+     "query": {
+      "target_type": "brand",
+      "signals": [
+       "urn:entity:brand:stub-tide",
+       "urn:entity:brand:stub-oreo",
+       "urn:entity:brand:stub-heinz",
+       "urn:entity:brand:stub-cheerios",
+       "urn:entity:brand:stub-kellogg-s",
+       "urn:entity:brand:stub-hershey-s",
+       "urn:entity:brand:stub-campbell-s",
+       "urn:entity:brand:stub-jif",
+       "urn:entity:brand:stub-healthy-choice",
+       "urn:entity:brand:stub-lamb-weston"
+      ],
+      "limit": 10
+     }
+    }
+   ]
+  },
+  "execution": {
+   "transport": "direct",
+   "correlation_id": "exec-stub-recommend",
+   "duration_ms": 1
+  }
+ }
+}

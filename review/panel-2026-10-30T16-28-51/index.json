@@ -1,0 +1,186 @@
+[
+  {
+    "id": "nemotron-3.5-super",
+    "label": "NVIDIA NIM / Nemotron 3.5 Super VL 120B",
+    "endpoint": "https://integrate.api.nvidia.com/v1/chat/completions",
+    "keyVar": "NVIDIA_API_KEY",
+    "model": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+    "maxTokens": 12000,
+    "gap": 5000,
+    "ok": true,
+    "verdict": {
+      "verdict": "FIX FIRST",
+      "score_total": 50,
+      "scores": {
+        "technological_implementation": 15,
+        "design": 13,
+        "potential_impact": 10,
+        "quality_of_idea": 12
+      },
+      "fatal": "none",
+      "must_fix": [
+        "Replace the grade \"NO SIGNAL (IN-SAMPLE)\" with a label stating the held-out slice is untestable, e.g. \"NO OUT-OF-SAMPLE TEST — FROZEN TASTE REGRESSOR\".",
+        "Remove the post-hoc diagnostic or re-label it as ungraded, non-pre-registered, and interval-free; it currently implies out-of-sample evidence.",
+        "Disclose on the data vintage card that Qloo population_percentile is frozen for the final 44 of 102 weeks and the taste regressor is identically zero across all 35 scored weeks.",
+        "Explain or remove the 18 unresolved names; 21 percent of the book lacks the core cultural column."
+      ],
+      "method_objections": [
+        "The held-out taste regressor has zero variation, so the out-of-sample condition has power equal to size; \"no test\" is accurate but the surrounding copy still implies a completed inference.",
+        "All 35 scored weeks fall inside the carry-forward region; the final 44 weeks are stale Qloo data.",
+        "The dispersion test has 0 percent power at the observed standard deviation (28.4) and is labeled uninformative yet remains on the desk.",
+        "Qloo-vs-peer basket correlation averages 0.04; the taste basket moves in only 27 of 102 weeks while the peer basket moves every week, so the taste regressor is not a weekly signal.",
+        "The three nulls share one calendar and one frozen tail; p-values of 0.78 to 0.90 are not rescued by calling them one stringent check.",
+        "The 38/20 post-hoc split is median-led, outlier-dominated (range -127.5 to +15.8), and reported without an interval or grade."
+      ],
+      "overstatements": [
+        "\"NO SIGNAL (IN-SAMPLE)\" claims a capable in-sample test found nothing; the in-sample nulls were not cleared (rotation p 0.90, week-order p 0.78, block p 0.83) and the out-of-sample slice is frozen. It should read \"NO OUT-OF-SAMPLE TEST — FROZEN TASTE REGRESSOR.\"",
+        "The diagnostic's presentation of a post-hoc median (-0.49 pts) as an out-of-sample check overstates the evidence; it is post-hoc, ungraded, interval-free, and outlier-dominated. It should read \"post-hoc diagnostic only, not evidence.\"",
+        "\"IN-SAMPLE ONLY\" implies a confirmed in-sample state; the correct reading is \"in-sample association not confirmed by any null.\""
+      ],
+      "grade_label_verdict": "No. The label still reads as a capable test that found nothing, but the held-out regressor is identically zero and the in-sample nulls were not cleared; there is no signal to reject, only an untestable slice.",
+      "roster_verdict": "Integrity in disclosure, but a broken table for 21 percent of the book. Keeping the rows with the query tried is better than silent dropping, yet it invites the question why 18 consumer names failed to resolve to Qloo entities without answering it.",
+      "cadence_diagnostic_verdict": "Cut. It is post-hoc, median-led, outlier-dominated, interval-free, and ungraded; no single sentence makes a result-shopping diagnostic safe. If retained, it must carry: \"This post-hoc split is ungraded, has no confidence interval, and does not support the book's verdict.\"",
+      "best_next_model_construction": "Re-base the sample on weeks where Qloo population_percentile actually changes, restrict to the 83 resolved names, pre-register a hold-out with non-zero taste regressor variation, switch to a Qloo endpoint with weekly movement instead of carry-forward percentiles, and power the dispersion test before reporting it.",
+      "headline_rewrite": "Cultural beta desk: 101 consumer names, 80 priced, zero significant flags, and no testable out-of-sample slice because the Qloo taste series is frozen for the final 44 weeks.",
+      "judge_60s": "A judge will read \"NO SIGNAL (IN-SAMPLE)\" and conclude the desk tested cultural beta and found it does not predict returns, when the out-of-sample test was impossible (frozen regressor) and the in-sample association failed its own nulls."
+    },
+    "finish": "stop",
+    "usage": {
+      "prompt_tokens": 1996,
+      "completion_tokens": 8588,
+      "total_tokens": 10584,
+      "prompt_tokens_details": {
+        "audio_tokens": null,
+        "cached_tokens": 0
+      },
+      "completion_tokens_details": {
+        "accepted_prediction_tokens": null,
+        "audio_tokens": null,
+        "reasoning_tokens": 7525,
+        "rejected_prediction_tokens": null
+      }
+    },
+    "ms": 140493
+  },
+  {
+    "id": "glm-5.3-flash",
+    "label": "BeatAPI / GLM 5.3 Flash (free)",
+    "endpoint": "https://api.beatapi.io/v1/chat/completions",
+    "keyVar": "BEATAPI_API_KEY",
+    "model": "glm-5.3-flash-free",
+    "maxTokens": 8000,
+    "gap": 65000,
+    "ok": true,
+    "verdict": {
+      "verdict": "PASS",
+      "score_total": 66,
+      "scores": {
+        "technological_implementation": 19,
+        "design": 16,
+        "potential_impact": 14,
+        "quality_of_idea": 17
+      },
+      "fatal": "none",
+      "must_fix": [
+        "State the 44/102 carry-forward and the empty held-out slice on the desk landing surface, not only in the vintage card — a judge who never opens that card will read NO SIGNAL (IN-SAMPLE) as a tested null.",
+        "Put a one-line resolution-failure reason per unresolved name (ticker aliasing, non-consumer brand string, Qloo coverage gap) so 18/101 does not read as a broken pipeline.",
+        "Cut or hard-downgrade the post-hoc split: as shipped it is a second look at a frozen region with no pre-registration and no interval; keep it only if labelled 'diagnostic, not evidence, not pre-specified' in the same visual weight as the graded cells.",
+        "Replace 'uninformative' dispersion framing with the actual consequence: with 0% power at the observed sd, the book cannot detect any effect of practical size — say that in the grade summary."
+      ],
+      "method_objections": [
+        "The three nulls share one calendar and one frozen tail; they are not independent confirmations and the copy now says so, but a single 58-week informative window is thin evidence for an entire book-level grade regardless of label.",
+        "All 35 scored weeks are carry-forward with the regressor identically zero: the OOS design never had power. This should be presented as a data-vintage failure of the pre-registration, not folded into the grade word.",
+        "The post-hoc 38/20 split with a −127.5 outlier and mean −8.42 invites exactly the mean-vs-median shopping the median-led presentation tries to pre-empt; without a pre-specified analysis it proves nothing either way.",
+        "Qloo-vs-peer basket correlation of 0.04 means the control basket is nearly a different instrument; the symmetric perturbation rule is formally clean but the comparison is between a signal that moves 27/102 weeks and one that moves every week — unequal exposure, not a matched control.",
+        "83/101 entity resolution with no published resolution methodology means the surviving 80 may be a selection-biased subset (large, well-documented brands resolve; the marginal names do not)."
+      ],
+      "overstatements": [
+        "Any phrasing implying the book was 'tested out of sample' — it was not; the held-out condition has power equal to size. Should read: 'the pre-registered out-of-sample window was frozen on stale Qloo data and could not test anything.'",
+        "'0 flags' as a finding — with 0% power at observed dispersion and +0.67 r² in-sample, the correct claim is 'the design could not have detected this effect size', not 'no name clears the bar'.",
+        "Dispersion 'uninformative' understates the problem: it is informative about power — the test cannot reject at any plausible effect — and the copy should say the book is underpowered, not neutral."
+      ],
+      "grade_label_verdict": "Yes, defensible. NO SIGNAL (IN-SAMPLE) correctly locates the evidentiary basis in the in-sample book and nulls, and IN-SAMPLE ONLY existing as a distinct state prevents the label from being read as 'tested and found nothing'. The remaining risk is placement, not wording: if the vintage card is not on the default view, the parenthetical will be skipped.",
+      "roster_verdict": "Yes on integrity, with a caveat. 101/80 with nulls and queries shown is more honest than 83 silent rows, but 'no Qloo entity' plus the raw query is a non-explanation; a one-word failure class per name (alias, coverage, delisted) converts a broken-looking table into an audited one.",
+      "cadence_diagnostic_verdict": "Cut, or reduce to a footnote. Median-led with no interval and no grade is more disciplined than before, but it is still an unplanned analysis on data the desk itself declares frozen; its only function is narrative texture. One sentence that would make it safe: 'This split was not pre-registered and the region contains no independent taste variation; it is shown for completeness and carries no evidentiary weight.'",
+      "best_next_model_construction": "Re-pull the full window on a current Qloo vintage so population_percentile actually moves in the held-out weeks, and use a basket constructed from Qloo entity-level affinity/taste signals that vary weekly (the trending basket moving only 27/102 weeks is the real power killer). Cross-validate the entity resolution against a known ticker-name mapping and pre-register the split before regenerating.",
+      "headline_rewrite": "A deterministic cultural-beta desk over 101 consumer names found no association that survives in-sample rotation and permutation nulls — and, because Qloo's ranking data froze for the final 44 weeks, the pre-registered out-of-sample test could not be run at all.",
+      "judge_60s": "A skimming judge will see '0 flags, NO SIGNAL' and score it as a failed product: no finding, no edge, nothing to ship. They will miss that the grade word is a deliberately honest epistemic state, that the OOS emptiness is a data-vintage defect the submission itself detected and reported, and that the statistical hygiene here (BH correction, rotation/permutation nulls, symmetric perturbation rule, no simulated data) is well above hackathon norm — which is where the real points are."
+    },
+    "finish": "stop",
+    "usage": {
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cached_tokens": 0,
+      "completion_thinking_tokens": 62,
+      "completion_tokens": 1265,
+      "completion_tokens_details": {
+        "accepted_prediction_tokens": 0,
+        "audio_tokens": 0,
+        "cached_tokens": 0,
+        "reasoning_tokens": 62,
+        "rejected_prediction_tokens": 0
+      },
+      "prompt_cache_hit_tokens": 0,
+      "prompt_cache_miss_tokens": 1893,
+      "prompt_cache_write_tokens": 0,
+      "prompt_tokens": 1893,
+      "prompt_tokens_details": {
+        "accepted_prediction_tokens": 0,
+        "audio_tokens": 0,
+        "cached_tokens": 0,
+        "reasoning_tokens": 0,
+        "rejected_prediction_tokens": 0
+      },
+      "total_tokens": 3158
+    },
+    "ms": 30688
+  },
+  {
+    "id": "minimax-m2.7",
+    "label": "dahl / MiniMax M2.7",
+    "endpoint": "https://inference.dahl.global/v1/chat/completions",
+    "keyVar": "DAHL_API_KEY",
+    "model": "MiniMaxAI/MiniMax-M2.7",
+    "maxTokens": 8000,
+    "gap": 20000,
+    "ok": true,
+    "verdict": {
+      "verdict": "PASS",
+      "score_total": 62,
+      "scores": {
+        "technological_implementation": 21,
+        "design": 18,
+        "potential_impact": 11,
+        "quality_of_idea": 12
+      },
+      "fatal": "none",
+      "must_fix": [],
+      "method_objections": [
+        "The three nulls (rotation, week-order permutation, 6-week-block permutation) are described as sharing one calendar and one frozen tail, but this framing conflates data dependency with test independence. If the same frozen data feeds all three, the tests are not independent replications — they are the same test with cosmetic variation. The claim that this constitutes 'one stringent check' rather than three opportunities to fluke is unsupported.",
+        "The rotation and block-permutation nulls preserve 'slow shape' per the desk's own statement, which means they are weak tests for a weekly signal. The high p-values (0.78–0.90) may reflect test weakness rather than evidence against signal, but the desk presents them as evidence against.",
+        "The post-hoc 58-week split (38 train / 20 test) with 9 moving test weeks is not pre-registered and has no interval. Presenting median −0.49 with no confidence bounds and no grade does not make it safe — it still anchors the reader on a negative median before they read the caveats."
+      ],
+      "overstatements": [
+        "The desk copy states the grade 'says the grade rests on the in-sample book and the nulls only.' This is accurate but the phrase 'IN-SAMPLE' in the grade word may still be read as a qualified positive finding rather than a statement that no test was possible.",
+        "'The taste regressor is identically zero' in the OOS window is described as a perturbation tag, but this is not a perturbation — it is a structural consequence of frozen data. Calling it a perturbation implies it is a minor artifact; it is the reason the test has zero power.",
+        "The diagnostic median of −0.49 is presented without an interval, which implies precision the data does not support. A reader who sees 'median −0.49' and does not read the full diagnostic will anchor on that number."
+      ],
+      "grade_label_verdict": "Partially. 'NO SIGNAL (IN-SAMPLE)' is more defensible than the previous 'NO SIGNAL' because it explicitly disclaims the OOS basis. However, the parenthetical still reads as a qualified finding rather than a statement that the held-out test had zero power. A label like 'INSUFFICIENT DATA — NO TEST POSSIBLE' or 'HELD-OUT TEST: NO POWER' would be unambiguous. The current label requires the reader to infer that 'IN-SAMPLE' means the OOS slice was untestable, not merely that in-sample results are shown.",
+      "roster_verdict": "Integrity. Showing 101 rows with 21 carrying null cultural columns and the query tried is the correct disclosure. However, the phrase 'no Qloo entity' should be replaced with 'Qloo entity not found for query: [query]' — the current framing implies Qloo failed to match, which may invite the follow-up 'did you try alternate spellings or parent companies?' The query shown is necessary but not sufficient; the desk should state whether alternate queries were attempted.",
+      "cadence_diagnostic_verdict": "Change. The diagnostic is labeled post-hoc and has no grade, but it still functions as result-shopping because the median (−0.49) anchors the reader before the caveats. One sentence that would make it safe: 'This split was not pre-registered and has no statistical interval; treat it as a sanity check with no inferential weight, not as evidence for or against the hypothesis.' Without that explicit disclaimer at the point of the number — not buried in the documentation — the median will be quoted out of context.",
+      "best_next_model_construction": "Acquire a live Qloo data vintage with at least 20 weeks of post-freeze observations to populate the held-out slice. Until then, the product demonstrates a working pipeline and honest reporting, but cannot demonstrate the one thing it claims to do: that cultural beta adds predictive signal to market beta. The held-out test is not a formality — it is the entire empirical case.",
+      "headline_rewrite": "A consumer equity desk that computes cultural beta from live Qloo data — currently reporting NO SIGNAL (IN-SAMPLE) because the held-out test has zero power on frozen data.",
+      "judge_60s": "A judge skimming for 60 seconds will read 'NO SIGNAL (IN-SAMPLE)' as a finding that cultural beta was tested and came up empty, rather than understanding that the test itself had no power. They will see the post-hoc diagnostic median of −0.49 and treat it as corroborating evidence. They will not read the frozen-data disclosure in the OOS cell. They will likely score this as a failed hypothesis rather than a pipeline demo with honest reporting on a data limitation."
+    },
+    "finish": "stop",
+    "usage": {
+      "completion_tokens": 2144,
+      "completion_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "prompt_tokens": 1871,
+      "total_tokens": 4015
+    },
+    "ms": 112949
+  }
+]

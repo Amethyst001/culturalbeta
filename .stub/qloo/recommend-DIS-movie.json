@@ -1,0 +1,110 @@
+{
+ "harness": {
+  "version": "0.1.26",
+  "surface": "exec recommend"
+ },
+ "input": {
+  "target_type": "movie",
+  "signals": [
+   "urn:entity:brand:stub-disney"
+  ],
+  "limit": 10
+ },
+ "fetchedAt": "2026-10-30T09:15:57.966Z",
+ "correlationId": "exec-stub-recommend",
+ "response": {
+  "status": "ok",
+  "interpretation": {
+   "target_type": "movie",
+   "signals": [
+    "urn:entity:brand:stub-disney"
+   ]
+  },
+  "results": [
+   {
+    "entity_id": "urn:entity:movie:stub-urn-entity-brand-stub-disney-0",
+    "name": "Stub movie 0",
+    "type": "urn:entity:movie",
+    "affinity": 0.6
+   },
+   {
+    "entity_id": "urn:entity:movie:stub-urn-entity-brand-stub-disney-1",
+    "name": "Stub movie 1",
+    "type": "urn:entity:movie",
+    "affinity": 0.59
+   },
+   {
+    "entity_id": "urn:entity:movie:stub-urn-entity-brand-stub-disney-2",
+    "name": "Stub movie 2",
+    "type": "urn:entity:movie",
+    "affinity": 0.58
+   },
+   {
+    "entity_id": "urn:entity:movie:stub-urn-entity-brand-stub-disney-3",
+    "name": "Stub movie 3",
+    "type": "urn:entity:movie",
+    "affinity": 0.57
+   },
+   {
+    "entity_id": "urn:entity:movie:stub-urn-entity-brand-stub-disney-4",
+    "name": "Stub movie 4",
+    "type": "urn:entity:movie",
+    "affinity": 0.56
+   },
+   {
+    "entity_id": "urn:entity:movie:stub-urn-entity-brand-stub-disney-5",
+    "name": "Stub movie 5",
+    "type": "urn:entity:movie",
+    "affinity": 0.55
+   },
+   {
+    "entity_id": "urn:entity:movie:stub-urn-entity-brand-stub-disney-6",
+    "name": "Stub movie 6",
+    "type": "urn:entity:movie",
+    "affinity": 0.54
+   },
+   {
+    "entity_id": "urn:entity:movie:stub-urn-entity-brand-stub-disney-7",
+    "name": "Stub movie 7",
+    "type": "urn:entity:movie",
+    "affinity": 0.53
+   },
+   {
+    "entity_id": "urn:entity:movie:stub-urn-entity-brand-stub-disney-8",
+    "name": "Stub movie 8",
+    "type": "urn:entity:movie",
+    "affinity": 0.52
+   },
+   {
+    "entity_id": "urn:entity:movie:stub-urn-entity-brand-stub-disney-9",
+    "name": "Stub movie 9",
+    "type": "urn:entity:movie",
+    "affinity": 0.51
+   }
+  ],
+  "result_count": 10,
+  "provenance": {
+   "source": "stub",
+   "endpoint": "/v2/insights",
+   "documentation": "stub",
+   "requests": [
+    {
+     "method": "GET",
+     "path": "/v2/insights",
+     "query": {
+      "target_type": "movie",
+      "signals": [
+       "urn:entity:brand:stub-disney"
+      ],
+      "limit": 10
+     }
+    }
+   ]
+  },
+  "execution": {
+   "transport": "direct",
+   "correlation_id": "exec-stub-recommend",
+   "duration_ms": 1
+  }
+ }
+}

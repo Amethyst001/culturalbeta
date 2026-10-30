@@ -1,0 +1,28 @@
+{
+  "verdict": "PASS",
+  "score_total": 72,
+  "scores": { "technological_implementation": 20, "design": 19, "potential_impact": 14, "quality_of_idea": 19 },
+  "fatal": "none",
+  "must_fix": [
+    "Replace 'power at the observed spread' as the reading key with a pre-specified minimum detectable spread (MDE at 80% power) printed next to the dispersion table, and state on the read page that at this MDE the desk cannot distinguish NO SIGNAL from FAILS.",
+    "Make Qloo load-bearing visible in the product: add a per-sub-sector panel comparing the Qloo basket's return path against the no-Qloo peer basket (correlation, active-week overlap, dispersion), so judges see what the Qloo data contributes rather than inferring it from two nulls.",
+    "Support 'all four fields move at the same cadence' with week-level co-movement of change indicators across fields, not medians; medians of 39-50 changing weeks do not establish identical timing.",
+    "Print the effective-sample bound up front: ~29 shared active weeks out of 102, piecewise-constant levels, 8 frozen weeks — a reader should know before the results that this window was close to guaranteed non-detection."
+  ],
+  "method_objections": [
+    "Power at the observed spread is endogenous: it anchors on an estimate that is itself near zero, so 0% power conflates 'the test is weak' with 'the effect is small.' The correct criterion is power at a pre-registered minimal effect size, or equivalently reporting the MDE the refit interval already implies (~2.1 pts). The observed-spread figure is defensible as a diagnostic but not as the sole key to 'informative.'",
+    "The benchmark reconciliation's conclusion (analytic mean-se² is the miscalibrated yardstick) holds, but the stated mechanism is incomplete: inside the rotation null the basket link is severed, yet cross-name residual covariance — shared calendar, common sector shocks, correlated omitted factors — independently pushes cross-sectional slope variance below the sum of marginal variances. The overshoot therefore does not isolate 'treats 80 slopes as independent' as the sole defect; the team should attribute it to both cross-name dependence channels, which actually strengthens the case against the analytic benchmark.",
+    "'A positive claim requires every null at p ≤ 0.10 (intersection-union)' is a mislabel: IUT applies to decomposing a composite hypothesis into components, not to testing the same hypothesis three ways. What the team has built is a conservative max-of-p rule; harmless here because every p is 0.78-0.93, but the framing should be corrected before a statistician on the panel flags it.",
+    "The dispersion test with 0% power at every planted spread up to sd 50 is not 'calibrated' — it is disclosed as uninformative, which is different. 'Now calibrated, and it reports itself as uninformative' is internally contradictory; the honest phrasing is that calibration of the reading was added, and the reading is that the statistic has no resolving power at this sample."
+  ],
+  "overstatements": [
+    "'all four weekly fields in that response move at the same slow cadence' — supported only by medians (39-50 of ~198 weeks); correct to 'no field shows materially more weekly movement than the others by median change frequency; week-level co-movement not verified.'",
+    "'The dispersion test — now calibrated' — a test with 0% power at the observed spread was not calibrated; correct to 'the dispersion test's reading is now keyed to a disclosed power figure and reports uninformative.'",
+    "'A block permutation respecting the cadence would confirm the p-values' (round 3 header as recapitulated) — p 0.830 vs 0.778 agrees with, and does not confirm, the week-by-week figure; 'agrees with' is the correct verb."
+  ],
+  "dispersion_verdict": "Yes with one caveat — the independent-rotation null and the uninformative reading are right, but the reconciliation over-attributes the 25% overshoot to the independence assumption when cross-name residual covariance is an equally admissible mechanism, and the test's 0% power means 'uninformative' must not be read as evidence of homogeneity in either direction.",
+  "power_criterion_verdict": "No — power anchored on the observed (near-zero) spread begs the question; key the reading on power at a pre-specified minimal spread or state the MDE, which the refit interval already bounds at roughly a 2.1-point effect.",
+  "best_next_model_construction": "Aggregate to the cadence the data actually supports: test the taste factor at monthly or quarterly horizon (matching the ~4-7 week refresh and revision structure) with returns and basket steps aligned to the natural refresh grid, restoring effective sample where the weekly construction has almost none.",
+  "headline_rewrite": "One pre-registered test across 80 consumer names finds Qloo taste-basket timing too sparse in this window to detect or rule out a cultural beta — so the desk ships the evidence trail, the power bounds, and the negative result, not the claim.",
+  "judge_60s": "A skimming judge will most likely read 'NO SIGNAL' as 'Qloo data does not matter for equities' when the actual finding is that /v2/trending's refresh cadence cannot support a weekly-horizon test at all — a sampling-frequency limitation, not a verdict on the taste channel; the converse misread, that the peer-basket ablation proves Qloo adds value, is equally wrong since both baskets are nulls."
+}

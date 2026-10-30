@@ -9,21 +9,26 @@ about it, which of their recommendations I took, which I rejected and why, and w
 
 ## 1. What exists, and the evidence for it
 
-**The measurement** — seven holdings, 106 aligned weekly returns (2024-10-14 → 2026-10-26), one index.
-Market beta is a one-regressor fit of weekly return on SPY. Cultural beta adds a leave-one-out,
-affinity-weighted taste basket from Qloo `/v2/trending` + `/v2/insights`. ΔR² is the gain in r² over
-the market-only fit. A flag is raised when cultural beta < 0 and |t| ≥ 2.
+**The measurement** — 101 US consumer names across 11 sub-sectors, 106 aligned weekly returns
+(2024-10-14 → 2026-10-26), one index. Market beta is a one-regressor fit of weekly return on SPY.
+Cultural beta adds an affinity-weighted taste basket from Qloo `/v2/trending` +
+`/v2/recommend`. The basket is **per sub-sector**, so the call count grows with sectors rather than
+with names. ΔR² is the gain in r² over the market-only fit. A name is flagged only when cultural
+beta < 0, |t| ≥ 2, **and** Benjamini–Hochberg q ≤ 0.10 across the priced book — a hundred
+uncorrected tests would flag about five names by chance alone.
 
 **Verified now, without Qloo:**
 
 | Claim | Evidence |
 |---|---|
-| Real price data, 7 names, 106 weeks | `fixtures/prices.json`; ELF market beta **2.03 ± 0.41** (t 4.9) pinned in `tests/market-only.test.mjs` |
+| Real price data, 101 names, 106 weeks | `fixtures/prices.json` (99 priced, WBD/EA/K no prices); ELF market beta **2.02 ± 0.41** (t 4.9) pinned in `tests/market-only.test.mjs` |
 | The desk refuses to print without Qloo | `tests/nullroute.test.mjs` — exit 2, no `desk.json`, no zero beta |
-| Sample floor keeps rows, drops betas | `tests/floor.test.mjs` — MCD with 1 weekly point stays, others compute |
+| Sample floor keeps rows, drops betas | `tests/floor.test.mjs` — MCD with a starved sector basket stays, others compute |
 | ΔR² is exactly the nested-model gain | `tests/floor.test.mjs:59` — `deltaR2 === r2 - r2Market`, and ≥ 0 |
+| Multiplicity is Benjamini–Hochberg, not a raw p | `tests/multiplicity.test.mjs` + `tests/second-window.test.mjs` (flag needs q ≤ 0.10) |
+| The second window is disjoint and pre-registered | `tests/second-window.test.mjs` — shared boundary bar, zero overlapping return dates |
 | No Qloo response data in the repo | `fixtures/qloo/` is gitignored; review artifacts contain none |
-| UI + routing + layout, 4 routes × 3 viewports | `review/audit-2026-10-29T18-18-11.md` — **159/159** |
+| UI + routing + layout, 4 routes × 3 viewports | `review/audit-2026-10-29T23-42-08.md` — **185/185** |
 
 **The four views:** Desk (both betas, flagged names), Holding (price vs taste chart, basket weights,
 residualised scatter), Taste map (market × cultural quadrant), Evidence (request URLs, entity ids,
@@ -43,7 +48,13 @@ because keeping it would mean keeping simulated Qloo numbers.
 
 ## 2. The review panel
 
-3 slots, tiered roster, keys read by name from the AI Cockpit env file. Round 1
+3 slots, tiered roster, keys read by name from the AI Cockpit env file. Every reviewer prompt opens
+with one fixed standing directive — **"Exercise abstract thinking."** — followed by the ask that it
+judge the entry at the level of its abstract claim (what is measured, what would falsify it, whether
+the instrument, the estimator and the control establish it) before it scores the screens, and that it
+give a real critical review rather than a summary of the brief. The directive lives in
+`scripts/panel.mjs` (`STANDING`, prepended to every prompt and stamped into each report's header) and
+in the brief files themselves, so it survives either entry path. Round 1
 (`review/panel-2026-10-29T15-27-13.md`):
 
 | Slot | Model that answered | Latency | Verdict |
@@ -144,8 +155,8 @@ calls. Those are manual and, for the last one, gated.
 
 ## 5. Open items
 
-1. **Key gate.** Live probe → resolve 7 entity ids → confirm trending/affinity shapes → full run →
-   the real cultural betas, flags and ΔR². Nothing below this line moves until then.
+1. **Key gate.** Live probe → resolve 101 entity ids → confirm trending/affinity shapes → full run →
+   the real cultural betas, flags, ΔR² and replication. Nothing below this line moves until then.
 2. Reviewer-3 was empty in round 1 (Oxion and Alpme 503, dahl 502). Filled in round 2 by NVIDIA's
    vision model after the roster was fixed — see §6.
 3. Round-2 and round-3 panels are recorded in §6.
@@ -413,3 +424,1040 @@ limit of a seven-name desk, not a defect to patch in the last two days. The one 
 asked for that is worth doing is **export**: a CSV of the panel and a copy-JSON of the provenance
 payload would make the desk usable as an instrument rather than a screen, and it is the only
 remaining idea that adds capability at near-zero risk.
+
+---
+
+## 9. The expansion round — from seven names to a book (2026-10-29, late)
+
+### 9.1 The decision
+
+The scored panel put Impact at 17.7/25 and all three models named the same cause: seven names is a
+demo, not a book. The user asked the obvious question — why only seven? — so the roster is now
+**101 US consumer names across 11 sub-sectors**, with the seven reference names kept as *featured*
+(they carry an extra audience-basket reading, not a different factor).
+
+The design constraint was Qloo cost. A basket per name would have been ~3,600 calls. A basket per
+**sub-sector** — one `qloo exec recommend` per sector per creative type, signalled by up to ten of
+that sector's resolved entities — makes every name in the sector comparable and puts the budget at:
+
+| Call | Count |
+|---|---|
+| `search` (one per name) | 101 |
+| `recommend` — sector baskets (11 sectors × 4 types) | 44 |
+| `recommend` — featured audience baskets (7 names × 4 types) | 28 |
+| `trends` — weekly series, date-window paged at ~18 points | ~372 |
+| **Total for 101 names** | **≤ 600** |
+
+### 9.2 What the expansion forced, and what it bought
+
+- **Multiplicity.** 101 names × one factor is 101 |t| tests. At |t| ≥ 2 about five flag by chance.
+  The flag now needs cultural beta < 0 **and** |t| ≥ 2 **and** Benjamini–Hochberg q ≤ 0.10 across the
+  priced book (`src/multiplicity.mjs`, pinned by `tests/multiplicity.test.mjs`). The q is printed on
+  every row and in the CSV.
+- **A pre-registered second window.** The same estimator, floor, 400 draws and seed re-run on the
+  106 weekly returns immediately before the primary window; the slice and the rule (OOS ΔR² > 0 and
+  placebo p ≤ 0.10) are fixed in `config/book.json` before any keyed run. Names without prior prices
+  are excluded from the cohort, not allowed to cancel the replication
+  (`tests/second-window.test.mjs`). The desk's verdict now reads HOLDS / MARGINAL / FAILS from the
+  primary result **and** whether it replicates.
+- **A products surface.** `/api/v1/panel`, `/api/v1/holding/:ticker`, `/api/v1/alerts` and
+  `/export/panel.csv`. The alerts feed returns firing names plus every suppressed name with its
+  reason, so "no alert" is inspectable rather than a black box. This also delivers the CSV export
+  §8.5 ended on.
+- **Sector filters on the desk**, a taste map that is now one dot per sub-sector (mean market beta
+  against mean cultural beta, sized by names), and a holding page that shows the sector basket, the
+  audience basket, the q, and both windows.
+- **An ablation arm — the test of whether Qloo is load-bearing at all.** The control is a peer
+  basket: the equal-weight weekly return of the other names in the sub-sector, from the same
+  committed prices, with no Qloo data. Peer-only and peer + taste are fitted on the first 70 weeks
+  and scored on the last 36; the evidence page reports the signed out-of-sample gain of taste over
+  that control and the share of names where it is positive. In-sample nested ΔR² cannot fall when a
+  regressor is added, so only the out-of-sample arm is allowed to make the claim. Tests plant a
+  taste factor over a real peer effect (found) and a world with only market and peers (not found).
+  `src/ablation.mjs`, `tests/ablation.test.mjs`.
+- **An interval on every out-of-sample number.** A 90% range from a 400-draw circular block
+  bootstrap of the test weeks (8 weeks per block — consecutive weeks stay together, so
+  autocorrelation survives the resample; the coefficients are fixed and only the scored weeks move).
+  The primary window, the replication window and the ablation gain all carry one, and a range that
+  crosses zero is labelled as such. `bootstrapMean`/`blockDraws` in `src/robustness.mjs`,
+  pinned by the bootstrap test in `tests/robustness.test.mjs`.
+- **A designed null case.** The evidence page states both branches before the keyed run — what the
+  desk sells if taste adds over peers, and what it is worth if it does not — and marks the branch
+  the numbers land in. Neither branch is styled as the afterthought.
+- **The ablation is described as the non-overlapping layer, not a bound.** The first framing
+  ("a lower bound on what the instrument adds") was wrong, and all three reviewers of the 87.3
+  round said so: controlling for a peer basket does not bound a causal total in either direction.
+  The desk, the read page and the README now state the estimand plainly.
+- **The power limit is printed at the number.** 36 test weeks is a short window; a zero-crossing
+  interval is the expected result at this length, and no provision can buy power — only a longer
+  window can.
+- **A taste map that is an instrument.** Hover names the tickers behind a dot, click (or Enter)
+  opens that sub-sector on the desk with the filter applied, a hairline ties each label to its own
+  dot, and a legend states what colour and size mean. The desk now opens sorted by q, so the first
+  rows are the names that survived their own correction rather than the noisiest beta in the book.
+- **A second bootstrap that refits every draw.** The first interval resampled the test weeks and
+  held the coefficients still, which measures test-slice sampling error and nothing else — two
+  reviewers called it a coverage claim a referee can falsify in one line. A 200-draw bootstrap now
+  redraws the same 70/36 split and refits inside each draw, printed beside the 400-draw interval on
+  both windows and on the ablation gain, with per-name bounds in the CSV. The split is held fixed
+  inside each draw, so the refit interval varies only through the fit and the scored weeks; it
+  centres near zero and contains the point estimate, and the page says so rather than implying it is
+  a bound. `refitBootstrap` in `src/robustness.mjs`, pinned by the refit test in
+  `tests/robustness.test.mjs`.
+- **The ablation carries its own rotation null.** The 400 circular rotations were scored only
+  against SPY, which answers "is the basket aligned with returns at all" — a different question from
+  the arm's own claim, "does the aligned basket add beyond the sector". `ablationPlacebo` scores the
+  same shifts against the peer models, peer-only fitted once per name and only the joint model
+  refitted inside each draw (98 names × 400 draws ≈ 3 s). The band prints it as one line and says
+  what it does and does not mean: an alignment result is not an additivity result. The stub panel
+  reads exactly the case that distinction exists for — alignment p 0.06 beside an additive cell of
+  −0.31 pts. Per-name p ships as `ablationPlaceboP`; the read page explains the two nulls in a
+  paragraph. `tests/ablation.test.mjs` pins planted-taste-found, null-calibration across worlds, and
+  seed determinism, and checks the placebo's real statistic equals the ablation point estimate.
+- **The in-sample cell is out of the ablation band.** In-sample R² cannot fall when a regressor is
+  added, so a "peers over market" cell sitting beside a negative out-of-sample cell read as free
+  positive evidence for the market model. The band is two cells now; the peer in-sample gain stays
+  in the CSV, and the sub-copy says why in one sentence.
+- **The stub basket block is one labelled state.** Eight "Stub brand 0 …" rows at identical weights
+  were getting screenshotted past their tag. On the stub harness the block collapses to a single
+  labelled row and the real rows only appear on a keyed run; the audit fails the build if a
+  "Stub …" row renders again.
+- **"holds" became "positive".** The chip said holds whenever the mean was above zero, immediately
+  above a line reading "crosses zero". It now names the sign, which is what it measures.
+- **The Read page says what would falsify the desk.** Three named results — no flag survives BH,
+  the ablation cell is negative with both intervals crossing zero, the second window does not
+  replicate — each with the live verdict that would print, and a sentence saying the verdicts are
+  generated from the numbers rather than typed. The most consistent ask of the 86.7 round was that
+  the null case was designed but never stated in results.
+- **The claim is bounded to the book.** The Read page now says 36 held-out weeks cannot support
+  name-level precision, and that the claim is the book-level average, the share of names, and the
+  replication. One reviewer called this the most under-weighted quality issue of the round.
+- **The negative case is priced honestly.** A negative run yields a pre-registered falsification
+  memo; the buyer is a factor researcher or buy-side quant; the cost is a Qloo subscription plus the
+  desk's compute; there is no mass-market buyer and the page says so. The branch card stopped
+  claiming the sector-peer model is "itself the usable product", because that arm is only read
+  in-sample.
+- **The interval identity is at the number.** Every OOS cell now carries "claim carries on the
+  *refit per draw* / *fixed coefficients* interval, the wider of the two", computed from the two
+  widths rather than asserted. Holding pages carry both per-name intervals; the fixed one is new,
+  from `fixedBootstrapPerItem`, and ships as `oosDeltaR2FixedLo/Hi` beside `oosDeltaR2RefitLo/Hi`.
+- **The second window is labelled as a different regime**, with its dates, and the verdict sentence
+  says a replication across regimes is the stronger claim and a miss can be a regime difference. The
+  placebo copy states that the rotation preserves cross-name alignment, so the null keeps the book's
+  correlation structure.
+- **The peer control is stated as Qloo-free**, on the ablation band and on the Evidence desk, with
+  the honest consequence: the two regressors are correlated by construction, so a null cell means
+  the sector average carries the channel, not that taste is unpriced.
+
+### 9.3 What the audit caught in this round
+
+- Every `.fchip` was 25px tall, below the 28px tap floor → `min-height:30px` + padding fixed it.
+- The sector-filter check fired on `#/evidence`, a route that has no chips → the check is now gated
+  to book routes.
+- Taste-map labels overlapped ("Retail" over "Restaurants", "Travel" over "Beauty"). The placement
+  code offset each label by a fixed 11px, which sits inside a large dot's own radius, so every
+  candidate "collided with itself" and the fallback was always chosen. The offset now clears the
+  dot radius and the fallback walks vertical nudges. A new `map-labels-separated` check measures the
+  painted label boxes so this cannot regress.
+- The branch card first rendered inside a narrow `.cards` column, wrapping its prose to ~104 px.
+  The section now spans the full band (`.robust.full{grid-column:1/-1}`) with its two branches as
+  equal boxes.
+- **The stub tag could be lost by regenerating with the wrong env var.** The tag was derived from
+  `QLOO_BIN_JS` alone, so recomputing the layout panel from `.stub/` fixtures without that variable
+  produced a panel advertising "qloo harness" — a stub result labelled live, which is the one thing
+  the tag exists to prevent. The panel now also reads the cache path, so pointing the run at `.stub/`
+  is enough to make it a layout exercise. Caught by inspection, not by the audit, because the audit
+  compares the page against what the operator told it to expect.
+- Three new checks joined the audit: the ablation band must be **two** cells with **both** interval
+  lines and no in-sample cell, and no holding page may render a "Stub …" basket row. First run with
+  them: 233/239 (the band was still three cells, the basket block still showed stub rows); after the
+  fixes: **239/239**.
+- **A new check failed on CSS case, not on content.** `second-window-regime` searched innerText for
+  "different regime", but `.rb-window span:first-child` is `text-transform:uppercase`, and innerText
+  reflects the transform. The page was right and the check was wrong; it is case-insensitive now.
+- **A new inline link broke the 28px tap floor** at tablet width — the branch card's "same answer in
+  plain English" link was 14px tall. It now carries the same `min-height:28px` treatment as the desk
+  link, which is also the better touch target.
+- **Both panels of the 86.7 round read the peer basket as Qloo-derived** ("re-weighted by affinity
+  within the sector"). It is price-only — the equal-weight weekly return of the other names in the
+  sub-sector — so the reviewers' proposed sentence ("a same-instrument control") would have been
+  false on this desk, and was not adopted. What was adopted is the true version of their point: the
+  peer basket uses no Qloo data, and the two regressors are correlated by construction.
+- **The second-window ablation was computed and thrown away.** `second.ablation` was fitted and
+  tested on the pre-registered window but never reached `desk.json`, so the band could show a
+  control that held on one window and not the other only by omission. It is copied into
+  `valueAdd.secondary.ablation` and printed as one line under the "names where taste adds" cell.
+- **The fourth falsifier existed on the page and not in the check.** `read-falsifiers` asserted the
+  first three strings and reported "three falsifiers named" while the page listed four; the check
+  now asserts the fourth ("peer control wins in both windows") and the message counts four. A check
+  that counts a fixed number while the page grows is the same drift the round is fixing elsewhere.
+- **A new line inside an interval cell tripped the interval count.** The ablation's rotation-null
+  line reused the `.rb-se` class, so `ablation-intervals` counted three "interval" lines and its
+  every-line-has-a-CI assertion failed at all three viewports (263/266). The check was right and the
+  markup was lazy: the null line now has its own class, and the check filters to lines that actually
+  carry a 90% CI before counting them.
+- **A field can pass its test and miss its route.** `oosClaimInterval` (the machine-readable "which
+  interval carries the claim") built, tested and served correctly only after the desk server was
+  restarted — the process on 8802 predated the edit and kept serving the old row shape. Verified on
+  a fresh process: `claim: refit per draw` on `/api/v1/holding/ELF`, and the column present in
+  `/export/panel.csv`.
+
+### 9.4 State
+
+- **Tests: 45/45** (`npm test`) — including the multiplicity, universe, second-window, ablation,
+  block-bootstrap, refit-bootstrap, per-name fixed-interval, ablation-placebo, sentiment-control,
+  harness-transport and run-cost suites. `market-only` was updated to the 101-name roster and the
+  three unpriced names.
+- **Audit: 287/287, no failures** (`review/audit-2026-10-30T09-42-42.md`), 5 routes × 3 viewports —
+  desk, map, evidence, holding and the plain-English read page — screenshots in
+  `review/shots-2026-10-30T09-42-42/`. New checks this round: falsifiers on the read page, the
+  bounded claim, the negative-case valuation, two per-name intervals on a holding, the wider-interval
+  rule, the Qloo-free peer statement, the regime label on the second window, the ablation's rotation
+  null, the read page's two-nulls paragraph, the sentiment exclusion, and the run cost printed as
+  numbers with the control arm at zero.
+- **Populated layout** was exercised against throwaway stub fixtures in `.stub/` (not Qloo data,
+  never committed, not shown to a judge); the state tag reads "stub harness · layout only" precisely
+  so a screenshot of that run cannot be mistaken for a Qloo result. The numbers on those screenshots
+  mean nothing and the desk's real numbers still wait on the key.
+
+### 9.5 What is still key-gated
+
+Entity resolution across 101 names (the 70% refusal in `qloo-map.mjs` is the guard), trending
+weekday coverage at 106+106 weeks, the real sign and size of 101 cultural betas, the BH-corrected
+flag count, whether the second window replicates, and whether taste adds anything over the sector's
+own peer basket. Hosting, the 90-second demo and the Devpost submission follow the first keyed run.
+
+### 9.6 The panels on this round
+
+Five scored panels ran on the expanded build, each on a different build. The first (`review/panel-2026-10-29T23-52-05.md`, brief
+v4) scored **83 / 85 / 88, mean 85.3**, up from 82.7, and every reviewer named the same defect: the
+"LIVE QLOO" tag sat on stub images. Fixed by deriving the tag from the compute source; the same round
+added the plain-English read page and per-alert prose that two of them asked for.
+
+The second (`review/panel-2026-10-30T00-05-35.md`, brief v5) scored **88 / 87 / 87, mean 87.3** and
+converged on one new structural ask — the "Qloo is the only instrument" thesis was asserted, not
+tested. That is the ablation arm in §9.2. Its verdict is deliberately left to the real data: the arm
+can report "no measurable add", and if it does, the desk will say so on the front page.
+
+The third (`review/panel-2026-10-30T00-25-02.md`, brief v6, the ablation attached) scored
+**79 / 88 / 85, mean 84.0** — but it is not a like-for-like comparison, and the report says so
+itself: Opus timed out at the 240 s cap and Nemotron failed to connect, so reviewer-1 fell to
+GPT-OSS 120B answering text-only against six images it could not see, and it docked Impact and Idea
+for a result it was told to assume away. Fable moved 87 → 88 and Sonnet 87 → 85 on the same build.
+What the round did produce was actionable even so: two reviewers named the same craft gaps (no
+map interactivity, thin onboarding), and the fix list below is theirs.
+
+The fourth (`review/panel-2026-10-30T00-37-36.md`) is the **v6 brief re-run with the roster repaired**
+— three Abhibots models, Opus answering in 61 s once its timeout was raised to 420 s — and it scored
+**83 / 87 / 87, mean 85.7**. That is the like-for-like number for the ablation build, and it is the
+figure the previous entry should be read against rather than 84.0. All three reviewers named the same
+top ask: pre-register the **non-overlapping Qloo layer** and report its OOS gain with a standard
+error. The first half of that is presentational — Frisch–Waugh–Lowell makes the taste coefficient in
+the joint model the residual coefficient, so the two readings are the same number — so the honest
+response was the interval plus the framing, which is what the next build added. The same round asked
+for the audience weight block to be cut from the public holding view.
+
+The fifth (`review/panel-2026-10-30T00-51-42.md`, brief v7, intervals and the null-case card attached)
+scored **87 / 90 / 90, mean 89.0**. Unanimously, and correctly, the reviewers said the "lower bound"
+framing was a conceptual error: controlling for a peer basket does not bound a causal total in either
+direction. The desk, the read page and the README now state the estimand and says plainly that
+reading it as a bound would be wrong. Two smaller asks — the power limit at the number, co-equal
+branch boxes, stub tags on the picture-like cards — were done in the same pass.
+
+The sixth (`review/panel-2026-10-30T00-58-39.md`, brief v8) scored **88 / 87 / 87, mean 87.3**; one
+slot failed over from Sonnet to Nemotron after a fetch error and returned the same 87. It converged
+on two things the earlier panels had not caught, both about claims outrunning their estimators:
+the fixed-coefficient bootstrap under-covers coefficient error (Opus and Fable both named it as the
+single highest-leverage change), and the in-sample cell of the ablation band reads as free positive
+evidence beside a negative out-of-sample cell. Both are fixed in the build the next panel scores;
+the stub-row look that two of them flagged is a labelled state now.
+
+The seventh round ran twice on the same build because the first pass had a harness fault, not a
+product fault: captions interleaved between the seven screenshots made the models bind captions to
+the wrong pictures, and Opus answered that it had been given "only the map, holding, evidence and
+partial branch card". That pass (`review/panel-2026-10-30T01-13-17.md`) scored **84 / 88 / 88**, and
+is not like-for-like against the rest of the chain. Its criticism was still useful and is carried
+forward: the negative branch's "the sector-peer model is itself the usable product" sentence
+overclaims an in-sample arm, the "wider interval carries the claim" rule sits in body copy rather
+than at the number, and the pre-2024 second window is a different regime presented as an
+identical-conditions check.
+
+The eighth pass (`review/panel-2026-10-30T01-16-23.md`), with the screenshots announced once and
+then sent unlabelled, scored **87 / 87 / 86, mean 86.7** — Tech 24 / 24 / 24, Idea 24 / 24 / 24,
+Design 24 / 23 / 23, Impact 15 / 16 / 15. It is the cleanest read of the build so far and it moved
+the criticism from layout to claim. All three named the same three: (i) the Read page never states
+what would falsify the desk in terms of results on the screen; (ii) the estimator is coarse at the
+name level and the claim is really book-level with replication, which the page does not say; (iii)
+the peer basket is a same-instrument control, not a no-instrument control, so a null ablation
+falsifies "Qloo adds nothing over a sector average", not "taste is unpriced". Two of them added a
+fourth: if the run lands negative, the artifact is a pre-registered falsification memo and should
+say so rather than imply a signal product. Impact is the weak axis in every slot; the buyable part
+is naming the buyer and price plainly, the unbuyable part is the real ablation number.
+
+The ninth pass (`review/panel-2026-10-30T01-26-48.md`, brief v9) answered the three above and
+converged on three more: the refit-per-draw bootstrap printed beside the fixed one, the in-sample
+cell moved out of the ablation band, and the stub basket block collapsed to one labelled state.
+It also produced the "holds"→"positive" chip fix and the full-width ablation cells.
+
+The tenth pass (`review/panel-2026-10-30T01-27-48.md`, brief v10) scored **91 / 86 / —**. Opus
+returned 91 — the highest single slot in the chain — and Fable 86, one point below its own previous
+read on the same build; the Sonnet slot returned a 539-character meta reply about the rubric with a
+web search it never executed, so it carries no score and is excluded rather than interpreted. Opus's
+remaining asks, all cheap: document the four CSV interval bounds and expose one machine-readable
+"use the wider" field (shipped: `oosClaimInterval`), show the recompute timeout state, and tag the
+audience reading as in-sample (shipped). Fable's: a fourth falsifier (peer control losing on *both*
+windows — shipped), the Qloo call count against zero for peers (shipped in the evidence caption),
+the placebo p read against both nulls, a CSV header note, and the second-window ablation (shipped as
+`secondary.ablation`, printed at the band). Both intervals at the number, on the band's second
+window line, and in the CSV are the standing shape; the panel is now arguing about documentation
+depth rather than about whether the estimator means what the page says.
+
+The eleventh pass (`review/panel-2026-10-30T01-41-25.md`, brief v11) scored **90 / 87 / —**. Fable 5.1
+held at 90 and Sonnet 5 came in at 87; the Opus slot again returned prose without a score block and is
+excluded rather than averaged. Both named the same two gaps, and they are the two that were still open
+when the key arrived: print the Qloo spend as numbers next to the zero-cost peer arm and the two
+rotation p-values, on one panel, and re-cut the Evidence screen around it. That panel is now shipped as
+the Run cost band (`aria-label="Run cost"`, four cells, two new audit checks, captured at 1440 and 390
+in `review/shots-2026-10-30T09-42-42/`), with the same numbers restated in prose on the Read page. The
+sentiment exclusion both reviewers asked for landed in the same round. What remains from their lists is
+the keyed run itself — real entity resolutions, real basket names, real correlation ids — which is the
+half of the entry no provision can buy.
+
+### 9.7 Honest limit
+
+The expansion raises impact and statistical hygiene; it does not raise the odds that the factor is
+real. A hundred names can fail to replicate as easily as seven. What changes is that a null result
+is now *informative* — 101 tests with a corrected threshold is evidence, whereas seven tests were an
+anecdote.
+
+### 9.8 Keyed-run readiness — what the key arrived to (2026-10-30, morning)
+
+The key landed with a hard constraint attached: the call budget is finite, so nothing gets tested
+against Qloo that the documentation can settle. Everything below was therefore verified by reading
+the installed harness and the endpoint docs, not by spending requests.
+
+**Three defects that would have surfaced only after the money was gone.** `qloo exec` prints the
+bare workflow result by default and it carries no correlation id; the desk caches one per call, so
+without `--jsonl` every row would have claimed a null id. `qloo api search --json` prints the raw
+entity array keyed by `entity_id`, not the documented `{ success, results }` envelope — the old
+parser would have thrown after all 101 searches were spent. And the test stub was emitting an
+`execution` field the real CLI never sends, which is the one case a stub exists to prevent. All
+three are fixed, the stub now reproduces both real output shapes, and `tests/harness.test.mjs`
+asserts against them.
+
+**The cost of a run is now a computed number, not an adjective.** The README and the evidence
+caption had claimed "under 600 calls". That was wrong by roughly a factor of three and it was wrong
+because nobody had done the arithmetic: the pre-registered second window doubles the trend pull, and
+the trend pull is the whole budget. `src/budget.mjs` derives the count from the same paging rules
+`src/qloo.mjs` spends — 20 weekly points per request, one request per entity per window, 12 windows
+across the 213-week span — and three things read it: `npm run qloo:budget` prints it before anything
+is spent, `/api/budget.json` serves it, and the Read page states it as numbers with the peer-basket
+control at zero, which is what both reviewers asked for. Upper bound 1,993; the stub run, where the
+basket members are known, came to 1,601.
+
+**The expensive step now refuses to run.** `qloo:series` prints its exact request count and exits
+without calling anything unless `QLOO_RUN=1` names it back. That converts the one place where a
+miscount costs a thousand calls into a confirmation prompt.
+
+**The desk button cannot spend the budget.** It used to run all five keyed steps, so a judge left
+alone with the hosted page could have burned the run by clicking. It now re-derives the panel from
+the cached responses by default — still Qloo's data, already paid for — and the keyed pipeline
+requires `DESK_KEYED_RECOMPUTE=1` on the server process. The copy that promised "a live Qloo run
+just now" says which of the two happened, and the button is labelled "Recompute the desk".
+
+## 10. The keyed run — what the endpoint actually said (2026-10-30)
+
+The key arrived and the full pull ran. This section records what the endpoint returned, the three
+decisions it forced, and the result — including the parts that are worse than the pitch.
+
+### 10.1 What it cost, and where the plan was wrong
+
+`qloo:series` ran the 28 sector/featured trend batches at `QLOO_CONCURRENCY=6` and hit
+`QLOO_RATE_LIMIT` with three tasks failed; the run refused to write `series.json`, which is the
+behaviour we wanted. Resumed at concurrency 2: the page cache replayed every page already paid for
+and only the missing pages were spent. Totals from `spentFromCache`: **121 searches, 72 basket
+calls, 2,872 trend requests — 3,065 against a 3,816 plan ceiling.** The plan was an upper bound
+because it assumes no basket member is shared between sub-sectors and no page is short; the real
+request shape was 358 cached pages of up to five entities, two requests per entity-page.
+
+The plan's arithmetic was wrong in one respect and the run fixed it: my first history floor was
+2025-04, read from probes whose windows opened less than 180 days before their end — which the
+endpoint refuses. The real floor is **2022-07**, so the walk is 12 pages per batch, not 5, and the
+trend line is the whole budget. The cost line now says so before a request is spent.
+
+### 10.2 Six facts about the series, measured rather than assumed
+
+1. **History is deep.** Subway returns 216 consecutive weekly points back to 2022-07; the deepest
+   entities all reach it.
+2. **Values are stable across re-requests.** Re-fetching a subset returned identical numbers for
+   99.7% of 5,531 (entity, date) pairs. The 0.3% are fresh points in the newest weeks.
+3. **The series is piecewise-constant.** Chili's shows 39 distinct levels over 166 weeks. It moves
+   in steps, not continuously.
+4. **The newest ~8 weeks are frozen** for every entity — Qloo's refresh cadence.
+5. **`velocity_fold_change === population_percent_delta` on every point**, and it is 0 on 71 of the
+   106 primary-window weeks, on the same dates for every entity. That is a cadence artefact; it is
+   not "no movement" and it is not usable as a weekly return.
+6. **Two catalogue-wide revisions.** On 2025-04-07/14 and 2025-10-13/20 every entity's percentile
+   steps at once: book-wide median weekly log move 0.188–0.262, against 0.0007 on a normal week.
+   All 100 of the most extreme weekly moves in the book sit on those dates.
+
+### 10.3 Three decisions the data forced
+
+**The factor changed before any result was read.** `config/book.json → tasteSignal` was amended from
+`velocity_fold_change` to a weekly log change in `population_percentile`. Fact 5 makes the
+pre-registered field unusable: a column that is zero in two-thirds of weeks and identical to another
+field would have priced the book off Qloo's refresh schedule. The amendment, its reason and its
+timestamp are recorded in the config, not only here.
+
+**Catalogue revisions are cut, not dummied.** A log difference across a revision is an index
+rescaling. `revisionWeeks()` finds those dates from the book's own level series (median move across
+entities) and drops them from both windows: four weeks in the primary window, none in the prior one.
+**The priced window is 102 weeks, 2024-10-14 → 2026-10-26**, not 106, and the desk says 102.
+
+**The second window cannot be priced.** Qloo's levels cover 58 of the prior window's 106 weeks, so
+no name clears the 100-week floor. The window was pre-registered and stays in the config; the desk
+reports it as **untestable**, with the reason and the per-name coverage. It is not reported as a
+failure to replicate, because the estimator never ran.
+
+### 10.4 The result
+
+| | |
+|---|---|
+| Book | 101 names, 83 resolved to a Qloo entity, **80 priced** (3 lack prices: WBD, EA, K) |
+| Window | 102 weeks after the revision cut |
+| Mean in-sample ΔR² | **+0.67 pts** (market R² 11.4% → 12.0%) |
+| Median \|t\| | **0.60** |
+| Out-of-sample ΔR² | **−0.05 pts**, 90% CI −0.56 → +0.28 |
+| Rotation placebo | real 0.67 pts vs rotation mean 0.96 pts, **p 0.898** |
+| Taste over peers (OOS) | **−0.78 pts**, 90% CI −2.00 → +0.41, positive on 57% of names |
+| Beyond consumer sentiment | **−0.10 pts**, 90% CI −0.70 → +0.18 |
+| Flags | **0 of 80** |
+
+The desk's verdict is FAILS, and the copy says what that means: taste is measured on every name and
+charged as a risk on none. This is the honest headline, not a hedge.
+
+**Why the individual betas look absurd, and what was done about it.** DIS +43.8, KDP −27.4. The
+level-difference basket is flat in most weeks: each sector's basket moves in **19–31 of 102 weeks**,
+median 29. The slope is identified on that handful of weeks, so it can be large and unstable, and the
+out-of-sample column shows it (DIS −5.8 pts). Rather than clip or winsorise, the desk prints the
+count: a note under the table gives the 19–31 range and median, and the evidence card states the same
+in the *Identification* bullet. A judge who asks "why is Disney's cultural beta 44?" now gets the
+answer at the number.
+
+**A monthly re-expression does not rescue it.** Re-building the factor from month-end levels (25
+four-week blocks) and re-running the estimator gives an out-of-sample mean ΔR² of **−0.113**, positive
+on 43% of names — worse than the weekly reading. The null is not an artefact of weekly cadence.
+
+### 10.5 A second numerical defect, found in the ablation null
+
+The ablation's rotation null returned `placeboMean: −191,329` in the first live run. The cause was
+identification, not code: a rotation can put almost all of a sector's active weeks into the test
+slice, leaving the training window nearly flat; the taste coefficient is then fitted by a handful of
+points and swings the test forecast by orders of magnitude. A near-singular `XtX` guard had already
+been added (it skips exactly-constant rotations), but rotations with *nearly* constant training
+series were still scored.
+
+The fix identifies a rotation the way one should: a name-draw counts only when the rotated training
+window has ≥ 8 nonzero weeks and at least 5% of the basket's own spread; a draw that keeps fewer than
+80% of names is dropped and counted. On this book **206 of 400 draws are valid**; the two numbers are
+in the payload and the skipped count is printed under the null. The peer null is now
+**p 0.126** — and that is borderline: a looser rule (5 weeks, 2%) gives 0.099, a stricter one (10
+weeks) 0.147. It is reported as borderline, not as a win in either direction.
+
+### 10.6 What changed in the product and the audit
+
+- Desk: an *Identification* note under the table and in the method card; a *Catalogue revisions*
+  bullet; the second-window chip now reads "second window untestable" and the note explains why.
+- Evidence: the ablation null prints the identification rule and the dropped-draw count; the old
+  "earns its place" phrasing became "adds out of sample on N% of names — a positive count, not a
+  positive average".
+- Copy that was true at 106 weeks now reads 102 where the data says 102 (window badge, footer,
+  method card), and the footer method line names `population_percentile`, not `velocity_fold_change`.
+- `scripts/audit.mjs` no longer hardcodes "106 weeks" or the tested second-window wording: both read
+  the live payload. Run against the live server: **287/287 checks pass** across 5 routes × 3
+  viewports. The only console noise was a 404 favicon, replaced with an inline icon.
+
+### 10.7 Honest limit
+
+With 0 flags and a negative out-of-sample cell, the submission's claim is a measurement discipline,
+not an alpha. The strongest positive statement available is that the real basket beats 87% of
+rotations on the peer-adjusted ablation *while* adding nothing on average — an alignment that the
+sector already prices. That is what the desk leads with when you ask it, and it is what the README
+says too.
+
+## 11. External review, round 1 — and what it changed
+
+The user asked for external model audits to start now rather than after the build
+was finished, so that a wrong design would be caught before more was stacked on it.
+Round 1 ran two live reviewers on the free tiers (Abhibots was rate-limited,
+Intern-AI out of quota, dahl returned 502): **NVIDIA NIM / Nemotron 3.5 Super**
+(verdict FIX FIRST, 55/100: TI 17, Design 18, Impact 8, Idea 12) and
+**BeatAPI / GLM 5.3 Flash** (verdict PASS, 71/100: TI 20, Design 17, Impact 14,
+Idea 20). Outputs are in `review/panel-2026-10-30T13-10-50/`.
+
+They disagreed on the verdict and converged on the substance. Both independently
+asked for the same four things:
+
+1. **Pool the estimator.** 80 separate slopes on a basket that moves in about 29 of
+   102 weeks is pseudo-replication; name fixed effects with one cultural beta per
+   sub-sector (or ridge shrinkage) uses the same signal with far more information.
+2. **A date-permutation null.** The circular-rotation null only explores shifted
+   cadences of the same series, so a high p is weak evidence; shuffling the week
+   order generates a richer null.
+3. **The ablation null is not a usable number.** Its p moves across the 0.10 line
+   when the identification rule changes, so it should be labelled uninformative
+   rather than borderline.
+4. **Copy that outruns the evidence** — an "alerts feed" implying live signals,
+   "an exposure an index beta cannot see", and a "FAILS … not a defect in the desk"
+   framing that attributes a power-limited null entirely to the factor.
+
+### 11.1 What was built in response
+
+**Pooled panel estimator** (`src/panel.mjs`). Name fixed effects swept out by
+within-transformation, one common market slope, one cultural slope per sub-sector,
+standard errors clustered by week (every name shares the calendar), plus a ridge
+variant with one penalty scale for all sub-sectors. It carries its own 400-draw
+date-permutation null. Result on this book: **within-book ΔR² +0.04 pts**,
+permutation **p 0.928**; common market slope 0.75 (t 10.5). Two of eleven
+sub-sector slopes reach |t| ≥ 2 (restaurants −1.39, t −2.12; apparel +2.48,
+t 2.08) and **neither survives a Bonferroni threshold of p ≤ 0.0045** across eleven
+tests. The ridge column shows which slopes were riding a nearly-flat basket: media
+−19.16 → −6.28, travel +4.40 → +2.61. The pooled reading therefore says what the
+per-name table says — at this window length the factor is not separable from
+chance — from a construction that does not depend on per-name identification.
+
+**Date-permutation null on the book** (`bookDatePermutation` in
+`src/robustness.mjs`). 400 shared shuffles of the week order. Real book ΔR²
+**+0.67 pts** against a shuffled mean of **+0.89 pts**, **p 0.778** — the same
+verdict as the rotation null (p 0.898) from a null with a different failure mode.
+It is printed in the robustness band, in the cost band and in the payload, and the
+desk's verdict tag now takes the better of the two p-values.
+
+**Revision cut made checkable** (`dataQuality.revisionSensitivity`). The same
+estimator, same code, on the same window with the four catalogue-revision weeks
+kept in: out-of-sample ΔR² **−0.10 pts**, placebo **p 1.000**, 0 flagged, against
+**−0.05 pts** and **p 0.898** on the cut calendar. The cut changes the second
+decimal and nothing else, which is what a data-quality cut should look like; if it
+had moved the headline, the cut would have been doing the work.
+
+**An UNPOWERED grade.** The front page previously read FAILS whenever the primary
+window disappointed. That overclaims in the opposite direction: an interval that
+crosses zero says the window cannot separate the factor from no factor.
+`verdictOf()` now separates *UNPOWERED* (interval crosses zero, both nulls at
+least match the real alignment) from *FAILS* (measured negative with an interval
+clear of zero). The chip note explains which one the reader is looking at.
+
+**Alerts feed relabelled.** `/api/v1/alerts` now returns `status` —
+`armed` / `watchlist-only` / `no-book-null` — plus a `note` stating the window, that
+this is not a live monitor, and that a book-level placebo of p 0.90 means no name
+can clear the rule. With this book it answers `watchlist-only` with 0 firing and 80
+suppressed, each carrying its own reason.
+
+**Per-name effective sample at the number.** Every priced row now ships
+`activeWeeks`, printed next to its ± in the table (`± 13.84 · 30 wk`) and on the
+holding page ("identified on N of 102 weeks"), so a large beta off a sparse basket
+is visible at the point of reading rather than in a footnote.
+
+**Ablation null labelled uninformative** in the band, the README and here, with the
+sensitivity band stated (0.099 looser rule, 0.147 stricter).
+
+### 11.2 What was not done, and why
+
+- **Pre-registering the pooled estimator is impossible.** It was chosen after the
+  per-name results were seen. It is labelled post-hoc in the band header, the read
+  page and this document; the pre-registered object remains the per-name estimator.
+- **Reinstating the four revision weeks as dummies** would re-introduce the
+  three-unit outliers the cut exists to remove. The reviewer's alternative — keep
+  them and model them — is answered instead by the sensitivity run above, which
+  shows the verdict is unchanged either way. Both are in the payload.
+- **Reversing the factor amendment** (`velocity_fold_change` →
+  `population_percentile`) is not available: the original signal was zero on 71 of
+  106 primary weeks for every entity at once, so it cannot be estimated at all. The
+  amendment is documented where it was made, and a monthly re-expression of the
+  amended factor is reported (−0.113 OOS) as the cadence check.
+
+### 11.3 Verification after the changes
+
+Pipeline re-run end to end; `npm test` **49/49**; CDP audit **302/302** checks
+across 5 routes × 3 viewports, including new assertions for the pooled band, the
+multiplicity note, the permutation null, the revision sensitivity and the grade
+note. Every evidence band now spans the page rather than sitting in one column of
+the card grid, because the reviewers' replacement paragraphs made the narrow
+column unreadable.
+
+### 11.4 What the panel's strongest objection still says about the product
+
+The Nemotron reviewer's "judge in 60 seconds" point is the one that should shape the
+demo: a Qloo judge skimming this desk can read "0 flagged, negative OOS" as *Qloo
+data is useless for equities*, when the measured statement is narrower — at weekly
+cadence, in this window, with a basket that moves a quarter of the time, no
+incremental risk is detectable. The desk now says that in the headline sentence, in
+the UNPOWERED note, and on the read page, and the pooled reading is the evidence
+that the null is not an artifact of the per-name fit.
+
+## 12. External review, round 2 — three fixes that changed the result (2026-10-30, 13:41 → 14:05)
+
+Two reviewers returned on the round-1 build: **Nemotron 3.5 Super VL 120B — FAIL,
+40/100** (TI 14 · Design 6 · Impact 8 · Idea 12) and **GLM 5.3 Flash — PASS, 66/100**
+(TI 20 · Design 19 · Impact 12 · Idea 15). MiniMax was 502 again. They converged,
+independently, on five points, and they were right about four of them.
+
+### 12.1 The "better of two nulls" rule
+
+Both flagged it as post-hoc null selection: taking `min(p_rotation, p_permutation)`
+lets the desk report whichever null flatters the factor, and the choice is invisible
+because it happens inside a `Math.min`. Nemotron's suggested repair was to keep one
+null and drop the other. That throws information away in the direction the reviewer
+did not intend — either null alone can be the lenient one depending on the book.
+
+Replaced with an **intersection-union** rule: a positive claim needs both nulls at
+p ≤ 0.10. This is strictly stronger than either single null, it removes the choice
+entirely, and the rule is now stated at the number, in the band's sub-line, on the
+read page and in the README. On this book nothing changes — 0.898 and 0.778 — which
+is the point: the stricter rule was going to give the same answer, so there was no
+reason to keep the lenient one.
+
+### 12.2 "UNPOWERED" understated a null the data support
+
+The consensus was that UNPOWERED reads as *promising, needs more data*, when both
+nulls matched the real alignment and out-of-sample ΔR² was negative. Renamed to
+**NO SIGNAL**, and the grade is now read off the **refit** interval rather than
+whichever interval was wider, because the fixed-coefficient interval holds the fit
+still and so understates its own error by construction. The note and the headline
+sentence both say the factor was looked for and not detectable at this window
+length, and that this is not the same as measuring it as harmful.
+
+### 12.3 The pooled panel was answering a question nobody asked
+
+Both reviewers made the same scope objection: one slope per sub-sector with name
+fixed effects is a *sector-level* estimand, and it cannot confirm or refute the
+per-name claim the desk actually makes. GLM went further — the panel also forces
+**one market slope** across 80 names, which is exactly the cross-sectional
+heterogeneity the per-name claim depends on.
+
+Fixed in two moves:
+
+1. **Scoped in words** — the band, the read page and the README now say the pooled
+   reading answers a different estimand and cannot confirm or refute a per-name
+   claim, and what it *does* test (that taste, if it prices, prices the same for
+   peers).
+2. **Restriction removed in code** — `panelNameMarket` in `src/panel.mjs` gives each
+   name its own market loading, partialled out first, which is algebraically a
+   name × market interaction with name fixed effects. Loadings span **−0.29 to 2.40
+   (sd 0.55)**, so the restriction was real. The answer does not move: within-ΔR²
+   **+0.04 pts** and permutation **p 0.923**, against +0.04 and 0.928 with the common
+   slope. The strongest sub-sector does change (restaurants −1.39, t −2.12 →
+   apparel +1.37, t 1.27) and no slope now reaches |t| ≥ 2 on that arm — which is
+   itself the demonstration that the sector-level estimand is not the per-name claim.
+
+### 12.4 The dispersion test — built, then found uninformative (round 3)
+
+The one substantive test both reviewers asked for, and the one that could have turned
+the null into a cross-sectional story. If the mean cultural beta is zero but names
+genuinely pull in opposite directions, dispersion is a sellable risk-channel result.
+`src/dispersion.mjs` tests the cross-sectional variance of the per-name betas against
+the average squared standard error, calibrated by a null that rotates **each basket
+independently** — sampling noise survives, any name-specific timing does not.
+
+| | value |
+|---|---|
+| Spread across 80 names | 805 (sd 28) |
+| Explained by noise alone (mean se²) | 1,869 (sd 43) |
+| Independent-rotation null | mean 1,352 · p95 4,030 · p05 94 |
+| Upper tail (excess dispersion) | p 0.212 |
+| Lower tail (spread below noise) | p 0.791 |
+
+The first draft of this section called that a **kill** of the heterogeneity story. Round
+3 rejected the word, and the objection was correct: the two benchmarks of "noise
+alone" — analytic mean se² 1,869 and empirical rotation mean 1,352 — disagree by 28%,
+so neither can be taken at face value, and a variance comparison with no power figure
+is not a test of anything.
+
+The test now calibrates itself. Each name's outcome is shifted so its cultural beta
+becomes a draw from a planted spread (adding c × basket to y moves that name's fitted
+coefficient by exactly c), and the same 90% threshold is applied to each planted book:
+
+| Planted cross-sectional sd | 1 | 5 | 10 | 25 | 50 |
+|---|---|---|---|---|---|
+| Detection rate | 0% | 0% | 0% | 0% | 100% |
+
+The smallest spread this test can see is about **50** — 1.8× the spread actually
+observed and far outside anything plausible. So the honest reading is not "the names
+are the same"; it is **uninformative**, in the same bracket as the peer rotation null.
+The evidence band says exactly that, and the read page says why a non-detection needs
+a power figure before it means anything. That correction is round 3's most important
+contribution to the submission.
+
+### 12.5 Overstatements the reviewers named, and the replacement
+
+- "taste is a risk channel an index beta does not report" → "does not **measurably**
+  report in this sample", with the hypothesis/result distinction made explicit.
+- "the wider interval carries the claim" → "the wider interval **bounds the effect
+  sizes this window can exclude**, and here that bound is large, which is little."
+  The grade now uses the refit interval; the copy no longer implies the interval
+  supports anything.
+- The band sub-line still said "the better of two nulls" after the rule had changed
+  in code — caught by re-reading the rendered page, not by the audit, and fixed.
+
+### 12.6 Rejected, with reasons
+
+- **A 52-of-102 active-week floor.** The maximum any name achieves is 31 active weeks
+  and the median is 29, so this floor drops the entire book. A floor that deletes
+  every observation is not a robustness check.
+- **Dropping the 18 unresolved names and the 3 without prices.** The rows are withheld
+  with their reason printed, which is a stronger honesty position than deletion: a
+  reader can see coverage. Deleting them would make the book look complete.
+- **Reinstating the revision weeks as book-wide level-shift dummies.** Answers are
+  already given by the uncut re-run (OOS −0.10, placebo p 1.00 versus −0.05 and
+  0.90), and a dummy for a three-unit outlier does not remove the outlier from the
+  slope, only from the intercept.
+- **Extending the window to 2022-07.** The window is pre-registered and fixed; moving
+  it after seeing results is the exact error the pre-registration exists to prevent.
+  GLM's point that Qloo's levels *do* reach further is recorded here as a limitation
+  of the pre-registration, not repaired after the fact.
+- **Name-specific market slopes as the headline fix** was adopted, not rejected — but
+  as a second arm beside the common-slope one, so the reader can see that the
+  restriction made no difference rather than having to take it on faith.
+
+### 12.7 Verification
+
+Pipeline re-run end to end (45 s). `npm test` **59/59** — four new dispersion tests
+(planted opposite exposures show excess dispersion; identical names do not; the
+reported variance equals the variance of the per-name slopes computed independently;
+short or mismatched series are refused) and two new panel tests (per-name loadings
+recover the taste slope where a common slope is misspecified; they do not manufacture
+a signal on a null book). CDP audit **314/314** across 5 routes × 3 viewports,
+including three new assertions: the estimand scoping, the per-name-loading arm, and
+the dispersion band. Screenshots re-checked at 1440 and 390.
+
+## 13. External review, round 3 — the dispersion reading, corrected (2026-10-30, 14:05 → 14:35)
+
+The round-2 build went back to the same panel. **Nemotron 3.5 Super VL 120B —
+FIX FIRST, 50/100** (TI 15 · Design 15 · Impact 7 · Idea 13), **GLM 5.3 Flash —
+PASS, 78/100** (TI 21 · Design 22 · Impact 15 · Idea 20), MiniMax 502 again.
+Neither found a fatal. Both found the same hole, and it was one I had left open
+deliberately: section 12.4 called the dispersion test a kill, then rewrote it as
+"uninformative" on round-3 advice — but the page carried no power figure at the
+spread the book actually shows, only a grid up to sd 50. GLM: *"Without it, 'no
+detectable heterogeneity' is unreadable as either a kill or a pass."* Correct.
+
+### 13.1 Power at the spread the book has, not just at the top of the grid
+
+`betaDispersion` now scores the same simulated-plant machinery at the observed
+cross-sectional sd, not only on the grid. The numbers this book produces:
+
+| | |
+|---|---|
+| Observed spread (sd) | 28.4 |
+| Detection rate at a planted sd of 28.4 | **0%** |
+| Detection rate at a planted sd of 50 | 100% |
+| Verdict | **uninformative** |
+
+A test that would miss a genuine heterogeneity as large as the one it measured,
+even if that heterogeneity were entirely real, has not tested anything. That is
+now the definition the code uses: `informative = powerObserved >= 0.8`, and
+`readsAs` keys on it. The first draft keyed on `detectable` — whether *any* grid
+point reached 80% — which is a different question and returned `indeterminate`
+while the page copy said `uninformative`. The CDP audit caught it as a missing
+`dispersion-power` assertion; the copy had already been written for the right
+answer, so the code was the thing out of step. Fixed, asserted, and the state is
+now printed on the evidence band:
+
+> At the spread this book actually shows (sd 28.4) the same test would have found a
+> genuine heterogeneity that size **0%** of the time, below the 80% bar — which is
+> the whole basis for calling the non-detection uninformative.
+
+### 13.2 "Which of the three variance numbers is wrong?" — answered from inside the null
+
+GLM's second must-fix was to reconcile 805 (observed spread), 1,869 (mean se²) and
+1,352 (rotation null mean) rather than print all three and let a judge pick: *"the
+rotation null mean exceeding the analytic noise benchmark shows one of the two
+benchmarks is miscalibrated; identify which before citing either."*
+
+The null answers it, because inside its own draws the true relationship is removed
+by construction and **both** numbers can be computed on the same slopes:
+
+| | real book | inside the rotation null |
+|---|---|---|
+| mean squared standard error | 1,869 | 1,810 |
+| cross-sectional variance of the slopes | 805 | 1,352 |
+| gap | −28% | **−25%** |
+
+The same gap appears when no name is related to its basket. So the analytic
+benchmark is the miscalibrated one for this statistic: it treats 80 slopes as 80
+independent estimates, and every name here is measured over one shared calendar, so
+the cross-sectional variance sits below the sum of marginal variances by the
+average cross-name covariance. The rotation null keeps that co-movement and is the
+only yardstick every p is read against; the analytic number is printed beside it as
+a cross-check and for nothing else. That is now stated at the number on the
+evidence band, on the read page, and in README check 9.
+
+### 13.3 The permutation null now respects the refresh cadence
+
+GLM's remaining method objection was that permuting single week labels destroys the
+serial structure the refresh cadence imposes (a level that stepped once and held for
+weeks becomes isolated spikes), so the null may be calibrated in the direction of
+ease. Rather than argue the direction, the same 400 draws are now re-run on the
+same book with **blocks of 6 consecutive weeks** shuffled as units — each basket
+keeps its local serial structure and only the order of the blocks changes.
+
+| null | p |
+|---|---|
+| Circular rotation | 0.898 |
+| Date permutation, week by week | 0.778 |
+| Date permutation, 6-week blocks | **0.830** |
+
+The blocked null is the stricter of the two permutation variants, so the
+intersection-union rule uses it (a claim has to clear all three). On this book it
+moves the result further from a signal, not closer. Printed beside the week-by-week
+figure on the evidence band and in the run-cost band, with an audit assertion
+(`permutation-blocks`) that both are on the page.
+
+### 13.4 What was corrected in wording, and one rendering fault
+
+- **"the spread is no larger than noise, and if anything smaller"** was still on the
+  read page's uninformative branch. Replaced: *"no excess dispersion is detected,
+  and — as the calibration below shows — this window cannot turn that into a
+  finding."* Nemotron was right that the phrase reads as a result.
+- **A red p-value where the test is neutral.** The rotation-null cell coloured
+  `p 0.212` in the "bad" tone, which asserts a negative finding the test does not
+  make. Now neutral for a mid reading; a screenshot at 1440 caught what no
+  assertion was watching for.
+- **The holding page's 14px link** to the dispersion evidence was below the 44px tap
+  target at phone width. Replaced with a sentence that names the section; the
+  `tap-targets` check is back to green.
+
+### 13.5 Rejected: rebuild the basket from a weekly-varying source
+
+Nemotron's first must-fix was to reconstruct the taste basket from a Qloo series
+with genuine weekly variation *"so the regressor moves in most of the 102 weeks
+instead of the current median of 29."* Checked against the cached pull rather than
+assumed — the same response carries four weekly fields, and none of them varies
+more often per entity (median weeks where each changes, across the 80 series,
+~198 weeks each):
+
+| field | median weeks it changes |
+|---|---|
+| `population_percentile` (the factor) | 50 |
+| `velocity_fold_change` | 47 |
+| `population_percent_delta` | 47 |
+| `population_rank_velocity` | 39 |
+
+These are all weekly **snapshots of a slower-moving process**; changing which field
+the basket differences would not change the cadence, and the basket is
+pre-registered besides. Recorded as a limitation of the endpoint and of the
+pre-registration — which is exactly what the read page says — not repaired after
+seeing the answer. If a future Qloo endpoint exposes a genuinely weekly flow
+series, the same pipeline would take it without touching the estimator.
+
+### 13.6 Verification
+
+Pipeline re-run end to end. `npm test` **62/62** (one new dispersion test for the
+observed-spread grading rule; one new test that the blocked permutation is computed
+on its own index order and is seed-deterministic). CDP audit **326/326** across 5
+routes × 3 viewports, with three new assertions: `dispersion-power-observed`,
+`dispersion-benchmark-reconciled`, `permutation-blocks`. Screenshots re-checked at
+1440 and 390; the dispersion section was captured as a section shot at both widths
+(`review/dispersion-desktop.png`, `review/dispersion-phone.png`).
+
+## 14. External review, round 4 — and the defect none of them found (2026-10-30, 14:41 → 16:10)
+
+### 14.1 What the panel said
+
+| model | verdict | total | TI | Design | Impact | Idea |
+|---|---|---|---|---|---|---|
+| NVIDIA Nemotron 3.5 Super | FIX FIRST | 53 | 14 | 16 | 8 | 15 |
+| BeatAPI GLM 5.3 Flash | PASS | 72 | 20 | 19 | 14 | 19 |
+| dahl MiniMax M2.7 | PASS | 58 | 18 | 16 | 12 | 12 |
+
+None found a fatal error. Their combined must-fixes were: cadence-matched scoring
+(Nemotron), power at a pre-specified MDE (all three), replacement of the
+intersection-union rule with a single primary null (Nemotron), an active-week flag
+(Nemotron), a visible Qloo-vs-peer panel (GLM), week-level cadence evidence (GLM),
+the effective sample stated up front (GLM), and NO SIGNAL vs FAILS spelled out
+(MiniMax).
+
+### 14.2 The finding underneath all of them
+
+Implementing Nemotron's first must-fix meant checking the revision history instead of
+accepting the brief's premise that the newest ~8 weeks are frozen. The pull says
+something much larger:
+
+- every entity's `population_percentile` last changes in the week ending
+  **2025-12-22** — the last non-zero factor return in the book;
+- the price window ends **2026-10-26**, so its final **44 weeks** are a carry-forward
+  with a log change of exactly zero for every name;
+- the pre-registered 67/35 split puts **all 35 scored weeks** (2026-03-02 →
+  2026-10-26) inside that tail; the median name's basket moves in **0** of them.
+
+A regressor that is zero multiplies its coefficient by zero on every scored week, so
+the held-out condition could not have detected a taste effect of **any** size: its
+power equals its size. The OOS ΔR² (−0.05 pts) is a perturbation of the training-fit
+market coefficients, not a taste result; the refit interval [−2.12, +0.64] is not a
+bound on taste; and the ablation and sentiment arms inherit the same empty slice
+because they use the same split. This is bigger than any reviewer item: it reframes the
+submission's central claim, and it was visible in `fixtures/qloo/series.json` without
+any price data.
+
+### 14.3 What the product now does about it
+
+- `valueAdd.oos.scoring` (`testable`, `frozenWeeks`, `lastMove`, `frozenAfterWindow`,
+  `medianActive`) is computed once by `scoringDiagnostics()` in `src/robustness.mjs`,
+  and the ablation and sentiment blocks carry the same object.
+- The desk's OOS cell is tagged **"held-out slice frozen — no test"**, its rule box
+  says what the number is, and the chip reads "OOS ΔR² not a test".
+- The evidence page opens with a **grade-summary** card (grade first, then the frozen
+  qualifier and the empty-power statement) and carries a **vintage** card that names
+  the last revision, the 44-week carry-forward, the 67/35 placement and the post-hoc
+  cadence diagnostic.
+- The read page has a dedicated section, **"What the held-out test can and cannot
+  see"**, says "no held-out claim" in "How strong the claim is meant to be", and the
+  flag paragraph says the zero flag count is structural on this vintage.
+- The holding page states the slice is "not a test of this name"; the ablation and
+  sentiment bands are tagged **"perturbation, not a test"**; the alerts feed's rule
+  includes "the held-out slice testable at this data vintage", its status is
+  `watchlist-only` for that reason as well as the book placebo, and every suppressed
+  name carries the actual reason; the CSV gains an `oosTestable` column repeated on
+  every row.
+- A unit test pins the constant-regressor case: a slice that never moves reports
+  `testable: false`, `frozenWeeks == testWeeks`, and the right `lastMove`.
+
+### 14.4 What was accepted from the round-4 must-fixes
+
+- **Max-of-p, not intersection–union** (Nemotron, GLM). GLM was right that IUT was a
+  mislabel: the same hypothesis is tested three ways, and the grade reads the largest
+  p. Renamed and explained as conservative by construction wherever the rule appears.
+- **NO SIGNAL vs FAILS** (MiniMax). The read page now states both, and a window that
+  could not see the effect is called **untestable** — a third state, neither grade.
+- **Qloo-vs-peer panel** (GLM). `valueAdd.ablation.qlooVsPeer`: mean correlation
+  **0.04** (range −0.11 to +0.25); the taste basket moves in a mean **27** of 102
+  weeks, the peer basket every week. The product now shows what Qloo contributes
+  rather than asking the reader to infer it from two nulls.
+- **Week-level cadence** (GLM). Change indicators co-move on 90.0% of weeks for
+  percentile vs `velocity_fold_change`, 90.0% for percentile vs
+  `population_percent_delta`, and 100% for the two velocity fields — so the medians in
+  §13.5 are backed by timing, and no field is a denser signal.
+- **Every-null wording, block permutation, observed-spread power** were already in
+  from round 3 and were kept.
+
+### 14.5 What was rejected, with reasons
+
+- **"Power at a pre-specified MDE"** (Nemotron, GLM, MiniMax). Power against any true
+  effect **is** the test's size on this slice, because the scored regressor is
+  identically zero. A curve at 0.5 pts or at the observed spread would be the same
+  number — zero — wherever it was evaluated. Printing an MDE would dress an empty
+  slice as a weak one. The slice is labelled untestable instead, and the dispersion
+  test (which is a different statistic, not the OOS arm) keeps a pre-specified 80%
+  grid and an observed-spread read.
+- **Re-splitting the pre-registered window as the headline** (Nemotron, GLM). The
+  split was pre-registered; moving it after seeing the freeze would be choosing a
+  window after the answer. It is shipped as a labelled post-hoc diagnostic, with the
+  median and the share positive, and its mean shown to be outlier-dominated
+  (−8.42 pts, range −127.5 to +15.8) precisely so it cannot be quoted as a result.
+- **"The interval bounds what the window can exclude"** (Nemotron). Withdrawn for the
+  frozen slice; the copy now says the interval is not a bound on taste. The sentence is
+  kept only where the slice moves.
+
+### 14.6 The cadence-aligned diagnostic, and why it is not a verdict
+
+Over the 58 informative weeks (2024-10-21 → 2025-12-22), with a 38/20 split and 9
+moving test weeks, the same estimator gives a median ΔR² of **−0.49 pts**, positive on
+**38%** of names, mean **−8.42 pts**, range **−127.5 to +15.8**. The mean is dominated
+by names with almost no variance in the test slice, which is why the page leads with
+the median and the share. It is post-hoc, it is not stable under resampling (a 5-week
+block bootstrap can draw blocks with no movement and the refit then has a singular
+design), so no interval is printed on it and it carries no grade.
+
+### 14.7 Verification
+
+Pipeline re-run end to end with the new fields (80/83 priced; dispersion `uninformative`,
+observed-spread power 0%; permutation p 0.830; scored weeks 0 of 35; last revision
+2025-12-22; 44 frozen weeks after it). `npm test` **63/63** (one new test for
+`scoringDiagnostics`, both the frozen and the live case). CDP audit **341/341** across 5
+routes × 3 viewports, with six new assertions: `nulls-every-null`,
+`dispersion-power-pre-specified`, `frozen-heldout`, `grade-summary`, `vintage-card`,
+`qloo-vs-peer`. Screenshots re-checked at 1440 and 390; the vintage card was captured
+as a section shot at both widths (`review/vintage-desktop.png`,
+`review/vintage-phone.png`).
+
+---
+
+## 15. Round-5 external panel, and the grade word
+
+### 15.1 What the panel said
+
+| reviewer | verdict | score | implementation | design | impact | idea |
+|---|---|---|---|---|---|---|
+| NVIDIA NIM / Nemotron 3.5 Super | FIX FIRST | 53 | 16 | 14 | 9 | 14 |
+| BeatAPI / GLM 5.3 Flash | PASS | 61 | 17 | 16 | 12 | 16 |
+| dahl / MiniMax M2.7 | — (502, third consecutive round) | — | — | — | — | — |
+
+Both reviewers recorded **fatal: none**. Both independently found the same defect: the
+grade word **NO SIGNAL** reads as a capable test that returned nothing, when the held-out
+slice is frozen and no held-out test ran. Nemotron also asked that the OOS number stop
+leading the cell and that the post-hoc diagnostic be removed from the product; GLM asked
+that the diagnostic stay but lead with the median and the share, and that the dependence
+of the three nulls be disclosed.
+
+### 15.2 Accepted
+
+- **The grade word.** `verdictOf()` now branches on `scoring.testable === false` before
+  any OOS comparison and returns **NO SIGNAL (IN-SAMPLE)**, or **IN-SAMPLE ONLY** if the
+  in-sample association ever clears both nulls at p ≤ 0.10 with a positive ΔR². The
+  word is computed from the in-sample book and the nulls; the frozen OOS interval no
+  longer grades anything.
+- **The OOS cell.** It leads with **"no test"**; the perturbation value moved into the
+  tag (`held-out slice frozen — no test · perturbation −0.05 pts`) and the rule box. The
+  same treatment on the grade-summary card and the holding page.
+- **Null dependence.** The permutation paragraph now says the three nulls run on one
+  calendar and one frozen tail, are not three independent tests, and should be read as
+  one stringent check rather than multiplied p-values.
+- **Circularity of the nulls.** The same paragraph states that rotation and shuffling
+  preserve each basket's slow-moving shape, so they exclude less about a genuinely
+  weekly taste signal than the p-value alone suggests — a limitation of the endpoint,
+  printed rather than implied.
+- **Symmetric arm rule.** The read page states once that any arm whose scored slice is
+  frozen is called a perturbation, the taste arm, the peer control and the sentiment
+  control alike. This answers GLM's objection that only the comparison where taste
+  underperformed got the discount.
+- **The diagnostic stays, median-led.** Per GLM rather than Nemotron: it is post-hoc,
+  labelled, leads with the median and the share positive, and explains the mean as
+  outlier-dominated. Removing it would hide the only held-out reading the data allows.
+
+### 15.3 Rejected
+
+- **Remove the post-hoc diagnostic entirely** (Nemotron). Rejected: the desk would then
+  show only the empty pre-registered arm, which hides work the data does support reading.
+  The compromise above keeps it non-evidence: it carries no grade and no interval.
+- **Re-cut the scored window to end at 2025-12-22** (Nemotron, as one of two options).
+  Rejected as the headline: the split was pre-registered; moving it after seeing the
+  freeze is choosing a window after the answer. It exists only as the labelled diagnostic.
+- **Re-source a weekly Qloo series** (both). Not possible with the documented endpoint:
+  the four weekly fields move on the same cadence (50/47/47/39 change-weeks of ~198), so
+  no field swap buys weekly variation. Recorded in §13.5 and left as the next-vintage plan.
+
+### 15.4 A defect found by the desk's own audit, not by a reviewer
+
+The README promised that a name with no Qloo entity "keeps a row labelled unresolved,
+with the query that was tried". It did not: the pipeline filtered the unresolved names
+out before rows were built, so the desk showed 83 rows of a 101-name book and the 18
+missing names left no trace. All 18 have committed prices.
+
+Fixed at the source: `compute-betas.mjs` appends a row per unresolved name with a
+market-only OLS, `status: "unresolved"`, `culturalBeta: null`, the query tried, and a
+note saying the cultural beta is withheld rather than guessed. The desk renders it with
+the measured market beta, "no Qloo entity" in the cultural column and `query tried: …`
+under the name; the phone layout was rebuilt after the first attempt broke "AutoNation"
+across lines. Counts now read **101 names, 80 priced** everywhere, and a caption states
+that the roster does not shrink to hide them.
+
+### 15.5 Verification
+
+Pipeline re-run: 80/101 priced, 0 flags, same value-add numbers. `npm test` **63/63**.
+CDP audit **344/344** across 5 routes × 3 viewports, with one new assertion,
+`grade-in-sample`: when the frozen chip is present, the grade word must contain
+IN-SAMPLE. Its first implementation silently never fired because CSS uppercases chip
+text and `innerText` returns the transformed string; the check now compares upper-cased
+text, and the three verdict regexes were made case-insensitive for the same reason.
+Shots: `review/shots-2026-10-30T16-22-18/desktop-desk.png`,
+`review/roster-unresolved.png`, `review/roster-unresolved-phone.png`.

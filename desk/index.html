@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cultural Beta — Consumer Desk</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='6' fill='%23b4472a'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="/app.css">
 </head>
 <body>
@@ -14,16 +15,24 @@
       <a href="#/" data-tab="desk">Desk</a>
       <a href="#/map" data-tab="map">Taste map</a>
       <a href="#/evidence" data-tab="evidence">Evidence</a>
+      <a href="#/ask" data-tab="ask">Ask</a>
     </nav>
   </div>
   <main id="view"></main>
   <footer>
     <div class="note">
-      <b>Method.</b> Weekly taste momentum from Qloo <code>/v2/trending</code> (velocity fold change),
-      leave-one-out affinity-weighted basket from Qloo <code>/v2/insights</code>. Per holding:
-      OLS of 106 aligned weekly returns on SPY and the taste basket. The basket coefficient is the
-      cultural beta; standard errors in grey; ΔR² is the gain over the market-only fit.
+      <b>Method.</b> Weekly taste levels from Qloo <code>/v2/trending</code> (log change in
+      <code>population_percentile</code>), one affinity-weighted basket per sub-sector from Qloo
+      <code>/v2/insights</code>, every name in the book excluded from every basket. Per holding:
+      OLS of <span id="note-weeks">the aligned</span> weekly returns on SPY and
+      its sub-sector's basket. The basket coefficient is the cultural beta; standard errors in grey;
+      ΔR² is the gain over the market-only fit. <a href="#/read">How to read this desk</a>.
       <span id="note-live"></span>
+    </div>
+    <div class="verify">
+      <b>Checks.</b> <code>npm test</code> (unit) and <code>node scripts/audit.mjs</code> — six routes at three
+      viewports over the Chrome DevTools Protocol, with every check and screenshot committed under
+      <code>review/</code>. Nothing on this page is asserted in prose that a script does not also test.
     </div>
   </footer>
 </div>

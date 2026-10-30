@@ -1,0 +1,30 @@
+{
+  "verdict": "PASS",
+  "score_total": 66,
+  "scores": {"technological_implementation": 19, "design": 16, "potential_impact": 14, "quality_of_idea": 17},
+  "fatal": "none",
+  "must_fix": [
+    "State the 44/102 carry-forward and the empty held-out slice on the desk landing surface, not only in the vintage card — a judge who never opens that card will read NO SIGNAL (IN-SAMPLE) as a tested null.",
+    "Put a one-line resolution-failure reason per unresolved name (ticker aliasing, non-consumer brand string, Qloo coverage gap) so 18/101 does not read as a broken pipeline.",
+    "Cut or hard-downgrade the post-hoc split: as shipped it is a second look at a frozen region with no pre-registration and no interval; keep it only if labelled 'diagnostic, not evidence, not pre-specified' in the same visual weight as the graded cells.",
+    "Replace 'uninformative' dispersion framing with the actual consequence: with 0% power at the observed sd, the book cannot detect any effect of practical size — say that in the grade summary."
+  ],
+  "method_objections": [
+    "The three nulls share one calendar and one frozen tail; they are not independent confirmations and the copy now says so, but a single 58-week informative window is thin evidence for an entire book-level grade regardless of label.",
+    "All 35 scored weeks are carry-forward with the regressor identically zero: the OOS design never had power. This should be presented as a data-vintage failure of the pre-registration, not folded into the grade word.",
+    "The post-hoc 38/20 split with a −127.5 outlier and mean −8.42 invites exactly the mean-vs-median shopping the median-led presentation tries to pre-empt; without a pre-specified analysis it proves nothing either way.",
+    "Qloo-vs-peer basket correlation of 0.04 means the control basket is nearly a different instrument; the symmetric perturbation rule is formally clean but the comparison is between a signal that moves 27/102 weeks and one that moves every week — unequal exposure, not a matched control.",
+    "83/101 entity resolution with no published resolution methodology means the surviving 80 may be a selection-biased subset (large, well-documented brands resolve; the marginal names do not)."
+  ],
+  "overstatements": [
+    "Any phrasing implying the book was 'tested out of sample' — it was not; the held-out condition has power equal to size. Should read: 'the pre-registered out-of-sample window was frozen on stale Qloo data and could not test anything.'",
+    "'0 flags' as a finding — with 0% power at observed dispersion and +0.67 r² in-sample, the correct claim is 'the design could not have detected this effect size', not 'no name clears the bar'.",
+    "Dispersion 'uninformative' understates the problem: it is informative about power — the test cannot reject at any plausible effect — and the copy should say the book is underpowered, not neutral."
+  ],
+  "grade_label_verdict": "Yes, defensible. NO SIGNAL (IN-SAMPLE) correctly locates the evidentiary basis in the in-sample book and nulls, and IN-SAMPLE ONLY existing as a distinct state prevents the label from being read as 'tested and found nothing'. The remaining risk is placement, not wording: if the vintage card is not on the default view, the parenthetical will be skipped.",
+  "roster_verdict": "Yes on integrity, with a caveat. 101/80 with nulls and queries shown is more honest than 83 silent rows, but 'no Qloo entity' plus the raw query is a non-explanation; a one-word failure class per name (alias, coverage, delisted) converts a broken-looking table into an audited one.",
+  "cadence_diagnostic_verdict": "Cut, or reduce to a footnote. Median-led with no interval and no grade is more disciplined than before, but it is still an unplanned analysis on data the desk itself declares frozen; its only function is narrative texture. One sentence that would make it safe: 'This split was not pre-registered and the region contains no independent taste variation; it is shown for completeness and carries no evidentiary weight.'",
+  "best_next_model_construction": "Re-pull the full window on a current Qloo vintage so population_percentile actually moves in the held-out weeks, and use a basket constructed from Qloo entity-level affinity/taste signals that vary weekly (the trending basket moving only 27/102 weeks is the real power killer). Cross-validate the entity resolution against a known ticker-name mapping and pre-register the split before regenerating.",
+  "headline_rewrite": "A deterministic cultural-beta desk over 101 consumer names found no association that survives in-sample rotation and permutation nulls — and, because Qloo's ranking data froze for the final 44 weeks, the pre-registered out-of-sample test could not be run at all.",
+  "judge_60s": "A skimming judge will see '0 flags, NO SIGNAL' and score it as a failed product: no finding, no edge, nothing to ship. They will miss that the grade word is a deliberately honest epistemic state, that the OOS emptiness is a data-vintage defect the submission itself detected and reported, and that the statistical hygiene here (BH correction, rotation/permutation nulls, symmetric perturbation rule, no simulated data) is well above hackathon norm — which is where the real points are."
+}

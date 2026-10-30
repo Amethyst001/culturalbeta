@@ -1,0 +1,137 @@
+{
+ "harness": {
+  "version": "0.1.26",
+  "surface": "exec recommend"
+ },
+ "input": {
+  "target_type": "artist",
+  "signals": [
+   "urn:entity:brand:stub-home-depot",
+   "urn:entity:brand:stub-lowe-s",
+   "urn:entity:brand:stub-pool-corporation",
+   "urn:entity:brand:stub-whirlpool",
+   "urn:entity:brand:stub-mohawk-industries",
+   "urn:entity:brand:stub-lennar",
+   "urn:entity:brand:stub-d-r-horton",
+   "urn:entity:brand:stub-pultegroup",
+   "urn:entity:brand:stub-ryan-homes",
+   "urn:entity:brand:stub-tractor-supply"
+  ],
+  "limit": 10
+ },
+ "fetchedAt": "2026-10-30T09:15:49.359Z",
+ "correlationId": "exec-stub-recommend",
+ "response": {
+  "status": "ok",
+  "interpretation": {
+   "target_type": "artist",
+   "signals": [
+    "urn:entity:brand:stub-home-depot",
+    "urn:entity:brand:stub-lowe-s",
+    "urn:entity:brand:stub-pool-corporation",
+    "urn:entity:brand:stub-whirlpool",
+    "urn:entity:brand:stub-mohawk-industries",
+    "urn:entity:brand:stub-lennar",
+    "urn:entity:brand:stub-d-r-horton",
+    "urn:entity:brand:stub-pultegroup",
+    "urn:entity:brand:stub-ryan-homes",
+    "urn:entity:brand:stub-tractor-supply"
+   ]
+  },
+  "results": [
+   {
+    "entity_id": "urn:entity:artist:stub-urn-entity-brand-stub-home-depot-0",
+    "name": "Stub artist 0",
+    "type": "urn:entity:artist",
+    "affinity": 0.6
+   },
+   {
+    "entity_id": "urn:entity:artist:stub-urn-entity-brand-stub-home-depot-1",
+    "name": "Stub artist 1",
+    "type": "urn:entity:artist",
+    "affinity": 0.59
+   },
+   {
+    "entity_id": "urn:entity:artist:stub-urn-entity-brand-stub-home-depot-2",
+    "name": "Stub artist 2",
+    "type": "urn:entity:artist",
+    "affinity": 0.58
+   },
+   {
+    "entity_id": "urn:entity:artist:stub-urn-entity-brand-stub-home-depot-3",
+    "name": "Stub artist 3",
+    "type": "urn:entity:artist",
+    "affinity": 0.57
+   },
+   {
+    "entity_id": "urn:entity:artist:stub-urn-entity-brand-stub-home-depot-4",
+    "name": "Stub artist 4",
+    "type": "urn:entity:artist",
+    "affinity": 0.56
+   },
+   {
+    "entity_id": "urn:entity:artist:stub-urn-entity-brand-stub-home-depot-5",
+    "name": "Stub artist 5",
+    "type": "urn:entity:artist",
+    "affinity": 0.55
+   },
+   {
+    "entity_id": "urn:entity:artist:stub-urn-entity-brand-stub-home-depot-6",
+    "name": "Stub artist 6",
+    "type": "urn:entity:artist",
+    "affinity": 0.54
+   },
+   {
+    "entity_id": "urn:entity:artist:stub-urn-entity-brand-stub-home-depot-7",
+    "name": "Stub artist 7",
+    "type": "urn:entity:artist",
+    "affinity": 0.53
+   },
+   {
+    "entity_id": "urn:entity:artist:stub-urn-entity-brand-stub-home-depot-8",
+    "name": "Stub artist 8",
+    "type": "urn:entity:artist",
+    "affinity": 0.52
+   },
+   {
+    "entity_id": "urn:entity:artist:stub-urn-entity-brand-stub-home-depot-9",
+    "name": "Stub artist 9",
+    "type": "urn:entity:artist",
+    "affinity": 0.51
+   }
+  ],
+  "result_count": 10,
+  "provenance": {
+   "source": "stub",
+   "endpoint": "/v2/insights",
+   "documentation": "stub",
+   "requests": [
+    {
+     "method": "GET",
+     "path": "/v2/insights",
+     "query": {
+      "target_type": "artist",
+      "signals": [
+       "urn:entity:brand:stub-home-depot",
+       "urn:entity:brand:stub-lowe-s",
+       "urn:entity:brand:stub-pool-corporation",
+       "urn:entity:brand:stub-whirlpool",
+       "urn:entity:brand:stub-mohawk-industries",
+       "urn:entity:brand:stub-lennar",
+       "urn:entity:brand:stub-d-r-horton",
+       "urn:entity:brand:stub-pultegroup",
+       "urn:entity:brand:stub-ryan-homes",
+       "urn:entity:brand:stub-tractor-supply"
+      ],
+      "limit": 10
+     }
+    }
+   ]
+  },
+  "execution": {
+   "transport": "direct",
+   "correlation_id": "exec-stub-recommend",
+   "duration_ms": 1
+  }
+ }
+}

@@ -1,0 +1,650 @@
+{
+  "note": "The consumer universe. Every name is priced on its sub-sector's taste basket, so the factor is comparable across the book and the Qloo call count grows with sectors, not with names. The seven featured names also carry an audience-level basket built from their own entity. Order within a sector is the signal order: `recommend` accepts at most 10 signals, so the first ten resolvable names represent the sector.",
+  "sectors": [
+    {
+      "id": "beauty",
+      "label": "Beauty & personal care",
+      "names": [
+        {
+          "ticker": "ELF",
+          "label": "e.l.f. Beauty",
+          "query": "e.l.f. Beauty",
+          "featured": true,
+          "altQueries": [
+            "e.l.f. Cosmetics"
+          ]
+        },
+        {
+          "ticker": "ULTA",
+          "label": "Ulta Beauty",
+          "query": "Ulta Beauty",
+          "altQueries": [
+            "Ulta"
+          ]
+        },
+        {
+          "ticker": "EL",
+          "label": "Estée Lauder",
+          "query": "Estée Lauder"
+        },
+        {
+          "ticker": "COTY",
+          "label": "Coty",
+          "query": "Coty"
+        },
+        {
+          "ticker": "IPAR",
+          "label": "Inter Parfums",
+          "query": "Inter Parfums",
+          "altQueries": [
+            "Interparfums"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "apparel",
+      "label": "Apparel & footwear",
+      "names": [
+        {
+          "ticker": "NKE",
+          "label": "Nike",
+          "query": "Nike",
+          "featured": true
+        },
+        {
+          "ticker": "LULU",
+          "label": "Lululemon",
+          "query": "lululemon athletica",
+          "featured": true,
+          "altQueries": [
+            "lululemon"
+          ]
+        },
+        {
+          "ticker": "TPR",
+          "label": "Tapestry",
+          "query": "Coach"
+        },
+        {
+          "ticker": "RL",
+          "label": "Ralph Lauren",
+          "query": "Ralph Lauren"
+        },
+        {
+          "ticker": "DECK",
+          "label": "Deckers",
+          "query": "UGG"
+        },
+        {
+          "ticker": "VFC",
+          "label": "VF Corp",
+          "query": "Vans"
+        },
+        {
+          "ticker": "CROX",
+          "label": "Crocs",
+          "query": "Crocs"
+        }
+      ]
+    },
+    {
+      "id": "restaurants",
+      "label": "Restaurants & coffee",
+      "names": [
+        {
+          "ticker": "MCD",
+          "label": "McDonald's",
+          "query": "McDonald's",
+          "featured": true
+        },
+        {
+          "ticker": "SBUX",
+          "label": "Starbucks",
+          "query": "Starbucks",
+          "featured": true
+        },
+        {
+          "ticker": "CMG",
+          "label": "Chipotle",
+          "query": "Chipotle",
+          "featured": true
+        },
+        {
+          "ticker": "YUM",
+          "label": "Yum Brands",
+          "query": "KFC",
+          "altQueries": [
+            "Kentucky Fried Chicken"
+          ]
+        },
+        {
+          "ticker": "DPZ",
+          "label": "Domino's",
+          "query": "Domino's"
+        },
+        {
+          "ticker": "DRI",
+          "label": "Darden",
+          "query": "Olive Garden"
+        },
+        {
+          "ticker": "TXRH",
+          "label": "Texas Roadhouse",
+          "query": "Texas Roadhouse"
+        },
+        {
+          "ticker": "QSR",
+          "label": "Restaurant Brands",
+          "query": "Burger King"
+        }
+      ]
+    },
+    {
+      "id": "media",
+      "label": "Media & entertainment",
+      "names": [
+        {
+          "ticker": "DIS",
+          "label": "Disney",
+          "query": "Disney",
+          "featured": true
+        },
+        {
+          "ticker": "NFLX",
+          "label": "Netflix",
+          "query": "Netflix"
+        },
+        {
+          "ticker": "WBD",
+          "label": "Warner Bros. Discovery",
+          "query": "HBO"
+        },
+        {
+          "ticker": "PARA",
+          "label": "Paramount",
+          "query": "Paramount Pictures"
+        },
+        {
+          "ticker": "EA",
+          "label": "Electronic Arts",
+          "query": "Electronic Arts"
+        },
+        {
+          "ticker": "TTWO",
+          "label": "Take-Two",
+          "query": "Grand Theft Auto",
+          "altQueries": [
+            "Grand Theft Auto V"
+          ]
+        },
+        {
+          "ticker": "HAS",
+          "label": "Hasbro",
+          "query": "Hasbro"
+        },
+        {
+          "ticker": "MAT",
+          "label": "Mattel",
+          "query": "Barbie"
+        }
+      ]
+    },
+    {
+      "id": "grocery",
+      "label": "Grocery & mass retail",
+      "names": [
+        {
+          "ticker": "WMT",
+          "label": "Walmart",
+          "query": "Walmart"
+        },
+        {
+          "ticker": "COST",
+          "label": "Costco",
+          "query": "Costco"
+        },
+        {
+          "ticker": "TGT",
+          "label": "Target",
+          "query": "Target"
+        },
+        {
+          "ticker": "KR",
+          "label": "Kroger",
+          "query": "Kroger"
+        },
+        {
+          "ticker": "DG",
+          "label": "Dollar General",
+          "query": "Dollar General"
+        },
+        {
+          "ticker": "DLTR",
+          "label": "Dollar Tree",
+          "query": "Dollar Tree"
+        },
+        {
+          "ticker": "SYY",
+          "label": "Sysco",
+          "query": "Sysco"
+        }
+      ]
+    },
+    {
+      "id": "home",
+      "label": "Home & housing",
+      "names": [
+        {
+          "ticker": "HD",
+          "label": "Home Depot",
+          "query": "Home Depot"
+        },
+        {
+          "ticker": "LOW",
+          "label": "Lowe's",
+          "query": "Lowe's"
+        },
+        {
+          "ticker": "POOL",
+          "label": "Pool Corp",
+          "query": "Pool Corporation"
+        },
+        {
+          "ticker": "WHR",
+          "label": "Whirlpool",
+          "query": "Whirlpool"
+        },
+        {
+          "ticker": "MHK",
+          "label": "Mohawk",
+          "query": "Mohawk Industries"
+        },
+        {
+          "ticker": "LEN",
+          "label": "Lennar",
+          "query": "Lennar"
+        },
+        {
+          "ticker": "DHI",
+          "label": "D.R. Horton",
+          "query": "D.R. Horton"
+        },
+        {
+          "ticker": "PHM",
+          "label": "PulteGroup",
+          "query": "PulteGroup",
+          "altQueries": [
+            "Pulte Homes"
+          ]
+        },
+        {
+          "ticker": "NVR",
+          "label": "NVR",
+          "query": "Ryan Homes"
+        },
+        {
+          "ticker": "TSCO",
+          "label": "Tractor Supply",
+          "query": "Tractor Supply",
+          "altQueries": [
+            "Tractor Supply Co."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "beverages",
+      "label": "Beverages & tobacco",
+      "names": [
+        {
+          "ticker": "KO",
+          "label": "Coca-Cola",
+          "query": "Coca-Cola"
+        },
+        {
+          "ticker": "PEP",
+          "label": "PepsiCo",
+          "query": "Pepsi"
+        },
+        {
+          "ticker": "STZ",
+          "label": "Constellation Brands",
+          "query": "Corona beer",
+          "altQueries": [
+            "Corona"
+          ]
+        },
+        {
+          "ticker": "MNST",
+          "label": "Monster Beverage",
+          "query": "Monster Energy"
+        },
+        {
+          "ticker": "KDP",
+          "label": "Keurig Dr Pepper",
+          "query": "Dr Pepper"
+        },
+        {
+          "ticker": "TAP",
+          "label": "Molson Coors",
+          "query": "Coors Light"
+        },
+        {
+          "ticker": "BF.B",
+          "label": "Brown-Forman",
+          "query": "Jack Daniel's",
+          "yahoo": "BF-B",
+          "altQueries": [
+            "Jack Daniels"
+          ]
+        },
+        {
+          "ticker": "PM",
+          "label": "Philip Morris",
+          "query": "Marlboro"
+        },
+        {
+          "ticker": "MO",
+          "label": "Altria",
+          "query": "Altria"
+        }
+      ]
+    },
+    {
+      "id": "food",
+      "label": "Packaged food & household",
+      "names": [
+        {
+          "ticker": "PG",
+          "label": "Procter & Gamble",
+          "query": "Tide"
+        },
+        {
+          "ticker": "MDLZ",
+          "label": "Mondelez",
+          "query": "Oreo"
+        },
+        {
+          "ticker": "KHC",
+          "label": "Kraft Heinz",
+          "query": "Heinz"
+        },
+        {
+          "ticker": "GIS",
+          "label": "General Mills",
+          "query": "Cheerios"
+        },
+        {
+          "ticker": "K",
+          "label": "Kellanova",
+          "query": "Kellogg's"
+        },
+        {
+          "ticker": "HSY",
+          "label": "Hershey",
+          "query": "Hershey's"
+        },
+        {
+          "ticker": "CPB",
+          "label": "Campbell's",
+          "query": "Campbell's"
+        },
+        {
+          "ticker": "SJM",
+          "label": "J.M. Smucker",
+          "query": "Jif",
+          "altQueries": [
+            "Jif Peanut Butter"
+          ]
+        },
+        {
+          "ticker": "CAG",
+          "label": "Conagra",
+          "query": "Healthy Choice"
+        },
+        {
+          "ticker": "LW",
+          "label": "Lamb Weston",
+          "query": "Lamb Weston"
+        },
+        {
+          "ticker": "MKC",
+          "label": "McCormick",
+          "query": "McCormick"
+        },
+        {
+          "ticker": "TSN",
+          "label": "Tyson",
+          "query": "Tyson Foods"
+        },
+        {
+          "ticker": "HRL",
+          "label": "Hormel",
+          "query": "Hormel"
+        },
+        {
+          "ticker": "CL",
+          "label": "Colgate",
+          "query": "Colgate"
+        },
+        {
+          "ticker": "KMB",
+          "label": "Kimberly-Clark",
+          "query": "Huggies"
+        },
+        {
+          "ticker": "CLX",
+          "label": "Clorox",
+          "query": "Clorox"
+        },
+        {
+          "ticker": "ADM",
+          "label": "ADM",
+          "query": "Archer-Daniels-Midland"
+        },
+        {
+          "ticker": "BG",
+          "label": "Bunge",
+          "query": "Bunge"
+        }
+      ]
+    },
+    {
+      "id": "retail",
+      "label": "Specialty & auto retail",
+      "names": [
+        {
+          "ticker": "AMZN",
+          "label": "Amazon",
+          "query": "Amazon"
+        },
+        {
+          "ticker": "TJX",
+          "label": "TJX",
+          "query": "TJ Maxx",
+          "altQueries": [
+            "T.J. Maxx"
+          ]
+        },
+        {
+          "ticker": "ROST",
+          "label": "Ross Stores",
+          "query": "Ross Dress for Less",
+          "altQueries": [
+            "Ross"
+          ]
+        },
+        {
+          "ticker": "BURL",
+          "label": "Burlington",
+          "query": "Burlington"
+        },
+        {
+          "ticker": "EBAY",
+          "label": "eBay",
+          "query": "eBay"
+        },
+        {
+          "ticker": "BBY",
+          "label": "Best Buy",
+          "query": "Best Buy"
+        },
+        {
+          "ticker": "AZO",
+          "label": "AutoZone",
+          "query": "AutoZone"
+        },
+        {
+          "ticker": "ORLY",
+          "label": "O'Reilly",
+          "query": "O'Reilly Auto Parts",
+          "altQueries": [
+            "O'Reilly"
+          ]
+        },
+        {
+          "ticker": "GPC",
+          "label": "Genuine Parts",
+          "query": "NAPA Auto Parts",
+          "altQueries": [
+            "NAPA"
+          ]
+        },
+        {
+          "ticker": "LKQ",
+          "label": "LKQ",
+          "query": "LKQ"
+        },
+        {
+          "ticker": "AN",
+          "label": "AutoNation",
+          "query": "AutoNation"
+        },
+        {
+          "ticker": "KMX",
+          "label": "CarMax",
+          "query": "CarMax"
+        }
+      ]
+    },
+    {
+      "id": "travel",
+      "label": "Travel & leisure",
+      "names": [
+        {
+          "ticker": "BKNG",
+          "label": "Booking",
+          "query": "Booking.com"
+        },
+        {
+          "ticker": "MAR",
+          "label": "Marriott",
+          "query": "Marriott"
+        },
+        {
+          "ticker": "HLT",
+          "label": "Hilton",
+          "query": "Hilton"
+        },
+        {
+          "ticker": "EXPE",
+          "label": "Expedia",
+          "query": "Expedia"
+        },
+        {
+          "ticker": "ABNB",
+          "label": "Airbnb",
+          "query": "Airbnb"
+        },
+        {
+          "ticker": "RCL",
+          "label": "Royal Caribbean",
+          "query": "Royal Caribbean"
+        },
+        {
+          "ticker": "CCL",
+          "label": "Carnival",
+          "query": "Carnival Cruise"
+        },
+        {
+          "ticker": "NCLH",
+          "label": "Norwegian",
+          "query": "Norwegian Cruise Line",
+          "altQueries": [
+            "Norwegian Cruise"
+          ]
+        },
+        {
+          "ticker": "LVS",
+          "label": "Las Vegas Sands",
+          "query": "The Venetian",
+          "placeQueries": [
+            "The Venetian"
+          ]
+        },
+        {
+          "ticker": "WYNN",
+          "label": "Wynn",
+          "query": "Wynn Las Vegas",
+          "altQueries": [
+            "Wynn"
+          ]
+        },
+        {
+          "ticker": "MGM",
+          "label": "MGM Resorts",
+          "query": "MGM Grand",
+          "altQueries": [
+            "MGM"
+          ],
+          "placeQueries": [
+            "MGM Grand"
+          ]
+        },
+        {
+          "ticker": "CZR",
+          "label": "Caesars",
+          "query": "Caesars Palace",
+          "altQueries": [
+            "Caesars Entertainment"
+          ],
+          "placeQueries": [
+            "Caesars Palace"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "auto",
+      "label": "Autos & mobility",
+      "names": [
+        {
+          "ticker": "TSLA",
+          "label": "Tesla",
+          "query": "Tesla"
+        },
+        {
+          "ticker": "F",
+          "label": "Ford",
+          "query": "Ford"
+        },
+        {
+          "ticker": "GM",
+          "label": "General Motors",
+          "query": "Chevrolet"
+        },
+        {
+          "ticker": "APTV",
+          "label": "Aptiv",
+          "query": "Aptiv"
+        },
+        {
+          "ticker": "BWA",
+          "label": "BorgWarner",
+          "query": "BorgWarner"
+        }
+      ]
+    }
+  ]
+}

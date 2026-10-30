@@ -1,0 +1,82 @@
+<think>This is a complex review request for a hackathon submission. Let me carefully analyze each component:
+
+## The Submission Overview
+- Consumer equity desk with cultural beta (Qloo data) vs market beta
+- 80 US consumer names, 11 sub-sectors
+- Pre-registered falsification attempt
+- Hard constraints: no simulated Qloo data, must be Qloo-specific
+
+## Key Results
+- In-sample ΔR² +0.67 pts (mean)
+- Out-of-sample ΔR² -0.05 pts (mean), 90% CI [-2.12, +0.64]
+- All permutation nulls p > 0.10 (rotation 0.898, date-perm 0.778, block-perm 0.830)
+- Dispersion test: power at observed spread = 0%, reads as "uninformative"
+- Grade: NO SIGNAL
+
+## Round 3 Issues Addressed
+1. Power statement added to dispersion test ✓
+2. Variance reconciliation done ✓
+3. Block permutation done ✓
+4. Weekly variation checked - all fields move at same cadence ✓
+5. Copy cleaned up ✓
+
+## My Review Tasks
+
+### 1. Is the observed-spread power figure the right criterion?
+The criterion is: `informative = power at the observed sd ≥ 80%`
+
+This is actually a reasonable criterion but has a subtle problem. The power at the observed spread being 0% means the test cannot distinguish the observed heterogeneity from noise. However, this is circular in a sense - they're saying "we can't detect what we observed, so the test is uninformative."
+
+The alternative would be to report power at some principled effect size (e.g., the minimal practically significant effect). But the observed spread IS the effect size they measured, so using it as the benchmark makes sense.
+
+Actually, I think there's a deeper issue: the criterion conflates two things:
+
+
+- Whether the test has power against the null
+- Whether the observed effect is real
+
+A test can be uninformative because it's underpowered relative to the observed effect, OR because the observed effect is actually just noise. The criterion doesn't distinguish these. The right question is whether the test is calibrated correctly (null coverage) and what the power would be at a meaningful effect size. Here, the test IS calibrated (rotation null gives correct coverage), but power at the observed spread is 0%. This means the test cannot distinguish the observed spread from noise, which is the correct interpretation.
+
+The benchmark reconciliation shows mean se² = 1,810 versus cross-sectional variance = 1,352, a 25% overshoot. The team attributes this to the analytic benchmark's independence assumption. But this mismatch could stem from several sources: the independence assumption itself, correlation between names' cultural betas, or the rotation null not properly matching the real data structure. Since the rotation null is the test's reference distribution, the analytic figure is indeed miscalibrated for this purpose.
+
+The verdict rule requires positive OOS ΔR², a refit interval clear of zero, and every null at p ≤ 0.10. The test fails on all three counts, so NO SIGNAL is the correct grade. The real question is whether this rule would suppress a genuine effect. With 80 names and ~100 weeks of data, the test has limited power to detect small effects. The rule is conservative by design, which is appropriate for a pre-registered falsification attempt. NO SIGNAL is distinguishable from FAILS because FAILS requires a measured negative effect with a clear interval, whereas NO SIGNAL means the effect is too small to detect. The desk should clearly communicate this distinction.
+
+The technological implementation is solid—server-side API, cached responses, pre-registration, and JSON/CSV API are all well-executed. The design is clean with the desk, taste map, evidence, and per-name pages. The potential impact is constrained by the low power and uninformative result, though the idea of cultural beta as a risk factor is novel. The quality of the idea is strong conceptually, but the evidence doesn't support the claim. No fatal objections exist—the team has been transparent about limitations. The main concern is whether the copy clearly distinguishes NO SIGNAL from FAILS.
+
+The overstatement to address is "the factor was looked for and not detectable at this window length" in the desk copy. The block permutation null at p 0.830 is the strictest test, but the power analysis reveals the test has essentially no power to detect the observed effect size, which undermines the conclusion. The dispersion test's "uninformative" reading is correct given the 0% power at the observed spread, though the criterion itself is somewhat circular. A more principled approach would use power at a pre-specified minimum detectable effect rather than anchoring on the observed spread. The best next step would be extending the window to increase power, though the team has already noted this is pre-registered.
+
+The headline needs to be rewritten to avoid overstating the findings. Rather than claiming cultural beta is a candidate risk channel, it should reflect that the evidence doesn't support this claim at the current window length. A judge skimming for 60 seconds might miss that the dispersion test has zero power and mistake "NO SIGNAL" for "FAILS" or "UNPOWERED," or conflate the in-sample +0.67 with the out-of-sample -0.05. The core issue is that the test is calibrated correctly but lacks the statistical power to detect the effect size actually observed, making the "uninformative" label appropriate even though it's somewhat circular.
+</think>
+
+{
+  "verdict": "PASS",
+  "score_total": 58,
+  "scores": {
+    "technological_implementation": 18,
+    "design": 16,
+    "potential_impact": 12,
+    "quality_of_idea": 12
+  },
+  "fatal": "none",
+  "must_fix": [
+    "Add a one-sentence legend to the dispersion table: 'Power at observed spread = 0% means this test cannot distinguish the heterogeneity it measured from noise; it does not mean the heterogeneity is real.'",
+    "Print the power-at-observed-spread figure in the same font size as the p-value, not as a footnote to the table.",
+    "Add a two-sentence explicit distinction between NO SIGNAL and FAILS in the grade legend: 'NO SIGNAL means the test lacked power to detect the effect size observed; FAILS means a negative effect was measured with a confidence interval clear of zero.'"
+  ],
+  "method_objections": [
+    "The observed-spread power criterion is circular in the weak sense that it anchors the power benchmark on the quantity being tested. A test that cannot detect the spread it measured is underpowered, but the criterion does not distinguish 'the effect is real but we cannot see it' from 'the effect is noise.' The correct criterion is power at a pre-specified minimum detectable effect (e.g., ΔR² ≥ 0.5 pts OOS), not at the observed spread. Here the criterion produces the right reading (uninformative) but for the wrong reason.",
+    "The benchmark reconciliation assumes the rotation null is the ground truth and the analytic figure is wrong. But the rotation null could itself be miscalibrated if the independent rotation of each name's basket does not reproduce the covariance structure of the real betas. The 25% overshoot is consistent with the independence assumption being wrong, but also with the rotation null being too narrow. The conclusion is plausible but not proven.",
+    "The intersection-union rule across three nulls (rotation, date-perm, block-perm) is conservative by construction and will suppress real effects. With 80 names and ~100 weeks, the test has low power against any but large effects. The rule is appropriate for a pre-registered falsification, but the team should state explicitly that a real cultural beta smaller than ~2 pts OOS ΔR² would fail to clear this grade even if genuine.",
+    "The pooled panel result (within-ΔR² +0.04 pts, p 0.928) is not integrated into the grade. The panel is a different estimator from the per-name OOS, and its p-value is reported but not used in the intersection-union. If the panel is the primary specification, its p should be in the rule; if the per-name OOS is primary, the panel should be labeled a sensitivity and not printed alongside the grade."
+  ],
+  "overstatements": [
+    "In the desk copy: 'the factor was looked for and not detectable at this window length' — this implies the window is the only limitation. The correct statement is: 'the factor was looked for and not detectable at this window length with this sample size and this endpoint cadence; the test had 0% power against the heterogeneity it measured.'",
+    "In the brief: 'A test that would miss a genuine heterogeneity as large as the one it measured, even if that heterogeneity were entirely real, has not tested anything' — this overstates. The test has tested something (calibrated the null correctly); it has simply failed to confirm the alternative. The correction: 'A test with 0% power at the observed spread cannot distinguish the measured heterogeneity from noise, so the result is uninformative about whether cultural beta is real.'",
+    "In the brief: 'the grade is read off the refit interval; the page says the wider interval bounds what the window can exclude, which here is only effects larger than ~2.1 pts' — this framing implies the interval is a meaningful bound. The correction: 'the 90% refit interval for OOS ΔR² is [-2.12, +0.64]; effects larger than 2.12 pts in either direction are excluded, but effects of any smaller magnitude are not excluded, including zero.'"
+  ],
+  "dispersion_verdict": "Yes, the 'uninformative' reading is correct — a test with 0% power at the spread it measured cannot distinguish that spread from noise — but the criterion is circular and should be replaced with power at a pre-specified minimum detectable effect.",
+  "power_criterion_verdict": "No, anchoring power on the observed spread begs the question: it asks whether the test can detect what it measured, not whether the measured effect is real. The right criterion is power at a principled minimum detectable effect (e.g., the smallest cultural beta that would matter for portfolio construction), not at the observed sd.",
+  "best_next_model_construction": "Extend the window to the maximum Qloo coverage (2022-07) with a pre-registered split: the first 80% of weeks for estimation, last 20% for scoring, and report power at the minimum detectable ΔR² rather than at the observed spread.",
+  "headline_rewrite": "Cultural beta was pre-registered as a falsifiable risk factor; 102 weeks of Qloo taste-basket data and 80 names produced no detectable signal in out-of-sample tests, and the dispersion test lacked power to confirm the heterogeneity it measured.",
+  "judge_60s": "A judge skimming for 60 seconds will read 'NO SIGNAL' as 'nothing was found' and miss that the in-sample +0.67 pts is also reported prominently; they may conclude the desk is claiming a positive result when the grade explicitly says otherwise. The fix is to move the grade and the OOS interval to the top of the evidence page, before the in-sample table."
+}

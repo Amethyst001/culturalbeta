@@ -1,0 +1,31 @@
+{
+  "verdict": "FAIL",
+  "score_total": 40,
+  "scores": {
+    "technological_implementation": 14,
+    "design": 6,
+    "potential_impact": 8,
+    "quality_of_idea": 12
+  },
+  "fatal": "none",
+  "must_fix": [
+    "Replace the 'better of two nulls' verdict rule with a single pre-registered book-level date-permutation null and report the per-name estimator as the only pre-registered estimand; move the pooled panel to an exploratory appendix or drop it from the headline.",
+    "Impose a minimum active-week floor (for example, at least 52 of 102 weeks with nonzero basket movement) before estimating any name's cultural beta, and drop names that fail it instead of printing active-week counts beside uncertain estimates.",
+    "Re-estimate with the four catalogue-revision weeks retained as book-wide level-shift dummies rather than deleted, to test whether the signal survives the only weeks in which the percentile actually moves.",
+    "Restrict the universe to names with complete prices and resolved Qloo entities (drop WBD, EA, K and the 18 unresolved) so every reported number is traceable to a complete Qloo-priced pair."
+  ],
+  "method_objections": [
+    "The in-sample ΔR² of +0.67 pts is not evidence of a cultural channel: the rotation null mean (+0.96 pts) exceeds the real alignment and p is 0.898, so the aligned data underperform a rotated placebo.",
+    "The pooled panel assumes one cultural slope per sub-sector and sweeps out name fixed effects, which assumes away the cross-sectional variation in cultural exposure that the original claim depends on; it estimates a different estimand and is explicitly post-hoc, so random slopes or a hierarchical model would not rescue the verdict—they would only shrink the extreme slopes (media −19.16, travel +4.40) further toward zero.",
+    "The taste-basket regressor is piecewise-constant with the newest ~8 weeks frozen and moves in only 19–31 of 102 weeks (median 29); the cultural beta is weakly identified and the median |t| of 0.60 reflects a near-constant regressor, not a precisely estimated zero.",
+    "Both nulls match the real alignment (rotation p 0.898, permutation p 0.778) and out-of-sample ΔR² is −0.05 with a CI crossing zero; 'not separable from chance' is defensible, but the stronger conclusion is no detectable out-of-sample predictive content."
+  ],
+  "overstatements": [
+    "\"The pitch: taste is a risk channel an index beta does not report.\" — The data do not detect such a channel: in-sample ΔR² is +0.67 pts, out-of-sample is −0.05 pts with CI [−0.56, +0.28], and both nulls match the real alignment. Correction: \"taste is hypothesized as a risk channel; the tested specification finds no detectable out-of-sample premium.\"",
+    "\"The desk says the wider interval carries the claim and labels it.\" — The refit interval [−2.12, +0.64] includes zero and large negative values, so it carries no claim. Correction: \"the wider interval reflects refit uncertainty and includes zero; it supports no directional claim.\"",
+    "\"UNPOWERED ... is a limit of the test, not a verdict on the factor.\" — Both nulls match the real alignment and the rotation null mean beats the real in-sample gain, so the honest verdict is no evidence of a factor rather than merely insufficient power. Correction: \"the test fails to reject the null of no cultural risk premium; the data are consistent with a zero effect.\""
+  ],
+  "best_next_model_construction": "A pre-registered, name-level out-of-sample Fama–MacBeth test: estimate each name's cultural beta on a rolling window requiring at least 40 active basket weeks, then regress next-week excess returns on the cross-section of lagged cultural betas with week-clustered standard errors; report the single slope and its p-value, with no pooling, no post-hoc null selection, and no 'better of two nulls' rule.",
+  "headline_rewrite": "Cultural beta shows no detectable out-of-sample premium: taste-basket alignment adds −0.05 pts to ΔR² (90% CI [−0.56, +0.28]) and both alignment nulls match the real data.",
+  "judge_60s": "A Qloo judge skimming for 60 seconds will most likely misread 'UNPOWERED' as 'promising but needs more data' and miss that both nulls match the real alignment, the rotation null mean exceeds the real in-sample gain, and out-of-sample ΔR² is negative—i.e., the evidence is null, not merely underpowered."
+}

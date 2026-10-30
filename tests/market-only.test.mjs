@@ -1,7 +1,7 @@
 // The price half must work with no Qloo key at all: real Yahoo weekly bars,
 // one-regressor market beta. This also pins the real-data e.l.f. reproduction —
 // the brief's reference was 1.92 on simulated data; on real prices ELF fits
-// 2.03 ± 0.41, and that is the number the desk must keep reporting.
+// 2.02 ± 0.41, and that is the number the desk must keep reporting.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
@@ -30,14 +30,23 @@ test("market-only endpoint serves the real price half without Qloo", async () =>
     const res = await fetch(`http://localhost:${port}/api/market-only.json`);
     assert.equal(res.status, 200);
     const body = await res.json();
-    assert.equal(body.rows.length, 7);
+    assert.equal(body.rows.length, 101);
     assert.equal(body.window.weeks, 106);
     assert.equal(body.window.alignedDates, undefined, "window must not ship 106 dates to the browser");
+    assert.equal(new Set(body.rows.map((r) => r.sector)).size, 11, "all eleven sub-sectors present");
     const elf = body.rows.find((r) => r.ticker === "ELF");
-    assert.ok(Math.abs(elf.marketBeta - 2.03) < 0.05, `ELF market beta ${elf.marketBeta}`);
+    assert.ok(Math.abs(elf.marketBeta - 2.02) < 0.05, `ELF market beta ${elf.marketBeta}`);
     assert.ok(Math.abs(elf.marketSE - 0.41) < 0.03, `ELF market s.e. ${elf.marketSE}`);
     assert.equal(elf.weeks, 106);
-    for (const r of body.rows) assert.ok(r.marketBeta != null && Number.isFinite(r.marketBeta));
+    // delisted names keep their row and lose only the beta, never the roster
+    for (const t of ["WBD", "EA", "K"]) {
+      const r = body.rows.find((x) => x.ticker === t);
+      assert.equal(r.status, "no prices", `${t} should be unpriced`);
+      assert.equal(r.marketBeta, null);
+    }
+    for (const r of body.rows) {
+      if (r.status === "ok") assert.ok(r.marketBeta != null && Number.isFinite(r.marketBeta));
+    }
   } finally {
     child.kill();
   }

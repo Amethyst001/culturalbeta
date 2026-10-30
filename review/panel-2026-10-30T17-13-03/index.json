@@ -1,0 +1,211 @@
+[
+  {
+    "id": "nemotron-3.5-super",
+    "label": "NVIDIA NIM / Nemotron 3.5 Super VL 120B",
+    "endpoint": "https://integrate.api.nvidia.com/v1/chat/completions",
+    "keyVar": "NVIDIA_API_KEY",
+    "model": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+    "maxTokens": 12000,
+    "gap": 5000,
+    "ok": true,
+    "verdict": {
+      "verdict": "FIX FIRST",
+      "score_total": 38,
+      "scores": {
+        "technological_implementation": 12,
+        "design": 9,
+        "potential_impact": 7,
+        "quality_of_idea": 10
+      },
+      "would_make_top3": false,
+      "agentic_gap_closed": false,
+      "agentic_verdict": "No. The agent is a read-only chatbot over precomputed JSON; it plans nothing, spends no Qloo, and cannot change a single output. It is explanatory, not load-bearing.",
+      "fatal": "The held-out test has zero power because the scored regressor is identically zero across all 35 weeks, and the two hard gates (public repo, external hosting) are unmet, so the entry is neither externally reviewable nor statistically falsifiable.",
+      "must_fix": [
+        "Make the repo public with the MIT license visible in the About section.",
+        "Deploy external hosting with TLS on the Oracle VM.",
+        "Replace the 45-second fallback LLM path with a sub-second deterministic answer bank for the demo so a cold judge does not wait.",
+        "Stop reporting 'no test' as a result; declare the held-out test invalid due to an identically zero regressor and publish pre-registered effect-size bounds.",
+        "Attach an exact Qloo receipt (endpoint, entity IDs, timestamp) to every agent answer."
+      ],
+      "method_objections": [
+        "The held-out regressor is identically zero for all 35 scored weeks (carry-forward tail), so the test has zero power at any effect size.",
+        "44 of 102 weeks are carry-forward from the last Qloo revision (2025-12-22); the taste basket is stale for 43% of the sample.",
+        "18 of 101 names are unresolved by Qloo, creating survivorship bias in the 80 priced names.",
+        "Mean in-sample ΔR² of +0.67 points is economically trivial and zero names survive Benjamini-Hochberg at q ≤ 0.10.",
+        "The dispersion test has 0% power at the observed spread, so the placebo suite cannot detect the effect it claims to rule out.",
+        "Weekly OLS with sector taste baskets is not shown to address autocorrelation or look-ahead bias."
+      ],
+      "overstatements": [
+        "The agent answers with 'the exact Qloo request and the uncertainty' — the verified transcript is truncated by token limits and an earlier run overclaimed significance while omitting q = 0.164.",
+        "The entry 'would not work without Qloo' is true for the desk but false for the agent layer, which reads static JSON and makes no Qloo calls.",
+        "Calling the agent 'load-bearing' when it is a read-only Q&A layer over committed output files.",
+        "Presenting 'no test' as a valid output rather than an admission that the held-out slice is mechanically empty."
+      ],
+      "own_modifications": [
+        "Replace the live LLM fallback chain for judging with a deterministic, precomputed answer bank for the 10 most likely judge questions, with full Qloo receipts and sub-second latency.",
+        "Add one load-bearing tool: `refresh_basket(sub_sector)` that calls Qloo at inference and recomputes that sector's cultural beta, so the agent's tool choice changes the desk output.",
+        "Replace the invalid held-out test with a pre-registered out-of-sample window using only Qloo revisions before 2025-12-22, or publish the minimum detectable effect size as the headline result.",
+        "Cut the 400-character question cap and 120 questions/hour global limit for the demo; whitelist judge IPs.",
+        "Drop the proposed sector-briefing and alert-triage agents; they are vaporware and distract from shipping one working thing."
+      ],
+      "cut": [
+        "Cut the proposed multi-agent roadmap (sector briefing, alert triage).",
+        "Cut the 45-second fallback LLM from the critical demo path.",
+        "Cut the 'no test' framing; replace with an explicit invalidity notice and effect-size bound.",
+        "Cut the 400-character question cap for the demo environment."
+      ],
+      "score_per_hour_rank": [
+        "Make repo public with LICENSE visible in About (unblocks hard gate).",
+        "Deploy Oracle VM with vhost + TLS / external hosting (unblocks hard gate).",
+        "Replace live LLM agent with cached deterministic answers for top judge questions (fixes 45s latency and 429s).",
+        "Fix held-out framing: publish effect-size bounds instead of 'no test'.",
+        "Add Qloo request receipt to every answer.",
+        "Add one live Qloo tool to make the agent load-bearing (only if hours remain)."
+      ],
+      "path_to_90": [
+        "Public repo and live hosting with TLS.",
+        "Valid held-out test with a non-degenerate Qloo regressor through the test window.",
+        "Agent makes live Qloo calls at inference and changes computed output.",
+        "Sub-5-second judge-facing latency with no provider 429s.",
+        "Honest headline: Qloo taste data adds no detectable predictive power to consumer equity returns; here is the instrument, the receipts, and the bound."
+      ],
+      "highest_honest_score_this_vintage": 65,
+      "judge_60s": "A consumer equity screener that added Qloo 'cultural beta' to market beta, found no significant signal, and attached a slow chatbot that reads static files; no public repo and no live URL.",
+      "headline_rewrite": "Cultural beta fails to predict consumer stock returns: a transparent null result with a chatbot attached.",
+      "best_next_model_construction": "A live judge-facing tool that lets the agent resolve an off-book consumer entity via Qloo, pull its trend series, and recompute that name's cultural beta in real time, making Qloo load-bearing at inference."
+    },
+    "finish": "stop",
+    "usage": {
+      "prompt_tokens": 2566,
+      "completion_tokens": 6500,
+      "total_tokens": 9066,
+      "prompt_tokens_details": {
+        "audio_tokens": null,
+        "cached_tokens": 0
+      },
+      "completion_tokens_details": {
+        "accepted_prediction_tokens": null,
+        "audio_tokens": null,
+        "reasoning_tokens": 5167,
+        "rejected_prediction_tokens": null
+      }
+    },
+    "ms": 59828
+  },
+  {
+    "id": "glm-5.3-flash",
+    "label": "BeatAPI / GLM 5.3 Flash (free)",
+    "endpoint": "https://api.beatapi.io/v1/chat/completions",
+    "keyVar": "BEATAPI_API_KEY",
+    "model": "glm-5.3-flash-free",
+    "maxTokens": 8000,
+    "gap": 65000,
+    "ok": true,
+    "verdict": {
+      "verdict": "FIX FIRST",
+      "score_total": 74,
+      "scores": {
+        "technological_implementation": 21,
+        "design": 17,
+        "potential_impact": 17,
+        "quality_of_idea": 19
+      },
+      "would_make_top3": false,
+      "agentic_gap_closed": false,
+      "agentic_verdict": "The read-only Q&A layer is a competent explanatory chatbot bolted onto a deterministic pipeline; every number it cites was computed before the model was ever invoked, so Qloo and the model both sit outside the decision path. It satisfies the letter of 'wire Qloo into an agent' only if you squint. The smallest change that makes it load-bearing is proposal #2: let the agent resolve one off-book entity at inference and fetch its trend series through the harness — then the agent is literally choosing Qloo calls and constructing an answer that did not exist in the precomputed panel. That single live tool converts 'desk with chatbot' into 'agent that does cultural research on demand.'",
+      "fatal": "Two unmet hard gates (public repo, external hosting) plus a 45-second cold answer latency on a rate-limited fallback provider — a judge clicking the demo right now sees a blank screen or waits three-quarters of a minute.",
+      "must_fix": [
+        "Make the repo public and finish vhost+TLS on the Oracle VM — these are pass/fail gates, do them before any agent work",
+        "Ship the live Qloo tool (one resolve + one trend fetch per session, hard cap) so the agent makes Qloo calls at inference",
+        "Fix the 45s latency: cap rounds at 2 for the demo, trim tool results to the fields the prompt needs, stream partial answers so a judge sees progress at second 3",
+        "Replace the rate-limited primary with a provider that works cold; test the demo path at 04:00 UTC from a clean browser",
+        "Preload the #/ask page with 4-5 one-click example questions so the judge never types",
+        "Verify the 12 new agent tests actually run and pass before submission"
+      ],
+      "method_objections": [
+        "The held-out test has literally zero power: all 35 scored weeks use a carry-forward regressor that is identically zero. Printing 'no test' is honest but it means the headline deliverable — out-of-sample validation — does not exist at this vintage, and no amount of in-sample ΔR² compensates.",
+        "The dispersion test power calculation (0% at observed spread) means the entire falsification battery can only detect implausibly huge effects; the placebos (p 0.78–0.90) are consistent with 'no signal' AND with 'signal too small to see'. The entry should say which.",
+        "In-sample ΔR² of +0.67 points across 80 names is economically negligible; even with BH discipline, the natural interpretation is that sector-level Qloo taste baskets add essentially nothing over SPY. That is a publishable null, not a positive result.",
+        "Trend basket construction via 10 seeded entities with Qloo affinity ranks is opaque — the basket composition changes the beta, and there is no sensitivity analysis on basket composition (e.g., 5 vs 10 seeds).",
+        "102 weekly observations with two regressors leaves thin power per name; |t|≥2 plus BH q≤0.10 across 80 names is a very conservative joint bar, fine for honesty, but it guarantees the null flag count."
+      ],
+      "overstatements": [
+        "'Desk prints no test rather than a negative' is presented as rigor but it also means the entry cannot demonstrate the pipeline produces a decision — a system whose headline output is 'uninformative' needs to be framed as such, not as a feature.",
+        "The agent transcript is called 'verified against the panel' but the same question previously produced an overclaim ('significant' without q) — the system prompt is a mitigation, not a guarantee; do not present the agent as reliable.",
+        "83/101 resolution is reported but the entry does not surface which important names failed to resolve or why 18 unresolved entities were dropped — a judge will ask."
+      ],
+      "own_modifications": [
+        "Lead with the null as the story: rebrand the desk as 'the first falsification harness for cultural alpha' — the product is the ability to prove or disprove that Qloo taste data predicts equity returns, and the answer this vintage is 'not demonstrably'. That framing is more interesting and more defensible than chasing a positive.",
+        "Add a one-name deep-dive interactive: pick Disney, see its basket composition, its trend series, the regression overlay, and the walk-through of why it fails the flag rule — this is the judge's 60-second understanding and it already exists as data.",
+        "Add basket-composition sensitivity as a cheap fifth falsification: recompute betas with 5-seed baskets for 10 names; report whether coefficients are stable. One hour, answers the biggest methodological question a CTO will ask.",
+        "Write a 90-second 'judge script' README section at the top: what to click, what to ask the agent, what number to expect. Judges do not read four pages.",
+        "Cache the fallback provider's answers aggressively and pre-warm the 5 demo questions on boot so the cold path is instant for the questions judges will actually ask."
+      ],
+      "cut": [
+        "Cut proposals #1 and #3 (briefing agent, alert triage agent) — 11 hours is not enough and neither makes the agent load-bearing; #2 alone does.",
+        "Cut any further unit tests beyond verifying the 12 new ones pass.",
+        "Cut the Chrome DevTools audit refresh unless routes changed."
+      ],
+      "score_per_hour_rank": [
+        "1. Public repo + TLS/vhost on Oracle VM (2h, gates: without them score is 0 regardless)",
+        "2. Live Qloo tool for the agent with per-session cap (2-3h, closes the agentic gap — highest points/hour after gates)",
+        "3. Latency fix + pre-warmed demo questions + example question buttons (1-2h, protects every judge interaction)",
+        "4. README judge script + 'null as headline' reframe of the description (1h, cheap Impact/Design points)",
+        "5. Verify agent test suite runs (0.5h)",
+        "6. Optional: 5-seed basket sensitivity (1h, only if time remains)"
+      ],
+      "path_to_90": [
+        "Both hard gates met with a clean cold-start demo path under 10 seconds for pre-warmed questions",
+        "Agent performing a live Qloo resolve + trend fetch on an off-book name, cited end-to-end, in the demo transcript",
+        "Basket-sensitivity check showing betas are not artifacts of seed choice",
+        "Honest headline: 'we built the falsification harness; this vintage the data cannot support a claim, and here is exactly why' — with the agent as the interface to both evidence and absence of evidence"
+      ],
+      "highest_honest_score_this_vintage": 88,
+      "judge_60s": "A statistical desk that tests whether Qloo cultural-taste data predicts consumer equity returns beyond the market, with falsification placebos, and an agent you ask questions of that cites exact rows and Qloo provenance. First minute should show: one name (Disney), why it fails the flag rule, one live agent answer with tool trace.",
+      "headline_rewrite": "An agentic research desk that asks, and can falsify, whether Qloo taste data carries equity-return signal — with every answer cited to a Qloo response.",
+      "best_next_model_construction": "The live Qloo tool: agent resolves one off-book consumer entity via the harness, fetches its trend series, and runs the precomputed regression spec against the sector basket at inference time, returning a beta, a t, and an honest 'no flag possible this vintage' caveat — the agent becomes the only way a name enters the desk, not a narrator of it."
+    },
+    "finish": "stop",
+    "usage": {
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cached_tokens": 0,
+      "completion_thinking_tokens": 7,
+      "completion_tokens": 1739,
+      "completion_tokens_details": {
+        "accepted_prediction_tokens": 0,
+        "audio_tokens": 0,
+        "cached_tokens": 0,
+        "reasoning_tokens": 7,
+        "rejected_prediction_tokens": 0
+      },
+      "prompt_cache_hit_tokens": 0,
+      "prompt_cache_miss_tokens": 2453,
+      "prompt_cache_write_tokens": 0,
+      "prompt_tokens": 2453,
+      "prompt_tokens_details": {
+        "accepted_prediction_tokens": 0,
+        "audio_tokens": 0,
+        "cached_tokens": 0,
+        "reasoning_tokens": 0,
+        "rejected_prediction_tokens": 0
+      },
+      "total_tokens": 4192
+    },
+    "ms": 33115
+  },
+  {
+    "id": "minimax-m2.7",
+    "label": "dahl / MiniMax M2.7",
+    "endpoint": "https://inference.dahl.global/v1/chat/completions",
+    "keyVar": "DAHL_API_KEY",
+    "model": "MiniMaxAI/MiniMax-M2.7",
+    "maxTokens": 8000,
+    "gap": 20000,
+    "ok": false,
+    "status": 502,
+    "error": "<!DOCTYPE html>\n<!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 7]>    <html class=\"no-js ie7 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 8]>    <html class=\"no-js ie8 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if gt IE 8]><!--> <html class=\"no-js\" lang=\"en-US\"> <!",
+    "ms": 120742
+  }
+]

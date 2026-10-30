@@ -1,24 +1,38 @@
 {
-  "index": { "ticker": "SPY", "label": "S&P 500 (SPDR)" },
+  "index": {
+    "ticker": "SPY",
+    "label": "S&P 500 (SPDR)"
+  },
   "weeks": 106,
   "minTrendingWeeks": 100,
-  "holdings": [
-    { "ticker": "ELF",  "label": "e.l.f. Beauty",  "qlooQuery": "e.l.f. Beauty" },
-    { "ticker": "NKE",  "label": "Nike",           "qlooQuery": "Nike" },
-    { "ticker": "LULU", "label": "Lululemon",      "qlooQuery": "lululemon athletica" },
-    { "ticker": "CMG",  "label": "Chipotle",       "qlooQuery": "Chipotle" },
-    { "ticker": "SBUX", "label": "Starbucks",      "qlooQuery": "Starbucks" },
-    { "ticker": "MCD",  "label": "McDonald's",     "qlooQuery": "McDonald's" },
-    { "ticker": "DIS",  "label": "Disney",         "qlooQuery": "Disney" }
-  ],
+  "basket": {
+    "types": [
+      "brand",
+      "movie",
+      "artist",
+      "tv_show"
+    ],
+    "perType": 2,
+    "candidatesPerType": 10,
+    "minMembers": 4
+  },
+  "secondWindow": {
+    "weeks": 106,
+    "rule": {
+      "oosDeltaR2Positive": true,
+      "placeboP": 0.1
+    },
+    "note": "Pre-registered before any keyed run: the 106 weekly returns immediately before the primary window, same estimator, same sample floor, same 400 placebo draws and seed. Replicates when mean out-of-sample ΔR² > 0 and placebo p ≤ 0.10 on that slice. The window is fixed here, not chosen after seeing results."
+  },
   "tasteSignal": {
-    "field": "velocity_fold_change",
-    "fallbackField": "population_percent_delta",
-    "transform": "log_ratio"
+    "field": "population_percentile",
+    "transform": "log_diff_weekly",
+    "note": "Amended 2026-10-30, after the keyed pull and before any result was read. The pre-registered field was velocity_fold_change; measured on 140 cached trend pages it is 0 on 71 of the 106 primary-window weeks, the zero weeks are the same dates for every entity (Qloo's refresh cadence, not entity stillness), and it equals population_percent_delta on every point. population_percentile is the field that varies week to week, so the weekly taste return is ln(level_t / level_{t-1}), with a missing adjacent week producing no observation."
   },
   "flagRule": {
-    "description": "Flag when cultural beta is significant (|t| >= threshold) and negative — short-taste exposure nobody is charging for.",
-    "absT": 2.0,
+    "description": "Flag when cultural beta is negative, clears the |t| screen, and survives Benjamini-Hochberg across every priced name. A hundred tests at |t| >= 2 would flag about five names by chance, so the screen alone is not a flag.",
+    "absT": 2,
+    "qMax": 0.1,
     "negativeOnly": true
   }
 }

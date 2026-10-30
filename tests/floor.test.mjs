@@ -1,7 +1,8 @@
-// Acceptance test 3 (sample floor): remove one holding's trending fixture -> that
-// row loses its beta and is marked "insufficient signal"; other rows still compute.
-// Fixtures here are generated into an OS temp dir at test time (never committed):
-// they exist only to exercise the loader's floor logic, not as Qloo data.
+// Acceptance test 3 (sample floor): starve one sub-sector's basket of weekly
+// points -> the name priced against it loses its beta and is marked "insufficient
+// signal"; other sectors still compute. Fixtures here are generated into an OS
+// temp dir at test time (never committed): they exercise the loader's floor logic,
+// not real Qloo data.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -12,33 +13,40 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const TICKERS = ["ELF", "NKE", "LULU", "CMG", "SBUX", "MCD", "DIS"];
+const SECTOR = { MCD: "restaurants" };
+const sectorOf = (t) => SECTOR[t] ?? "apparel";
 
-function seedFixtures(dir, dropTrendingFor) {
-  const entities = TICKERS.map((t) => ({ ticker: t, entityId: `TEST-${t}`, entityName: t }));
+function seedFixtures(dir, starvedSector) {
+  const entities = TICKERS.map((t) => ({ ticker: t, label: t, query: t, entityId: `TEST-${t}`, sector: sectorOf(t) }));
   writeFileSync(resolve(dir, "entities.json"), JSON.stringify(entities));
-  const matrix = {};
-  for (const t of TICKERS) matrix[t] = Object.fromEntries(TICKERS.filter((o) => o !== t).map((o) => [o, 0.5]));
-  writeFileSync(resolve(dir, "affinity.json"), JSON.stringify({ matrix }));
-  for (const t of TICKERS) {
-    if (t === dropTrendingFor) {
-      writeFileSync(resolve(dir, `trending-${t}.json`), JSON.stringify({ points: [{ date: "2026-01-05", velocity_fold_change: 1.01 }] }));
-      continue;
-    }
-    const points = [];
-    const start = Date.UTC(2024, 9, 14);
-    for (let w = 0; w < 108; w++) {
-      const d = new Date(start + w * 7 * 86400 * 1000);
-      points.push({ date: d.toISOString().slice(0, 10), velocity_fold_change: 1 + 0.001 * Math.sin(w / 4) });
-    }
-    writeFileSync(resolve(dir, `trending-${t}.json`), JSON.stringify({ points }));
+
+  const week = (w) => new Date(Date.UTC(2024, 9, 14) + w * 7 * 86400 * 1000).toISOString().slice(0, 10);
+  const full = [];
+  for (let w = 0; w < 108; w++) full.push({ date: week(w), population_percentile: 0.5 + 0.001 * Math.sin(w / 4) });
+  const stub = [{ date: week(0), population_percentile: 0.51 }];
+
+  const byId = {};
+  for (const sector of [...new Set(TICKERS.map(sectorOf))]) {
+    const members = [0, 1, 2, 3].map((i) => {
+      const id = `TEST-B-${sector}-${i}`;
+      byId[id] = { type: i === 3 ? "movie" : "brand", name: `${sector} neighbour ${i}`, points: sector === starvedSector ? stub : full };
+      return { id, name: `${sector} neighbour ${i}`, type: i === 3 ? "movie" : "brand", affinity: 0.5 - i / 100, weight: 0.25 };
+    });
+    writeFileSync(resolve(dir, `basket-sector-${sector}.json`), JSON.stringify({
+      sector,
+      signalEntityIds: entities.filter((e) => e.sector === sector).map((e) => e.entityId),
+      members,
+      excludedByConstruction: TICKERS.map((t) => ({ ticker: t, entityId: `TEST-${t}` })),
+    }));
   }
+  writeFileSync(resolve(dir, "series.json"), JSON.stringify({ byId }));
 }
 
-test("missing trending signal marks the row insufficient, others still compute", () => {
+test("a starved sector basket marks its names insufficient, others still compute", () => {
   const dir = mkdtempSync(resolve(tmpdir(), "cb-floor-"));
   const out = mkdtempSync(resolve(tmpdir(), "cb-floor-out-"));
   try {
-    seedFixtures(dir, "MCD");
+    seedFixtures(dir, "restaurants");
     const res = spawnSync(process.execPath, [resolve(ROOT, "scripts/compute-betas.mjs")], {
       env: { ...process.env, CULTURALBETA_QLOO_DIR: dir, CULTURALBETA_OUTPUT_DIR: out }, encoding: "utf8", cwd: ROOT,
     });
@@ -53,8 +61,10 @@ test("missing trending signal marks the row insufficient, others still compute",
     assert.ok(okRows.length >= 6, `expected >=6 ok rows, got ${okRows.length}`);
     // basket weights sum to 1 on every computed row
     for (const r of okRows) {
-      const s = r.basketWeights.reduce((a, w) => a + w.weight, 0);
+      const s = r.basket.reduce((a, w) => a + w.weight, 0);
       assert.ok(Math.abs(s - 1) < 1e-9, `${r.ticker} weights sum ${s}`);
+      // no holding may appear in its own basket
+      assert.ok(!r.basket.some((m) => m.id === r.qlooEntityId || m.id === `TEST-${r.ticker}`), `${r.ticker} basket contains a holding`);
       // ΔR² is exactly the gain of the two-regressor fit over market-only
       assert.ok(Math.abs(r.deltaR2 - (r.r2 - r.r2Market)) < 1e-12, `${r.ticker} ΔR² mismatch`);
       assert.ok(r.deltaR2 >= -1e-12, `${r.ticker} nested model cannot lose r²`);

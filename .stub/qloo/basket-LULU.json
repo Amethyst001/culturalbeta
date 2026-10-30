@@ -1,0 +1,545 @@
+{
+ "ticker": "LULU",
+ "signalEntityId": "urn:entity:brand:stub-lululemon-athletica",
+ "config": {
+  "types": [
+   "brand",
+   "movie",
+   "artist",
+   "tv_show"
+  ],
+  "perType": 2,
+  "candidatesPerType": 10
+ },
+ "fetchedAt": "2026-10-30T09:15:53.079Z",
+ "calls": [
+  {
+   "type": "brand",
+   "request": {
+    "operation": "recommend",
+    "target_type": "brand",
+    "signals": [
+     "urn:entity:brand:stub-lululemon-athletica"
+    ],
+    "limit": 10
+   },
+   "returned": 10,
+   "excluded": 0,
+   "kept": 2,
+   "correlationId": "exec-stub-recommend",
+   "cache": "fixtures/qloo/recommend-LULU-brand.json"
+  },
+  {
+   "type": "movie",
+   "request": {
+    "operation": "recommend",
+    "target_type": "movie",
+    "signals": [
+     "urn:entity:brand:stub-lululemon-athletica"
+    ],
+    "limit": 10
+   },
+   "returned": 10,
+   "excluded": 0,
+   "kept": 2,
+   "correlationId": "exec-stub-recommend",
+   "cache": "fixtures/qloo/recommend-LULU-movie.json"
+  },
+  {
+   "type": "artist",
+   "request": {
+    "operation": "recommend",
+    "target_type": "artist",
+    "signals": [
+     "urn:entity:brand:stub-lululemon-athletica"
+    ],
+    "limit": 10
+   },
+   "returned": 10,
+   "excluded": 0,
+   "kept": 2,
+   "correlationId": "exec-stub-recommend",
+   "cache": "fixtures/qloo/recommend-LULU-artist.json"
+  },
+  {
+   "type": "tv_show",
+   "request": {
+    "operation": "recommend",
+    "target_type": "tv_show",
+    "signals": [
+     "urn:entity:brand:stub-lululemon-athletica"
+    ],
+    "limit": 10
+   },
+   "returned": 10,
+   "excluded": 0,
+   "kept": 2,
+   "correlationId": "exec-stub-recommend",
+   "cache": "fixtures/qloo/recommend-LULU-tv_show.json"
+  }
+ ],
+ "members": [
+  {
+   "id": "urn:entity:brand:stub-urn-entity-brand-stub-lululemon-athletica-0",
+   "name": "Stub brand 0",
+   "type": "brand",
+   "affinity": 0.6,
+   "weight": 0.12605042016806722
+  },
+  {
+   "id": "urn:entity:brand:stub-urn-entity-brand-stub-lululemon-athletica-1",
+   "name": "Stub brand 1",
+   "type": "brand",
+   "affinity": 0.59,
+   "weight": 0.12394957983193278
+  },
+  {
+   "id": "urn:entity:movie:stub-urn-entity-brand-stub-lululemon-athletica-0",
+   "name": "Stub movie 0",
+   "type": "movie",
+   "affinity": 0.6,
+   "weight": 0.12605042016806722
+  },
+  {
+   "id": "urn:entity:movie:stub-urn-entity-brand-stub-lululemon-athletica-1",
+   "name": "Stub movie 1",
+   "type": "movie",
+   "affinity": 0.59,
+   "weight": 0.12394957983193278
+  },
+  {
+   "id": "urn:entity:artist:stub-urn-entity-brand-stub-lululemon-athletica-0",
+   "name": "Stub artist 0",
+   "type": "artist",
+   "affinity": 0.6,
+   "weight": 0.12605042016806722
+  },
+  {
+   "id": "urn:entity:artist:stub-urn-entity-brand-stub-lululemon-athletica-1",
+   "name": "Stub artist 1",
+   "type": "artist",
+   "affinity": 0.59,
+   "weight": 0.12394957983193278
+  },
+  {
+   "id": "urn:entity:tv_show:stub-urn-entity-brand-stub-lululemon-athletica-0",
+   "name": "Stub tv_show 0",
+   "type": "tv_show",
+   "affinity": 0.6,
+   "weight": 0.12605042016806722
+  },
+  {
+   "id": "urn:entity:tv_show:stub-urn-entity-brand-stub-lululemon-athletica-1",
+   "name": "Stub tv_show 1",
+   "type": "tv_show",
+   "affinity": 0.59,
+   "weight": 0.12394957983193278
+  }
+ ],
+ "excludedByConstruction": [
+  {
+   "ticker": "ELF",
+   "entityId": "urn:entity:brand:stub-e-l-f-beauty"
+  },
+  {
+   "ticker": "ULTA",
+   "entityId": "urn:entity:brand:stub-ulta-beauty"
+  },
+  {
+   "ticker": "EL",
+   "entityId": "urn:entity:brand:stub-est-e-lauder"
+  },
+  {
+   "ticker": "COTY",
+   "entityId": "urn:entity:brand:stub-coty"
+  },
+  {
+   "ticker": "IPAR",
+   "entityId": "urn:entity:brand:stub-inter-parfums"
+  },
+  {
+   "ticker": "NKE",
+   "entityId": "urn:entity:brand:stub-nike"
+  },
+  {
+   "ticker": "LULU",
+   "entityId": "urn:entity:brand:stub-lululemon-athletica"
+  },
+  {
+   "ticker": "TPR",
+   "entityId": "urn:entity:brand:stub-coach"
+  },
+  {
+   "ticker": "RL",
+   "entityId": "urn:entity:brand:stub-ralph-lauren"
+  },
+  {
+   "ticker": "DECK",
+   "entityId": "urn:entity:brand:stub-ugg"
+  },
+  {
+   "ticker": "VFC",
+   "entityId": "urn:entity:brand:stub-vans"
+  },
+  {
+   "ticker": "CROX",
+   "entityId": "urn:entity:brand:stub-crocs"
+  },
+  {
+   "ticker": "MCD",
+   "entityId": "urn:entity:brand:stub-mcdonald-s"
+  },
+  {
+   "ticker": "SBUX",
+   "entityId": "urn:entity:brand:stub-starbucks"
+  },
+  {
+   "ticker": "CMG",
+   "entityId": "urn:entity:brand:stub-chipotle"
+  },
+  {
+   "ticker": "YUM",
+   "entityId": "urn:entity:brand:stub-kfc"
+  },
+  {
+   "ticker": "DPZ",
+   "entityId": "urn:entity:brand:stub-domino-s"
+  },
+  {
+   "ticker": "DRI",
+   "entityId": "urn:entity:brand:stub-olive-garden"
+  },
+  {
+   "ticker": "TXRH",
+   "entityId": "urn:entity:brand:stub-texas-roadhouse"
+  },
+  {
+   "ticker": "QSR",
+   "entityId": "urn:entity:brand:stub-burger-king"
+  },
+  {
+   "ticker": "DIS",
+   "entityId": "urn:entity:brand:stub-disney"
+  },
+  {
+   "ticker": "NFLX",
+   "entityId": "urn:entity:brand:stub-netflix"
+  },
+  {
+   "ticker": "WBD",
+   "entityId": "urn:entity:brand:stub-hbo"
+  },
+  {
+   "ticker": "PARA",
+   "entityId": "urn:entity:brand:stub-paramount-pictures"
+  },
+  {
+   "ticker": "EA",
+   "entityId": "urn:entity:brand:stub-electronic-arts"
+  },
+  {
+   "ticker": "TTWO",
+   "entityId": "urn:entity:brand:stub-grand-theft-auto"
+  },
+  {
+   "ticker": "HAS",
+   "entityId": "urn:entity:brand:stub-hasbro"
+  },
+  {
+   "ticker": "MAT",
+   "entityId": "urn:entity:brand:stub-barbie"
+  },
+  {
+   "ticker": "WMT",
+   "entityId": "urn:entity:brand:stub-walmart"
+  },
+  {
+   "ticker": "COST",
+   "entityId": "urn:entity:brand:stub-costco"
+  },
+  {
+   "ticker": "TGT",
+   "entityId": "urn:entity:brand:stub-target"
+  },
+  {
+   "ticker": "KR",
+   "entityId": "urn:entity:brand:stub-kroger"
+  },
+  {
+   "ticker": "DG",
+   "entityId": "urn:entity:brand:stub-dollar-general"
+  },
+  {
+   "ticker": "DLTR",
+   "entityId": "urn:entity:brand:stub-dollar-tree"
+  },
+  {
+   "ticker": "SYY",
+   "entityId": "urn:entity:brand:stub-sysco"
+  },
+  {
+   "ticker": "HD",
+   "entityId": "urn:entity:brand:stub-home-depot"
+  },
+  {
+   "ticker": "LOW",
+   "entityId": "urn:entity:brand:stub-lowe-s"
+  },
+  {
+   "ticker": "POOL",
+   "entityId": "urn:entity:brand:stub-pool-corporation"
+  },
+  {
+   "ticker": "WHR",
+   "entityId": "urn:entity:brand:stub-whirlpool"
+  },
+  {
+   "ticker": "MHK",
+   "entityId": "urn:entity:brand:stub-mohawk-industries"
+  },
+  {
+   "ticker": "LEN",
+   "entityId": "urn:entity:brand:stub-lennar"
+  },
+  {
+   "ticker": "DHI",
+   "entityId": "urn:entity:brand:stub-d-r-horton"
+  },
+  {
+   "ticker": "PHM",
+   "entityId": "urn:entity:brand:stub-pultegroup"
+  },
+  {
+   "ticker": "NVR",
+   "entityId": "urn:entity:brand:stub-ryan-homes"
+  },
+  {
+   "ticker": "TSCO",
+   "entityId": "urn:entity:brand:stub-tractor-supply"
+  },
+  {
+   "ticker": "KO",
+   "entityId": "urn:entity:brand:stub-coca-cola"
+  },
+  {
+   "ticker": "PEP",
+   "entityId": "urn:entity:brand:stub-pepsi"
+  },
+  {
+   "ticker": "STZ",
+   "entityId": "urn:entity:brand:stub-corona-beer"
+  },
+  {
+   "ticker": "MNST",
+   "entityId": "urn:entity:brand:stub-monster-energy"
+  },
+  {
+   "ticker": "KDP",
+   "entityId": "urn:entity:brand:stub-dr-pepper"
+  },
+  {
+   "ticker": "TAP",
+   "entityId": "urn:entity:brand:stub-coors-light"
+  },
+  {
+   "ticker": "BF.B",
+   "entityId": "urn:entity:brand:stub-jack-daniel-s"
+  },
+  {
+   "ticker": "PM",
+   "entityId": "urn:entity:brand:stub-marlboro"
+  },
+  {
+   "ticker": "MO",
+   "entityId": "urn:entity:brand:stub-altria"
+  },
+  {
+   "ticker": "PG",
+   "entityId": "urn:entity:brand:stub-tide"
+  },
+  {
+   "ticker": "MDLZ",
+   "entityId": "urn:entity:brand:stub-oreo"
+  },
+  {
+   "ticker": "KHC",
+   "entityId": "urn:entity:brand:stub-heinz"
+  },
+  {
+   "ticker": "GIS",
+   "entityId": "urn:entity:brand:stub-cheerios"
+  },
+  {
+   "ticker": "K",
+   "entityId": "urn:entity:brand:stub-kellogg-s"
+  },
+  {
+   "ticker": "HSY",
+   "entityId": "urn:entity:brand:stub-hershey-s"
+  },
+  {
+   "ticker": "CPB",
+   "entityId": "urn:entity:brand:stub-campbell-s"
+  },
+  {
+   "ticker": "SJM",
+   "entityId": "urn:entity:brand:stub-jif"
+  },
+  {
+   "ticker": "CAG",
+   "entityId": "urn:entity:brand:stub-healthy-choice"
+  },
+  {
+   "ticker": "LW",
+   "entityId": "urn:entity:brand:stub-lamb-weston"
+  },
+  {
+   "ticker": "MKC",
+   "entityId": "urn:entity:brand:stub-mccormick"
+  },
+  {
+   "ticker": "TSN",
+   "entityId": "urn:entity:brand:stub-tyson-foods"
+  },
+  {
+   "ticker": "HRL",
+   "entityId": "urn:entity:brand:stub-hormel"
+  },
+  {
+   "ticker": "CL",
+   "entityId": "urn:entity:brand:stub-colgate"
+  },
+  {
+   "ticker": "KMB",
+   "entityId": "urn:entity:brand:stub-huggies"
+  },
+  {
+   "ticker": "CLX",
+   "entityId": "urn:entity:brand:stub-clorox"
+  },
+  {
+   "ticker": "ADM",
+   "entityId": "urn:entity:brand:stub-archer-daniels-midland"
+  },
+  {
+   "ticker": "BG",
+   "entityId": "urn:entity:brand:stub-bunge"
+  },
+  {
+   "ticker": "AMZN",
+   "entityId": "urn:entity:brand:stub-amazon"
+  },
+  {
+   "ticker": "TJX",
+   "entityId": "urn:entity:brand:stub-tj-maxx"
+  },
+  {
+   "ticker": "ROST",
+   "entityId": "urn:entity:brand:stub-ross-dress-for-less"
+  },
+  {
+   "ticker": "BURL",
+   "entityId": "urn:entity:brand:stub-burlington"
+  },
+  {
+   "ticker": "EBAY",
+   "entityId": "urn:entity:brand:stub-ebay"
+  },
+  {
+   "ticker": "BBY",
+   "entityId": "urn:entity:brand:stub-best-buy"
+  },
+  {
+   "ticker": "AZO",
+   "entityId": "urn:entity:brand:stub-autozone"
+  },
+  {
+   "ticker": "ORLY",
+   "entityId": "urn:entity:brand:stub-o-reilly-auto-parts"
+  },
+  {
+   "ticker": "GPC",
+   "entityId": "urn:entity:brand:stub-napa-auto-parts"
+  },
+  {
+   "ticker": "LKQ",
+   "entityId": "urn:entity:brand:stub-lkq"
+  },
+  {
+   "ticker": "AN",
+   "entityId": "urn:entity:brand:stub-autonation"
+  },
+  {
+   "ticker": "KMX",
+   "entityId": "urn:entity:brand:stub-carmax"
+  },
+  {
+   "ticker": "BKNG",
+   "entityId": "urn:entity:brand:stub-booking-com"
+  },
+  {
+   "ticker": "MAR",
+   "entityId": "urn:entity:brand:stub-marriott"
+  },
+  {
+   "ticker": "HLT",
+   "entityId": "urn:entity:brand:stub-hilton"
+  },
+  {
+   "ticker": "EXPE",
+   "entityId": "urn:entity:brand:stub-expedia"
+  },
+  {
+   "ticker": "ABNB",
+   "entityId": "urn:entity:brand:stub-airbnb"
+  },
+  {
+   "ticker": "RCL",
+   "entityId": "urn:entity:brand:stub-royal-caribbean"
+  },
+  {
+   "ticker": "CCL",
+   "entityId": "urn:entity:brand:stub-carnival-cruise"
+  },
+  {
+   "ticker": "NCLH",
+   "entityId": "urn:entity:brand:stub-norwegian-cruise-line"
+  },
+  {
+   "ticker": "LVS",
+   "entityId": "urn:entity:brand:stub-the-venetian"
+  },
+  {
+   "ticker": "WYNN",
+   "entityId": "urn:entity:brand:stub-wynn-las-vegas"
+  },
+  {
+   "ticker": "MGM",
+   "entityId": "urn:entity:brand:stub-mgm-grand"
+  },
+  {
+   "ticker": "CZR",
+   "entityId": "urn:entity:brand:stub-caesars-palace"
+  },
+  {
+   "ticker": "TSLA",
+   "entityId": "urn:entity:brand:stub-tesla"
+  },
+  {
+   "ticker": "F",
+   "entityId": "urn:entity:brand:stub-ford"
+  },
+  {
+   "ticker": "GM",
+   "entityId": "urn:entity:brand:stub-chevrolet"
+  },
+  {
+   "ticker": "APTV",
+   "entityId": "urn:entity:brand:stub-aptiv"
+  },
+  {
+   "ticker": "BWA",
+   "entityId": "urn:entity:brand:stub-borgwarner"
+  }
+ ]
+}
