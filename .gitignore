@@ -1,11 +1,15 @@
 node_modules/
 .env
+# Reviewer-model keys for scripts/panel.mjs and scripts/external-review.mjs. The
+# whole .env.* family is ignored so a second key file cannot be committed by accident.
+.env.*
 output/
 fixtures/qloo/
 *.log
 .DS_Store
 review/shots-*/
 review/panel-*.json
+review/panel-*/
 
 # Early live-probe responses: real Qloo data, must never be published.
 .probe/

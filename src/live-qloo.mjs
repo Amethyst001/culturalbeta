@@ -16,7 +16,7 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { ROOT } from "./env.mjs";
-import { qlooSearch, qlooSeries, searchResults, seriesPlan } from "./qloo.mjs";
+import { qlooSearch, qlooSeries, qlooTrendPage, readCache, searchResults, seriesPlan } from "./qloo.mjs";
 import { blendBasket, tasteSeries } from "./factor.mjs";
 import { ols } from "./ols.mjs";
 
@@ -139,6 +139,281 @@ export function settle({ reserved, spent, ops = 0 }, { file = BUDGET_FILE } = {}
   });
 }
 
+/* ---------- mandatory live freshness attestation ---------- */
+
+// An external review's objection was that one optional live read does not make
+// Qloo load-bearing: the model can decline to call a tool, so a claim that the
+// panel is current would rest on the committed files alone. This check is
+// therefore not a tool — /api/ask runs it itself on every answer and prints what
+// it gets, whether or not the model asked. It is one bounded trend page for one
+// committed basket entity, drawn from the same daily budget as the live tools and
+// cached for the whole book, so five answers in a row spend one request.
+//
+// It answers one question and nothing else: does Qloo report a percentile change
+// newer than the panel's own last revision? The expected honest answer at this
+// vintage is "no", and it is printed as a passing attestation, not a failure.
+export const FRESHNESS = {
+  cacheMinutes: 15,
+  failureCacheSeconds: 60,
+  maxRequests: 2,
+  // Grid weeks the probe will step back through looking for points, bounded by the
+  // two requests the reservation covers.
+  maxAttempts: 2,
+  // The window the probe opens, measured back from the newest grid week. It is
+  // deep because of how the endpoint answers, not because twenty weeks of history
+  // is needed: verified 2026-10-30 on the reference entity, a 180-day window
+  // ending 2026-11-02 came back with no points at all while a 527-day window on
+  // the same end date returned the twenty weekly points from 2026-06-22 to
+  // 2026-11-02. Whichever window it accepts, the endpoint returns the newest
+  // twenty weeks and no more, so the page costs one request either way.
+  lookbackDays: 527,
+  referenceTicker: "DIS",
+  timeoutMs: 45000,
+  // The trend endpoint answers on a weekly grid and returns nothing for an end_date
+  // between the grid points (verified 2026-10-30: end_date 2026-10-30 came back
+  // empty, end_date 2026-11-02 — the next grid week — came back with 20 points, the
+  // newest of which carried the same percentile forward). So the probe asks for the
+  // next grid week after today: the newest week Qloo could possibly have published,
+  // which is exactly the week a stale panel would be missing.
+  weekGridDay: 1,
+};
+
+const iso = (ms) => new Date(ms).toISOString();
+
+// The weekly grid the trend endpoint answers on (Mondays, observed across every
+// committed page in fixtures/qloo): the next grid date on or after `day`.
+export function nextTrendWeek(day, gridDay = FRESHNESS.weekGridDay) {
+  const d = new Date(`${String(day).slice(0, 10)}T00:00:00.000Z`);
+  d.setUTCDate(d.getUTCDate() + (gridDay - d.getUTCDay() + 7) % 7);
+  return d.toISOString().slice(0, 10);
+}
+
+// Why the check did not run, as a machine code the UI maps to prose. Never a date.
+export function freshnessGateReason(env = process.env) {
+  if (String(env.AGENT_LIVE_QLOO ?? "") !== "1") return "live_gate_off";
+  if (!String(env.QLOO_API_KEY ?? "").trim()) return "qloo_key_missing";
+  return null;
+}
+
+// The reference entity is read out of the panel, never invented: a weighted member
+// of the reference row's own basket, whose id and creative type Qloo returned and
+// whose weekly levels the desk already priced against. Brands are preferred
+// because they carry the deepest history in the trend endpoint.
+export function referenceEntity(desk) {
+  const rows = desk?.rows ?? [];
+  const usable = (r) => (r.basket ?? []).filter((m) => m.id && m.type);
+  const named = rows.find((r) => String(r.ticker).toUpperCase() === FRESHNESS.referenceTicker && usable(r).length);
+  const row = named ?? rows.find((r) => usable(r).length);
+  if (!row) return null;
+  const w = (m) => (Number.isFinite(m.weight) ? m.weight : 0);
+  const member = [...usable(row)].sort((a, b) => (a.type === "brand" ? 0 : 1) - (b.type === "brand" ? 0 : 1) || w(b) - w(a))[0];
+  return { ticker: row.ticker, id: member.id, name: member.name, type: member.type, weight: num(w(member), 4) };
+}
+
+// The desk's own carry-forward reading: a week is a revision when the value differs
+// from the previous week Qloo reported for that entity. tasteSeries is the same
+// rule the estimator uses, so the attestation cannot drift from the panel's.
+export function qlooFreshnessReading({ points, panelLastRevision = null, panelWindowEnd = null, cfg = book().tasteSignal }) {
+  const moves = [...tasteSeries({ points }, cfg)];
+  const revisions = moves.filter(([, r]) => Number.isFinite(r) && Math.abs(r) > 0).sort((a, b) => a[0].localeCompare(b[0]));
+  const weeks = [...new Set((points ?? []).map((p) => p?.date).filter(Boolean))].sort();
+  const latestWeek = weeks.at(-1) ?? null;
+  const latestRevision = revisions.at(-1)?.[0] ?? null;
+  const newerRevision = Boolean(latestRevision && panelLastRevision && latestRevision > panelLastRevision);
+  const beyondWindow = Boolean(latestWeek && panelWindowEnd && latestWeek > panelWindowEnd);
+  return {
+    weeksPulled: weeks.length,
+    range: weeks.length ? { first: weeks[0], last: weeks.at(-1) } : null,
+    latestWeek,
+    latestRevision,
+    revisionCount: revisions.length,
+    newerThanPanel: newerRevision,
+    reportsWeeksBeyondPanel: beyondWindow,
+    verdict: newerRevision ? "qloo_has_a_newer_revision" : beyondWindow ? "newer_weeks_no_change" : "nothing_newer_than_panel_tail",
+  };
+}
+
+function freshnessSentence(ref, reading, panel, when) {
+  const tail = `the panel tail (last revision ${panel.lastRevision ?? "—"}, window end ${panel.windowEnd ?? "—"})`;
+  if (reading.verdict === "qloo_has_a_newer_revision") {
+    return `Qloo was asked ${when} about ${ref.name} (${ref.type}), an entity in the ${ref.ticker} basket: its percentile changed again on ${reading.latestRevision}, which is newer than the panel's last revision ${panel.lastRevision}. The held-out slice frozen at that date is stale against this.`;
+  }
+  if (reading.verdict === "newer_weeks_no_change") {
+    return `Qloo was asked ${when} about ${ref.name} (${ref.type}), an entity in the ${ref.ticker} basket: it now reports weeks through ${reading.latestWeek}, past the panel window end ${panel.windowEnd}, but no value differs from the week before it in the ${reading.weeksPulled} pulled. Newer weeks, no newer signal.`;
+  }
+  return `Qloo was asked ${when} about ${ref.name} (${ref.type}), an entity in the ${ref.ticker} basket: its newest weekly point is ${reading.latestWeek ?? "absent"} and ${reading.latestRevision ? `the last week its percentile moved is ${reading.latestRevision}` : `no percentile moved in the ${reading.weeksPulled} weeks pulled`} — nothing newer than ${tail}.`;
+}
+
+// One entity, one page: this attests that the feed is still frozen at the book
+// level, not that every basket member is still, and it never claims a date it did
+// not receive.
+function freshnessScope() {
+  return "One reference entity and one trend page, not a re-pull of the book's baskets. A \"nothing newer\" reading is the expected state at this vintage and is printed as a passing attestation.";
+}
+
+function pointsFor(byEntity, id) {
+  if (!byEntity) return [];
+  return byEntity instanceof Map ? byEntity.get(id) ?? [] : byEntity[id] ?? [];
+}
+
+function withTimeout(promise, ms, code) {
+  let timer;
+  const guard = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(Object.assign(new Error(code), { code })), ms);
+  });
+  timer.unref?.();
+  // The harness child keeps running past a timeout, so its request may still land
+  // at Qloo after the answer has been served without it: the budget is refunded to
+  // zero spent because this process cannot confirm what the orphaned call cost.
+  return Promise.race([promise, guard]).finally(() => clearTimeout(timer));
+}
+
+export async function runFreshnessCheck({ desk, series = null, qloo = {}, budgetFile = BUDGET_FILE, cap = LIVE.dailyRequests, clock = () => Date.now() } = {}) {
+  const blocked = freshnessGateReason();
+  const at = iso(clock());
+  if (blocked) return { checked: false, why: blocked, at };
+  const ref = referenceEntity(desk);
+  if (!ref) return { checked: false, why: "no_reference_entity", at };
+  const panel = { lastRevision: desk?.valueAdd?.oos?.scoring?.lastMove ?? null, windowEnd: desk?.window?.end ?? null };
+  const basket = series?.[ref.ticker];
+  const basketMoves = Array.isArray(basket?.basket) && Array.isArray(basket?.dates)
+    ? basket.dates.filter((d, i) => Math.abs(basket.basket[i] ?? 0) > 0).sort()
+    : [];
+  const panelBasketLastMove = basketMoves.at(-1) ?? null;
+
+  const reserved = await reserve(FRESHNESS.maxRequests, { file: budgetFile, cap });
+  if (!reserved.ok) {
+    return { checked: false, why: "budget_exhausted", used: reserved.requests, cap: reserved.cap, at, entity: ref, panel };
+  }
+  // The newest weekly grid point Qloo could be answering for, not today's date:
+  // between grid days the endpoint returns an empty page, which would read as
+  // "Qloo has nothing" when it really means "ask me on the grid".
+  const gridEnd = nextTrendWeek(new Date(clock()).toISOString().slice(0, 10));
+  const requestedAt = iso(clock());
+  const seriesFn = qloo.series ?? qlooTrendPage;
+  // The newest grid week first; if it answers with no points at all, one step back
+  // to the week before it. Two attempts, because that is all that was reserved.
+  let attempts = [];
+  let spent = 0;
+  let ops = 0;
+  let res = null;
+  let points = [];
+  let failed = null;
+  for (let i = 0; i < FRESHNESS.maxAttempts; i++) {
+    const end = shiftDays(gridEnd, -7 * i);
+    const start = shiftDays(end, -FRESHNESS.lookbackDays);
+    const cacheName = `live-freshness-${ref.id}-${end}.json`;
+    let one;
+    try {
+      one = await withTimeout(seriesFn([ref.id], ref.type, { start, end, cacheName }), FRESHNESS.timeoutMs, "freshness_timeout");
+    } catch (e) {
+      // The attempt that threw is refunded to zero spent: its harness child may
+      // still land at Qloo after this answer is served, and this process cannot
+      // confirm what the orphaned call cost.
+      failed = e;
+      break;
+    }
+    const calls = one.calls ?? [];
+    spent += calls.filter((c) => !c.replayed).length;
+    ops += calls.length;
+    attempts.push({ end, start, cacheName, calls });
+    res = one;
+    points = pointsFor(one.byEntity, ref.id);
+    if (points.length) break;
+  }
+  const last = attempts.at(-1) ?? null;
+  const window = last ? { start: last.start, end: last.end } : { start: shiftDays(gridEnd, -FRESHNESS.lookbackDays), end: gridEnd };
+  await settle({ reserved: FRESHNESS.maxRequests, spent, ops }, { file: budgetFile });
+  if (failed) {
+    const known = ["freshness_timeout", "budget_exhausted", "no_reference_entity"];
+    return { checked: false, why: known.includes(failed.code) ? failed.code : "harness_error", harnessCode: known.includes(failed.code) ? null : String(failed.code ?? "").slice(0, 60) || null, requestedAt, at: iso(clock()), entity: ref, window, panel };
+  }
+
+  const calls = attempts.flatMap((a) => a.calls);
+  const provenance = {
+    entity: ref,
+    operation: "exec trends",
+    window,
+    requestedAt,
+    respondedAt: iso(clock()),
+    requests: spent,
+    pages: calls.length,
+    // A replayed page is a real Qloo response, but it was fetched earlier, so the
+    // attestation says when: the page cache must never read as a live ask.
+    fromCachedPage: spent === 0 && calls.length > 0,
+    correlationIds: calls.map((c) => c.correlationId).filter(Boolean),
+    files: [...new Set([last.cacheName, ...calls.map((c) => c.cacheName)].filter(Boolean))],
+  };
+  if (provenance.fromCachedPage) {
+    const page = readCache(calls[0].cacheName);
+    provenance.cachedResponseFetchedAt = page?.fetchedAt ?? null;
+  }
+  if (!points.length) {
+    return { checked: false, why: "no_trend_points", ...provenance, panel };
+  }
+  const reading = qlooFreshnessReading({ points, panelLastRevision: panel.lastRevision, panelWindowEnd: panel.windowEnd });
+  const when = `${provenance.respondedAt.slice(11, 16)}Z${provenance.fromCachedPage ? ` (response fetched ${String(provenance.cachedResponseFetchedAt ?? "earlier").slice(11, 16)}Z, replayed from the page cache)` : ""}`;
+  return {
+    checked: true,
+    ...reading,
+    panel,
+    panelBasketLastMove,
+    ...provenance,
+    plain: freshnessSentence(ref, reading, panel, when),
+    scope: freshnessScope(),
+  };
+}
+
+// One checker per panel revision, so the whole book shares one attestation and one
+// cache slot. A failure is held for a minute rather than fifteen, and never retried
+// inside an answer.
+export function createFreshnessChecker(options = {}) {
+  const clock = options.clock ?? (() => Date.now());
+  const minutes = options.cacheMinutes ?? FRESHNESS.cacheMinutes;
+  let entry = null;
+  let inflight = null;
+  const holdMs = (value) => (value.checked ? minutes : FRESHNESS.failureCacheSeconds / 60) * 60000;
+  const run = () => {
+    const p = runFreshnessCheck({ ...options, clock });
+    inflight = p;
+    return p.then(
+      (value) => { if (inflight === p) inflight = null; entry = { at: clock(), value }; return value; },
+      (e) => { if (inflight === p) inflight = null; throw e; },
+    );
+  };
+  return {
+    async check() {
+      if (entry && clock() - entry.at < holdMs(entry.value)) {
+        return { ...entry.value, fromCache: true, cachedSeconds: Math.round((clock() - entry.at) / 1000) };
+      }
+      // One probe at a time: an answer that arrives while a probe is still in the
+      // air joins it rather than spending a second request on the same attestation.
+      const value = await (inflight ?? run());
+      return { ...value, fromCache: false };
+    },
+    // The first probe of a new trend week is a cold live call — measured at 26 s on
+    // 2026-10-30, longer than an answer may wait. Starting it when the panel is
+    // loaded means the first answer usually carries a reading that already landed;
+    // when it has not, that answer says it was not checked in time instead of
+    // inventing one, and the next one within the week replays the page from disk.
+    // Gated by the same flag as the check, so a deployment without the live gate
+    // never spends anything here.
+    prime() {
+      if (freshnessGateReason()) return null;
+      if (entry && clock() - entry.at < holdMs(entry.value)) return null;
+      return inflight ?? run().catch(() => null);
+    },
+    // What an answer already established. It never makes a request: a page load
+    // must not be able to spend the Qloo budget.
+    peek() {
+      const blocked = freshnessGateReason();
+      if (blocked) return { checked: false, why: blocked, live: false };
+      if (!entry) return { checked: false, why: "not_checked_yet", live: true };
+      return { ...entry.value, fromCache: true, stale: clock() - entry.at >= holdMs(entry.value), ageSeconds: Math.round((clock() - entry.at) / 1000) };
+    },
+  };
+}
+
 /* ---------- pure math reused for the live read ---------- */
 
 // The desk regresses a name's weekly return on SPY and its sub-sector basket over
@@ -203,9 +478,25 @@ export function createLiveTools({ desk, qloo = {}, state = { liveCalls: 0 }, bud
     }
   };
 
-  const finish = (result, { spent, pages, replayed }) => {
+  const finish = (result, { spent, pages, replayed, calls = [], entities = [], operation = "exec trends", requestedAt }) => {
     state.liveCalls++;
-    return { ...result, qloo: { ...(result.qloo ?? {}), requests: spent, pages, replayedPages: replayed, dailyBudget: readBudget(budgetFile) } };
+    return {
+      ...result,
+      qloo: {
+        ...(result.qloo ?? {}),
+        requests: spent,
+        pages,
+        replayedPages: replayed,
+        dailyBudget: readBudget(budgetFile),
+        // The receipt a reader needs to re-point at one call: what was asked, of
+        // which entity, what the harness answered it with, and which file holds it.
+        operation,
+        entities: [...new Set(entities.filter(Boolean))],
+        correlationIds: calls.map((c) => c.correlationId).filter(Boolean),
+        files: [...new Set(calls.map((c) => c.cacheName).filter(Boolean))],
+        requestedAt: requestedAt ?? null,
+      },
+    };
   };
 
   const tools = new Map();
@@ -228,6 +519,7 @@ export function createLiveTools({ desk, qloo = {}, state = { liveCalls: 0 }, bud
       const b = await reserve(reserveMax, { file: budgetFile, cap });
       if (!b.ok) return budgetError(b);
       let spent = 0, pages = 0, replayed = 0;
+      const requestedAt = new Date().toISOString();
       try {
         const json = await search(v.name, { take: 5, type: "brand" });
         spent++;
@@ -235,7 +527,7 @@ export function createLiveTools({ desk, qloo = {}, state = { liveCalls: 0 }, bud
         const hit = pickEntity(candidates, v.name);
         if (!hit) {
           await settle({ reserved: reserveMax, spent, ops: spent }, { file: budgetFile });
-          return finish({ query: v.name, resolved: false, candidates: [], note: "Qloo returned no brand entity for this string; the desk cannot price a name it cannot resolve." }, { spent, pages, replayed });
+          return finish({ query: v.name, resolved: false, candidates: [], note: "Qloo returned no brand entity for this string; the desk cannot price a name it cannot resolve." }, { spent, pages, replayed, requestedAt, operation: "api search" });
         }
         const type = String(hit.type ?? "brand").replace(/^urn:entity:/, "");
         const end = dates.at(-1) ?? today();
@@ -265,7 +557,7 @@ export function createLiveTools({ desk, qloo = {}, state = { liveCalls: 0 }, bud
           revisionJumps: jumps,
           inBook: desk.rows.find((r) => normal(r.label) === normal(hit.name))?.ticker ?? null,
           note: "live pull, not the committed panel. A percentile move is Qloo's level change, and a jump of 0.05 or more in one week is the catalogue being rescanned, not the brand moving.",
-        }, { spent, pages, replayed });
+        }, { spent, pages, replayed, calls: res.calls, entities: [hit.id], operation: "api search + exec trends", requestedAt });
       } catch (e) {
         await settle({ reserved: reserveMax, spent, ops: pages }, { file: budgetFile });
         return { error: `live Qloo read failed: ${e.code ?? e.message}`, code: e.code ?? "LIVE_FAILED", note: "Say the live read is unavailable; answer from the committed panel if it covers the question." };
@@ -322,6 +614,8 @@ export function createLiveTools({ desk, qloo = {}, state = { liveCalls: 0 }, bud
       if (!b.ok) return budgetError(b);
 
       let spent = 0, pages = 0, replayed = 0;
+      const requestedAt = new Date().toISOString();
+      const allCalls = [];
       try {
         const batches = [];
         for (const [type, ms] of byType) for (let i = 0; i < ms.length; i += 5) batches.push({ type, chunk: ms.slice(i, i + 5) });
@@ -329,7 +623,7 @@ export function createLiveTools({ desk, qloo = {}, state = { liveCalls: 0 }, bud
         const byId = {};
         const members = [];
         for (let i = 0; i < batches.length; i++) {
-          for (const c of out[i].calls) { pages++; if (c.replayed) replayed++; else spent++; }
+          for (const c of out[i].calls) { pages++; if (c.replayed) replayed++; else spent++; allCalls.push(c); }
           for (const m of batches[i].chunk) {
             const points = out[i].byEntity.get(m.id) ?? [];
             byId[m.id] = { points };
@@ -353,7 +647,7 @@ export function createLiveTools({ desk, qloo = {}, state = { liveCalls: 0 }, bud
           },
           basketMembers: members,
           note: "The live number is the desk's estimator re-run at inference over a Qloo pull of the same basket at the pipeline's depth. Pages already on disk are replayed and counted as such; anything not cached is fetched. Benjamini-Hochberg q is book-wide and cannot be re-derived for one name; the committed q is shown for context, and a live |t| above 2 without that correction is not a flag.",
-        }, { spent, pages, replayed });
+        }, { spent, pages, replayed, calls: allCalls, entities: row.basket.filter((m) => m.id).map((m) => m.id), requestedAt });
       } catch (e) {
         await settle({ reserved: reserveMax, spent, ops: pages }, { file: budgetFile });
         return { error: `live Qloo read failed: ${e.code ?? e.message}`, code: e.code ?? "LIVE_FAILED", note: "Say the live read is unavailable; the committed row is still the reading of record." };

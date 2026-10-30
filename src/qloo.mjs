@@ -331,3 +331,73 @@ export async function qlooSeries(entityIds, entityType, { start, end, cacheName 
   });
   return { byEntity, calls, cadenceDays: step };
 }
+
+// Exactly one trend page, returned in the shape a series pull produces. The
+// endpoint anchors to `end_date` and answers with the `limit` weekly points that
+// END there, so a single call is already the newest window — and, unlike qlooSeries,
+// this does not walk the history backwards once the first page is in hand. The
+// freshness attestation needs the newest weeks and nothing else, so it uses this:
+// one request per panel revision, never a paging run.
+export async function qlooTrendPage(entityIds, entityType, { start, end, cacheName } = {}) {
+  if (!entityIds.length || entityIds.length > SERIES_MAX_ENTITIES) {
+    throw new HarnessError("QLOO_BATCH", `trends accepts 1–${SERIES_MAX_ENTITIES} entities per call, got ${entityIds.length}`);
+  }
+  const input = { entities: entityIds, entity_type: entityType, start_date: start, end_date: end, limit: SERIES_MAX_POINTS };
+  const byEntity = new Map(entityIds.map((id) => [id, []]));
+  const calls = [];
+
+  const replay = readSeriesPage(input);
+  let series;
+  if (replay) {
+    series = replay.series;
+    calls.push({
+      input,
+      points: series.reduce((n, s) => n + (s.points?.length ?? 0), 0),
+      correlationId: replay.correlationId ?? null,
+      provenance: replay.provenance ?? null,
+      cacheName: seriesPageName(input),
+      replayed: true,
+    });
+  } else {
+    const env = await execOperation("trends", input);
+    if (env.status && env.status !== "ok") throw statusError("trends", env);
+    series = env.series ?? [];
+    calls.push({
+      input,
+      points: series.reduce((n, s) => n + (s.points?.length ?? 0), 0),
+      correlationId: env.execution?.correlation_id ?? null,
+      provenance: env.provenance ?? null,
+      cacheName: seriesPageName(input),
+    });
+    writeCache(seriesPageName(input), {
+      harness: { version: await version(), surface: "exec trends" },
+      input,
+      to: end,
+      series,
+      correlationId: env.execution?.correlation_id ?? null,
+      provenance: env.provenance ?? null,
+      fetchedAt: new Date().toISOString(),
+    });
+  }
+
+  for (const s of series) {
+    const id = s.entity?.entityId ?? s.entity?.id;
+    if (id && byEntity.has(id)) byEntity.get(id).push(...(s.points ?? []));
+  }
+  for (const [id, points] of byEntity) {
+    const seen = new Set();
+    byEntity.set(id, points.filter((p) => p?.date && !seen.has(p.date) && seen.add(p.date))
+      .sort((a, b) => a.date.localeCompare(b.date)));
+  }
+  if (cacheName) {
+    writeCache(cacheName, {
+      harness: { version: await version(), surface: "exec trends" },
+      entityType,
+      entities: entityIds,
+      window: { start, end },
+      cadenceDays: null,
+      calls,
+    });
+  }
+  return { byEntity, calls };
+}

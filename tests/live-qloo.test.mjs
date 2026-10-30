@@ -7,7 +7,7 @@ import { mkdtempSync, writeFileSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import {
-  LIVE, liveStatus, validateBrandName, validateTicker, pickEntity,
+  LIVE, FRESHNESS, liveStatus, validateBrandName, validateTicker, pickEntity,
   reserve, settle, readBudget, alignLive, regressLive, createLiveTools, withLiveTools,
 } from "../src/live-qloo.mjs";
 
@@ -45,6 +45,21 @@ function fakeSeries(counter = { calls: 0 }) {
     counter.calls++;
     const byEntity = new Map(ids.map((id) => [id, pointsFor(id)]));
     return { byEntity, calls: [{ replayed: false }, { replayed: false }] };
+  };
+}
+
+// What the real pager hands back: one call object per page, each with the
+// harness's own correlation id and the cached file that holds the response.
+function traceableSeries() {
+  return async (ids) => {
+    const byEntity = new Map(ids.map((id) => [id, pointsFor(id)]));
+    return {
+      byEntity,
+      calls: [
+        { replayed: false, correlationId: "cid-page-1", cacheName: "page-aa.json" },
+        { replayed: true, correlationId: "cid-page-2", cacheName: "page-bb.json" },
+      ],
+    };
   };
 }
 
@@ -188,4 +203,47 @@ test("LIVE constants are bounded", () => {
   assert.equal(LIVE.callsPerAnswer, 1);
   assert.ok(LIVE.maxTrendPages <= 96);
   assert.ok(LIVE.dailyRequests <= 200);
+});
+
+// The receipt is the reviewer's objection answered, so the ids have to survive the
+// tool result: what was asked, of which entity, and which cached file holds it.
+test("a live read records the correlation ids and entity ids its receipt shows", async () => {
+  const dir = tmpDir();
+  const budget = resolve(dir, "b.json");
+  const tools = createLiveTools({
+    desk: smallDesk(), budgetFile: budget, pricesFile: resolve(tmpDir(), "x.json"),
+    qloo: {
+      search: async () => [{ entity_id: "e9", name: "Gymshark", types: ["urn:entity:brand"] }],
+      results: (json) => json.map((e) => ({ id: e.entity_id, name: e.name, type: e.types[0] })),
+      series: traceableSeries(),
+    },
+  });
+  const brand = await tools.get("live_brand_trends").run({ name: "Gymshark" });
+  assert.deepEqual(brand.qloo.entities, ["e9"]);
+  assert.deepEqual(brand.qloo.correlationIds, ["cid-page-1", "cid-page-2"]);
+  assert.deepEqual(brand.qloo.files, ["page-aa.json", "page-bb.json"]);
+  assert.equal(brand.qloo.operation, "api search + exec trends");
+  assert.equal(brand.qloo.requests, 2, "one search plus one page not already on disk");
+  assert.match(String(brand.qloo.requestedAt), /^\d{4}-\d\d-\d\dT/);
+  const again = createLiveTools({
+    desk: smallDesk(), budgetFile: resolve(dir, "b2.json"), pricesFile: resolve(dir, "prices.json"),
+    qloo: { series: traceableSeries() },
+  });
+  writeFileSync(resolve(dir, "prices.json"), JSON.stringify(smallPrices()));
+  const beta = await again.get("live_cultural_beta").run({ ticker: "AAA" });
+  assert.deepEqual(beta.qloo.entities, ["e1", "e2"]);
+  assert.equal(beta.qloo.operation, "exec trends");
+});
+
+test("FRESHNESS bounds one bounded page per attestation", () => {
+  assert.equal(FRESHNESS.maxRequests, 2);
+  assert.equal(FRESHNESS.cacheMinutes, 15);
+  assert.equal(FRESHNESS.maxAttempts, FRESHNESS.maxRequests, "never more asks than the reservation pays for");
+  // Deep on purpose, and still one request: the probe reads the newest weeks
+  // through qlooTrendPage, which does not walk the history backwards. Verified
+  // 2026-10-30 — a 180-day window ending 2026-11-02 returned no points at all for
+  // the reference entity, a 527-day window on the same end date returned the
+  // newest twenty weekly points, and the endpoint caps the page at twenty either way.
+  assert.ok(FRESHNESS.lookbackDays > 180, "a window narrower than the endpoint's floor answers with nothing");
+  assert.ok(FRESHNESS.timeoutMs <= 60000, "the attestation must not outlast the answer it rides on");
 });

@@ -7,9 +7,13 @@ aligned return window** (106 weekly closes, less four weeks in which Qloo revise
 catalogue wholesale — see *Catalogue revisions* below).
 
 Built for the Qloo Agentic Hackathon. Qloo is load-bearing: **without live Qloo
-responses the desk refuses to print.** There is no simulated Qloo data anywhere —
-not labelled, not as a fallback. The null-route test (`tests/nullroute.test.mjs`)
-enforces it.
+responses the desk refuses to print.** No number on the desk is simulated — nothing
+is invented to stand in for a Qloo response, and there is no fallback path that
+fabricates one. The null-route test (`tests/nullroute.test.mjs`) enforces it.
+The only synthetic fixtures in the tree are `.stub/` (entity ids like
+`urn:entity:brand:stub-disney`) and `tests/stubs/`: they exist so the layout audit
+and the estimator tests run on a clean clone with no key and no network, and the
+server never serves them. Real Qloo responses are never committed.
 
 ## Factor construction (which method was used, and why)
 
@@ -307,10 +311,10 @@ npm run qloo:basket         # fixtures/qloo/basket-<TICKER>.json — audience ba
 npm run qloo:series         # fixtures/qloo/series.json — weekly taste series per basket member.
                             # prints the exact request count and refuses to spend it without QLOO_RUN=1
 npm run compute-betas       # refuses to print without Qloo fixtures
-npm run serve               # desk at http://localhost:8787
+npm run serve               # desk at http://localhost:8811
 npm test                    # ols, null-route, floor, market-only, robustness, second window, ablation, sentiment, budget, multiplicity, universe
-node scripts/audit.mjs --url http://localhost:8787
-                            # 344 UI checks, 5 routes × 3 viewports (1440 / 768 / 390), CDP, no deps
+node scripts/audit.mjs --url http://localhost:8811
+                            # ~450 UI checks, 5 routes × 3 viewports (1440 / 768 / 390), CDP, no deps
 ```
 
 Call budget for the full book, computed by `npm run qloo:budget` from the same

@@ -9,16 +9,24 @@ User=culturalbeta
 WorkingDirectory=/opt/culturalbeta
 EnvironmentFile=-/opt/culturalbeta/.env
 Environment=NODE_ENV=production
-ExecStart=/usr/bin/node /opt/culturalbeta/server/desk-server.mjs
+# Not 8787 — that port already serves another app on this host. The vhost proxies here.
+Environment=PORT=8790
+# /opt/node22 first: the Qloo harness declares engines.node >=22.19.0 and the distro
+# node on this host is 20, which other tenants pin. Upgrading it would move those
+# sites, so the desk runs on a private copy and nothing else sees it.
+Environment=PATH=/opt/node22/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+# ProtectHome masks /home/culturalbeta, and the harness CLI keeps its own state under
+# HOME; without a writable one a keyed live read fails and the freshness attestation
+# reports "unavailable" instead of asking Qloo.
+Environment=HOME=/opt/culturalbeta/.state
+ExecStart=/opt/node22/bin/node /opt/culturalbeta/server/desk-server.mjs
 Restart=always
 RestartSec=3
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=true
-# A keyed recompute writes both the panel and the Qloo response cache; the rest
-# of the tree stays read-only under ProtectSystem=strict.
-ReadWritePaths=/opt/culturalbeta/output /opt/culturalbeta/fixtures/qloo
+ReadWritePaths=/opt/culturalbeta/output /opt/culturalbeta/fixtures/qloo /opt/culturalbeta/.state
 AmbientCapabilities=
 CapabilityBoundingSet=
 
