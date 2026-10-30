@@ -9,7 +9,7 @@ import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import {
   FRESHNESS, freshnessGateReason, referenceEntity, qlooFreshnessReading,
-  runFreshnessCheck, createFreshnessChecker, readBudget,
+  runFreshnessCheck, createFreshnessChecker, readBudget, entitiesFor, tickersInQuestion,
 } from "../src/live-qloo.mjs";
 import { collectReceipts, redactSecrets } from "../src/agent.mjs";
 
@@ -88,7 +88,7 @@ test("the reference entity is read from the panel, never invented", () => {
   const ref = referenceEntity(desk);
   assert.equal(ref.ticker, "DIS");
   // the brand wins over the heavier movie because brands carry the deepest history
-  assert.deepEqual(ref, { ticker: "DIS", id: "51AC9AB8-EF60-42AF-878C-D9EB34B50721", name: "Youtube", type: "brand", weight: 0.1257 });
+  assert.deepEqual(ref, { ticker: "DIS", sector: null, id: "51AC9AB8-EF60-42AF-878C-D9EB34B50721", name: "Youtube", type: "brand", weight: 0.1257 });
   assert.equal(referenceEntity({ rows: [] }), null);
 });
 
@@ -201,6 +201,77 @@ test("a revision newer than the panel tail is reported as newer, not as a pass",
   const none = qlooFreshnessReading({ points: [], panelLastRevision: "2025-12-22", panelWindowEnd: "2026-10-26" });
   assert.equal(none.latestWeek, null);
   assert.equal(none.verdict, "nothing_newer_than_panel_tail");
+});
+
+/* ---------- the attested set ---------- */
+
+const bookDesk = {
+  ...desk,
+  rows: [
+    { ticker: "DIS", label: "Disney", sector: "Media & entertainment", basket: [{ id: "e-dis", name: "Youtube", type: "brand", weight: 0.3 }] },
+    { ticker: "ELF", label: "e.l.f. Beauty", sector: "Beauty", basket: [{ id: "e-elf", name: "e.l.f. Cosmetics", type: "brand", weight: 0.4 }] },
+    { ticker: "KO", label: "Coca-Cola", sector: "Beverages", basket: [{ id: "e-ko", name: "Sprite", type: "brand", weight: 0.4 }] },
+    { ticker: "PEP", label: "PepsiCo", sector: "Beverages", basket: [{ id: "e-pep", name: "Doritos", type: "brand", weight: 0.4 }] },
+  ],
+};
+
+test("a question's names drive the attestation, matched on whole words only", () => {
+  const cited = tickersInQuestion("Why is Disney not flagged?", bookDesk);
+  assert.deepEqual(cited, ["DIS"]);
+  assert.deepEqual(tickersInQuestion("How does ELF look?", bookDesk), ["ELF"]);
+  assert.deepEqual(tickersInQuestion("is the desk bearish on soft drinks", bookDesk), [], "no substring match, no invented name");
+  const refs = entitiesFor(bookDesk, cited);
+  assert.equal(refs.length, 1);
+  assert.equal(refs[0].id, "e-dis");
+  assert.equal(refs[0].sector, "Media & entertainment");
+});
+
+test("an unnamed question is attested by one name per sub-sector, the reference first", () => {
+  const refs = entitiesFor(bookDesk);
+  assert.equal(refs.length, 3, "three entities, the cap");
+  assert.deepEqual(refs.map((r) => r.ticker), ["DIS", "ELF", "KO"], "one per sector, panel order, reference first");
+  assert.equal(new Set(refs.map((r) => r.sector)).size, 3);
+});
+
+test("one answer attests every entity it was given, and the sentence says so", async () => {
+  const budget = resolve(tmpDir(), "b.json");
+  const q = fakeQloo(frozen());
+  const refs = entitiesFor(bookDesk);
+  const out = await withLiveEnv(keyedEnv, () => runFreshnessCheck({ desk: bookDesk, refs, qloo: q, budgetFile: budget }));
+  assert.equal(q.seen.n, 3, "one page per entity, asked in parallel");
+  assert.deepEqual(q.seen.args.map((a) => a.ids[0]), ["e-dis", "e-elf", "e-ko"]);
+  assert.equal(out.checked, true);
+  assert.equal(out.entities.length, 3);
+  assert.equal(out.requests, 3);
+  assert.equal(readBudget(budget).requests, 3, "the set is paid for by what it spent");
+  assert.ok(out.plain.includes("3 entities"));
+  assert.ok(out.plain.includes("across 3 sub-sectors"));
+  assert.ok(out.scope.includes("3 entities"));
+});
+
+test("a named entity is one probe, not the whole set", async () => {
+  const budget = resolve(tmpDir(), "b.json");
+  const q = fakeQloo(frozen());
+  const refs = entitiesFor(bookDesk, ["ELF"]);
+  const out = await withLiveEnv(keyedEnv, () => runFreshnessCheck({ desk: bookDesk, refs, qloo: q, budgetFile: budget }));
+  assert.equal(q.seen.n, 1);
+  assert.equal(out.entity.ticker, "ELF");
+  assert.equal(out.requests, 1);
+});
+
+test("two questions about different names do not overwrite each other's attestation", async () => {
+  const budget = resolve(tmpDir(), "b.json");
+  let t = Date.UTC(2026, 9, 30, 18, 0, 0);
+  const q = fakeQloo(frozen());
+  const checker = createFreshnessChecker({ desk: bookDesk, clock: () => t, qloo: q, budgetFile: budget });
+  const a = await checker.check(entitiesFor(bookDesk, ["DIS"]));
+  const b = await checker.check(entitiesFor(bookDesk, ["ELF"]));
+  assert.equal(a.entity.ticker, "DIS");
+  assert.equal(b.entity.ticker, "ELF");
+  assert.equal(b.fromCache, false, "a different set is a different cache slot");
+  const a2 = await checker.check(entitiesFor(bookDesk, ["DIS"]));
+  assert.equal(a2.entity.ticker, "DIS");
+  assert.equal(a2.fromCache, true, "the same set is replayed from the cache");
 });
 
 /* ---------- the receipt ---------- */

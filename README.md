@@ -6,8 +6,8 @@ fixed book of **101 US consumer names across 11 sub-sectors**, over a **102-week
 aligned return window** (106 weekly closes, less four weeks in which Qloo revised its
 catalogue wholesale — see *Catalogue revisions* below).
 
-Built for the Qloo Agentic Hackathon. Qloo is load-bearing: **without live Qloo
-responses the desk refuses to print.** No number on the desk is simulated — nothing
+Built for the Qloo Agentic Hackathon. Qloo is load-bearing: **no number appears
+without a Qloo response behind it.** No number on the desk is simulated — nothing
 is invented to stand in for a Qloo response, and there is no fallback path that
 fabricates one. The null-route test (`tests/nullroute.test.mjs`) enforces it.
 The only synthetic fixtures in the tree are `.stub/` (entity ids like
@@ -237,6 +237,27 @@ The desk is a product, not a page — the same book served four ways:
 - `GET /export/panel.csv` — the panel with sector, q, and both windows' betas.
 
 A missing factor is a named 503 refusal, never a zero-filled beta.
+
+### The analyst, and what Qloo does at answer time
+
+`POST /api/ask` is the agentic surface. The model picks its own tools over the
+committed panel (`get_holding`, `search_book`, `rank_holdings`, `get_nulls`,
+`get_basket`, `desk_summary`, …), and every answer carries two things it cannot
+decline:
+
+- **A server-side Qloo attestation.** Before the model is called, the server asks
+  Qloo one bounded trend page for each of up to three committed basket entities —
+  the names the question cites when it cites any, otherwise one reference name per
+  sub-sector — and prints what each returned: newest week, last revision, whether it
+  is newer than the panel's frozen tail, Qloo's own correlation id and the cached
+  response file name. This runs outside the tool loop, so the model can neither skip
+  it nor substitute a claim of its own. If it cannot run, the answer says why.
+- **A receipt** naming the panel file and revision, the attested entities and every
+  tool call with the request that produced it and the cached response behind it.
+
+A live tool (`live_brand_trends`, `live_cultural_beta`) may spend one further
+bounded request per answer from a persisted daily budget. Nothing in the desk, and
+nothing in the answer, is generated from a Qloo response that does not exist.
 
 ## Provenance
 

@@ -508,6 +508,19 @@ export function collectReceipts({ desk, revision = null, trace = [], freshness =
       entity: freshness.entity?.id ?? null,
       entityName: freshness.entity?.name ?? null,
       entityType: freshness.entity?.type ?? null,
+      // Every entity the attestation actually read, so a receipt can show that the
+      // answer's own names were checked, not a fixed basket member.
+      entities: (freshness.entities ?? []).map((e) => ({
+        entity: e.entity?.id ?? null,
+        name: e.entity?.name ?? null,
+        type: e.entity?.type ?? null,
+        ticker: e.entity?.ticker ?? null,
+        sector: e.entity?.sector ?? null,
+        checked: Boolean(e.checked),
+        verdict: e.checked ? e.verdict ?? null : null,
+        latestWeek: e.checked ? e.latestWeek ?? null : null,
+        correlationIds: e.correlationIds ?? [],
+      })),
       requestedAt: freshness.requestedAt ?? freshness.at ?? null,
       respondedAt: freshness.respondedAt ?? null,
       fromCachedPage: Boolean(freshness.fromCachedPage),

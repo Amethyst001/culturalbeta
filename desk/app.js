@@ -702,8 +702,12 @@ function deskView() {
   // The single fact that changes how every number on this page is read belongs on
   // this page, not two clicks away: a judge who never opens the vintage card must
   // not read an in-sample grade as a completed held-out test.
+  const mdeRatio = MDE?.book?.medianDeltaR2Pts && va?.meanDeltaR2 ? MDE.book.medianDeltaR2Pts / va.meanDeltaR2 : null;
+  const mdeLay = mdeRatio && sc && sc.testable === false
+    ? ` In plain terms: this window can only see a taste effect about <b>${mdeRatio.toFixed(0)}× larger</b> than the one the book actually shows (a ${nf(MDE.book.medianDeltaR2Pts)}-point ΔR² against the ${nf(va.meanDeltaR2)} measured) — a statement about how short the window is, not evidence that taste does not matter.`
+    : "";
   const basis = sc && sc.testable === false
-    ? `<p class="basis" data-audit="basis"><b>Data basis.</b> Qloo's last revision in this pull is the week ending ${esc(sc.lastMove ?? "—")}. The final <b>${sc.frozenAfterWindow} of ${va.oos.trainWeeks + va.oos.testWeeks} weeks</b> repeat that level with a log change of exactly zero for every name, and <b>all ${sc.testWeeks} scored weeks sit inside them</b> — so no held-out test of taste ran, and none is claimed anywhere on this desk. Every number here is in sample. <a href="#/evidence">Why, and what a test would need →</a></p>`
+    ? `<p class="basis" data-audit="basis"><b>Data basis.</b> Qloo's last revision in this pull is the week ending ${esc(sc.lastMove ?? "—")}. The final <b>${sc.frozenAfterWindow} of ${va.oos.trainWeeks + va.oos.testWeeks} weeks</b> repeat that level with a log change of exactly zero for every name, and <b>all ${sc.testWeeks} scored weeks sit inside them</b> — so no held-out test of taste ran, and none is claimed anywhere on this desk. Every number here is in sample.${mdeLay} <a href="#/evidence">Why, and what a test would need →</a></p>`
     : "";
   // On a phone the full band lands below the first screen. The one sentence that
   // changes how the grade reads has to survive the fold, so it repeats here in a
@@ -1502,9 +1506,16 @@ function freshBlock(f, { standing = false } = {}) {
     f.fromCache ? `served from the ${Math.round((f.cachedSeconds ?? 0) / 60)}-minute attestation cache` : "",
     f.fromCachedPage ? `page cache replay${f.cachedResponseFetchedAt ? ` of the response fetched ${hhmm(f.cachedResponseFetchedAt)}` : ""}` : "",
   ].filter(Boolean).join(" · ");
+  const set = Array.isArray(f.entities) ? f.entities : [];
+  const setLine = set.length > 1
+    ? `<ul class="fresh-set">${set.map((e) => `<li>${e.checked
+      ? `<b>${esc(e.ticker ?? "—")}</b> · ${esc(e.name ?? "entity")} (${esc(e.type ?? "—")})${e.sector ? ` · ${esc(e.sector)}` : ""} · newest week ${esc(e.latestWeek ?? "—")} · ${e.verdict === "qloo_has_a_newer_revision" ? "CHANGED" : e.verdict === "newer_weeks_no_change" ? "no change" : "nothing newer"}`
+      : `<b>${esc(e.ticker ?? "—")}</b> · ${esc(e.name ?? "entity")} · not read`}</li>`).join("")}</ul>`
+    : "";
   return `<div class="fresh ${newer ? "warn" : "ok"}" data-audit="freshness" role="status">
     <span class="fresh-k">Qloo freshness ${standing ? "(last answer)" : "at answer time"}</span>
     <span class="fresh-v">${line}</span>
+    ${setLine}
     ${f.correlationIds?.length ? `<span class="fresh-cid">correlation ${f.correlationIds.map((c) => `<code>${esc(shortId(c))}</code>`).join(" ")}</span>` : ""}
     <p class="fresh-plain">${esc(f.plain ?? "")}</p>
   </div>`;
@@ -1518,7 +1529,7 @@ function receiptLine(rc) {
     if (!rc.checked) {
       return `<div class="rc"><b>freshness</b><span>not asked — ${esc(FRESH_WHY[rc.why] ?? String(rc.why ?? "unknown").slice(0, 60))}${rc.requests ? ` · ${rc.requests} request(s) spent before failing` : ""}</span></div>`;
     }
-    return `<div class="rc"><b>freshness</b><span>${esc(rc.operation ?? "exec trends")} · entity <code>${esc(rc.entity ?? "—")}</code> (${esc(rc.entityName ?? "")}) · ${rc.requests ?? 0} request${rc.requests === 1 ? "" : "s"} · correlation ${rc.correlationIds?.length ? rc.correlationIds.map((c) => `<code>${esc(c)}</code>`).join(" ") : "none returned"} · asked ${esc(String(rc.requestedAt ?? "").slice(0, 19))} · answered ${esc(String(rc.respondedAt ?? "").slice(0, 19))}${rc.fromAttestationCache ? ` · this attestation reused for ${rc.attestationCacheSeconds ?? 0}s of the 15-minute book cache` : ""}${rc.fromCachedPage ? " · replayed from the page cache" : ""} · files ${rc.files?.length ? rc.files.map((f) => `<code>${esc(f)}</code>`).join(" ") : "—"}</span></div>`;
+    return `<div class="rc"><b>freshness</b><span>${esc(rc.operation ?? "exec trends")} · entity <code>${esc(rc.entity ?? "—")}</code> (${esc(rc.entityName ?? "")})${rc.entities?.length > 1 ? ` · set ${rc.entities.map((e) => `${esc(e.ticker ?? "?")}:${e.checked ? esc(e.latestWeek ?? "—") : "not read"}`).join(" ")}` : ""} · ${rc.requests ?? 0} request${rc.requests === 1 ? "" : "s"} · correlation ${rc.correlationIds?.length ? rc.correlationIds.map((c) => `<code>${esc(c)}</code>`).join(" ") : "none returned"} · asked ${esc(String(rc.requestedAt ?? "").slice(0, 19))} · answered ${esc(String(rc.respondedAt ?? "").slice(0, 19))}${rc.fromAttestationCache ? ` · this attestation reused for ${rc.attestationCacheSeconds ?? 0}s of the 15-minute book cache` : ""}${rc.fromCachedPage ? " · replayed from the page cache" : ""} · files ${rc.files?.length ? rc.files.map((f) => `<code>${esc(f)}</code>`).join(" ") : "—"}</span></div>`;
   }
   if (rc.kind === "live") {
     const ents = (rc.entities ?? []).slice(0, 6).map((e) => `<code>${esc(shortId(e))}</code>`).join(" ");
@@ -1551,7 +1562,7 @@ function askView() {
   return `<div class="head">
     <div class="lede-col">
       <h1>Ask the <em>desk</em>.</h1>
-      <p class="sub">An analyst that reads the committed panel${AGENT?.live?.enabled ? ", and may make one bounded live Qloo read per answer" : " and the Qloo responses behind it"}. Read-only: it cannot run the pipeline or move a number.${AGENT?.live?.enabled ? " Its currency is not its own claim: before every answer the server asks Qloo one bounded trend page and prints what came back, checked or not." : ""}</p>
+      <p class="sub">An analyst that reads the committed panel${AGENT?.live?.enabled ? ", and may make one bounded live Qloo read per answer" : " and the Qloo responses behind it"}. Read-only: it cannot run the pipeline or move a number.${AGENT?.live?.enabled ? " Its currency is not its own claim: before every answer the server asks Qloo one bounded trend page per cited name — otherwise one per sub-sector — and prints what came back for each, checked or not." : ""}</p>
     </div>
     <div class="side">
       ${DESK ? windowPill(DESK.window) : ""}

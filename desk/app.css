@@ -420,6 +420,10 @@ footer .verify code{font:10px ui-monospace,Consolas,monospace}
   color:var(--muted);word-break:break-word}
 .fresh .fresh-plain,.ask-answer .fresh .fresh-plain{margin:9px 0 0;font:12.5px/1.65 Georgia,serif;
   color:var(--muted);max-width:780px}
+.fresh-set{margin:7px 0 0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:5px 14px;
+  font:10.5px/1.6 ui-monospace,Consolas,monospace;color:var(--muted)}
+.fresh-set li{white-space:nowrap}
+.fresh-set b{color:var(--ink);font-weight:600}
 .receipts{margin-top:16px;border-top:1px solid var(--hairline);padding-top:11px}
 .rc-head{font:10.5px/1.4 ui-sans-serif,system-ui,sans-serif;letter-spacing:.1em;
   text-transform:uppercase;color:var(--muted)}

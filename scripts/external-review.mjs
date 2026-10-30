@@ -110,7 +110,8 @@ const FULL = [
     gap: 65000,
   },
 ];
-const PANEL = arg("panel", "free") === "full" ? FULL : FREE;
+const ONLY = arg("only", "").split(",").map((s) => s.trim()).filter(Boolean);
+const PANEL = (arg("panel", "free") === "full" ? FULL : FREE).filter((p) => !ONLY.length || ONLY.includes(p.id));
 
 const SYSTEM = [
   "You are an independent reviewer for a hackathon submission. You have no stake in it and no",
