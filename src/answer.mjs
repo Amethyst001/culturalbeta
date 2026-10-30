@@ -6,6 +6,18 @@ const OPEN_THINK = /<(think|thinking|scratchpad)>/i;
 const CLOSED_THINK = /<(think|thinking|scratchpad)>[\s\S]*?<\/\1>/gi;
 const ANY_TAG = /<\/?(think|thinking|scratchpad)>/gi;
 
+// Observed 2026-10-30 from MiniMax M2.7 through the fallback chain: a numbered
+// scratchpad with no tag at all, three newlines, then the answer. Tags cannot find
+// that seam, so the seam itself is the signal — a final paragraph that starts like a
+// sentence and ends like one, after a gap wide enough that the model meant to break.
+function dropLeadingScratchpad(text) {
+  const parts = String(text).split(/\n{3,}/);
+  if (parts.length < 2) return text;
+  const tail = parts[parts.length - 1].trim();
+  const readsAsAnswer = tail.length >= 120 && /^[A-Z0-9"“(]/.test(tail) && /[.!?)]$/.test(tail);
+  return readsAsAnswer ? tail : text;
+}
+
 export function cleanAnswer(raw) {
   const text = String(raw ?? "").trim();
   let out = text.replace(CLOSED_THINK, "");
@@ -23,5 +35,5 @@ export function cleanAnswer(raw) {
       out = cut > -1 ? out.slice(cut).replace(/^\s+/, "") : out;
     }
   }
-  return out.replace(ANY_TAG, "").trim() || text.replace(ANY_TAG, "").trim() || text;
+  return dropLeadingScratchpad(out.replace(ANY_TAG, "")).trim() || text.replace(ANY_TAG, "").trim() || text;
 }

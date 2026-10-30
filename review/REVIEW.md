@@ -1524,3 +1524,54 @@ paragraph and the assertion requires the ordering.
 
 Verification after both: `npm test` **160/160**; CDP audit **566/566** before the
 falsification band, and the post-band run recorded in §17.
+
+## 17. Round 11 — the interaction pass, and the honest ceiling
+
+Round 11 is the state the entry ships in. Four independent reviewers scored it against the
+Devpost axes, each criterion out of 25, with `src/rubric.mjs` enforcing that the four sum to
+the total.
+
+| Reviewer | Total | TI | Design | Impact | Idea |
+|---|---|---|---|---|---|
+| Claude Opus 5.5 | **81** | 23 | 19 | 22 | 17 |
+| Claude Fable 5.1 | **79** | 21 | 19 | 18 | 21 |
+| GLM 5.3 Flash | **78** | 21 | 20 | 17 | 20 |
+| Claude Opus 5 | **77** | 23 | 18 | 12 | 24 |
+
+Every verdict is still **FIX FIRST**. The four scores sit inside a 4-point band, which is the
+useful fact: the disagreements are about which criterion owns the same weakness, not about
+whether the weakness exists.
+
+**What moved since round 10 (Opus 74, GLM 67).** The interface stopped being a document:
+
+- The book is filterable by ticker, company or sub-sector (`/` focuses it), filterable by
+  sub-sector chips, and sortable by four columns; the filter survives a re-render with the
+  caret where the reader left it.
+- A separate interaction layer gives every data table in-place sorting (asc → desc → none,
+  numeric-aware, missing values last, `aria-sort`, keyboard), sticky headers, scroll shadows,
+  and a copy button on every stamp, correlation id and cache filename.
+- The gate prints its own three-state legend, so `pass`, `moved` and `unattested` are readable
+  without a tooltip, and the freshness receipt now carries the panel's last revision.
+
+**What the panel still says, in one sentence.** All four reviewers landed on the same object:
+the `moved` path has never fired in production, so the most defensible feature is proven only
+by fixture. Opus 5.5 asks for a synthetic-revision demo; Fable 5.1 asks for the same "pinned
+fixture, clearly labelled"; Opus 5 puts the fatal question differently — *"so what should I do
+with this desk?"* — and answers it: "wait for the next Qloo revision", which is true at this
+vintage and is the ceiling on Impact (12–22 across the four).
+
+**Why that demo was not built.** The owner's standing rule is that no simulated Qloo data
+appears anywhere, not even labelled as a demo. A `force_moved` flag would have been the
+cheapest five points on the board and it would have broken the rule the whole entry is built
+on. The rule is worth more than the points.
+
+**The honest ceiling.** The four reviewers put Impact at 12–22 and Idea at 17–24; none put a
+total above 81, and none claimed a 90 is reachable without a hold-out where the percentile
+regressor is not carry-forward. That is an external-data problem, not an engineering one.
+
+Verification at this state: `npm test` **162/162**, CDP audit **581/581** locally, and the
+deployed-host run recorded beside this section. The two defects the harness caught this round
+were both mine: a stale local server that had the new static files and old server code (which
+served an un-stamped answer to the audit), and an answer whose reasoning scratchpad arrived
+untagged from MiniMax — now stripped by a seam rule with two tests.
+

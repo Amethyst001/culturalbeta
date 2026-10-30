@@ -11,7 +11,17 @@ let BOOTING = true;
 let MDE = null, BASKET = null;
 let FRESH = null;
 let ASK = { q: "", busy: false, res: null, err: null };
-let sortKey = "culturalQ", sortDir = 1, sectorFilter = "all";
+let sortKey = "culturalQ", sortDir = 1, sectorFilter = "all", bookQuery = "", slashBound = false;
+
+// 101 rows is a scroll, not a lookup. Matching is on the three things a reader would
+// type — ticker, company name, sub-sector — and on folded text, so "keurig" and
+// "beverages" both find KDP.
+const foldText = (s) => String(s ?? "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+function matchesQuery(row, q) {
+  const needle = foldText(q).trim();
+  if (!needle) return true;
+  return [row.ticker, row.label, row.sectorLabel, row.sector].some((v) => foldText(v).includes(needle));
+}
 
 // The state tag is derived from what computed the panel, never hardcoded: a
 // stub-harness run renders "layout only" so a screenshot of it cannot be read as
@@ -438,11 +448,18 @@ function filterBar(rows) {
   const chip = (id, label, n) => `<button class="fchip${sectorFilter === id ? " on" : ""}" data-sector="${id}">${esc(label)}<span>${n}</span></button>`;
   const count = (id) => rows.filter((r) => id === "all" || r.sector === id).length;
   const priced = rows.filter((r) => r.status === "ok").length;
-  return `<div class="filters" data-audit="filters">${chip("all", "All consumer", count("all")).replace("<button", `<button title="${priced} of ${count("all")} priced with a cultural beta"`)}${seen.map((s) => chip(s.id, s.label, count(s.id))).join("")}</div>`;
+  const shown = rows.filter((r) => (sectorFilter === "all" || r.sector === sectorFilter) && matchesQuery(r, bookQuery)).length;
+  const search = `<div class="fsearch">
+    <input id="book-q" type="search" autocomplete="off" spellcheck="false" value="${esc(bookQuery)}"
+      aria-label="Filter the book by ticker, company or sub-sector" placeholder="Filter ${rows.length} names — ticker, company or sector  (/)" data-audit="book-search">
+    ${bookQuery ? `<button type="button" class="fclear" data-clear="1" aria-label="Clear the filter">Clear</button>` : ""}
+    <span class="fcount" aria-live="polite">${bookQuery ? `${shown} of ${count(sectorFilter)}` : ""}</span>
+  </div>`;
+  return `${search}<div class="filters" data-audit="filters">${chip("all", "All consumer", count("all")).replace("<button", `<button title="${priced} of ${count("all")} priced with a cultural beta"`)}${seen.map((s) => chip(s.id, s.label, count(s.id))).join("")}</div>`;
 }
 
 function coldTable() {
-  const rows = MARKET.rows.filter((r) => sectorFilter === "all" || r.sector === sectorFilter).map((r) => {
+  const rows = MARKET.rows.filter((r) => (sectorFilter === "all" || r.sector === sectorFilter) && matchesQuery(r, bookQuery)).map((r) => {
     const name = `<td class="c-name" data-l="Holding"><span class="tick">${r.ticker}</span><span class="name">${esc(r.label)}</span><span class="sector">${esc(r.sectorLabel ?? "")}</span></td>`;
     const trace = `<td class="ta" data-l="Trace"><a class="tracelink" href="#/evidence/${r.ticker}">trace</a></td>`;
     if (r.status === "no prices") {
@@ -472,7 +489,7 @@ function coldTable() {
 }
 
 function liveTable() {
-  const inSector = DESK.rows.filter((r) => sectorFilter === "all" || r.sector === sectorFilter);
+  const inSector = DESK.rows.filter((r) => (sectorFilter === "all" || r.sector === sectorFilter) && matchesQuery(r, bookQuery));
   const rows = [...inSector].sort((a, b) => {
     const av = a[sortKey], bv = b[sortKey];
     if (av == null && bv == null) return a.ticker.localeCompare(b.ticker);
@@ -547,7 +564,7 @@ function liveTable() {
         <th class="sort" data-k="culturalQ"><span class="th">Signal ${arrow("culturalQ")}</span><span class="thsub">${sortKey === "culturalQ" ? "sorted by q · " : ""}flag needs |t| ≥ 2 · q ≤ 0.10</span></th>
         <th class="th-right"></th>
       </tr></thead>
-      <tbody>${body}</tbody>
+      <tbody>${body || `<tr class="empty"><td colspan="5">No name in the book matches “${esc(bookQuery)}”${sectorFilter !== "all" ? " in this sub-sector" : ""}. <button type="button" class="fclear" data-clear="1">Clear the filter</button></td></tr>`}</tbody>
     </table>
   </div>${sparseNote}${rosterNote}`;
 }
@@ -702,9 +719,12 @@ function deskView() {
   // The single fact that changes how every number on this page is read belongs on
   // this page, not two clicks away: a judge who never opens the vintage card must
   // not read an in-sample grade as a completed held-out test.
-  const mdeRatio = MDE?.book?.medianDeltaR2Pts && va?.meanDeltaR2 ? MDE.book.medianDeltaR2Pts / va.meanDeltaR2 : null;
+  // meanDeltaR2 is a fraction of variance and medianDeltaR2Pts is already in points;
+  // dividing them unscaled printed 2033× on the landing page (it is 20.3×).
+  const obsPts = va?.meanDeltaR2 != null ? va.meanDeltaR2 * 100 : null;
+  const mdeRatio = MDE?.book?.medianDeltaR2Pts && obsPts ? MDE.book.medianDeltaR2Pts / obsPts : null;
   const mdeLay = mdeRatio && sc && sc.testable === false
-    ? ` In plain terms: this window can only see a taste effect about <b>${mdeRatio.toFixed(0)}× larger</b> than the one the book actually shows (a ${nf(MDE.book.medianDeltaR2Pts)}-point ΔR² against the ${nf(va.meanDeltaR2)} measured) — a statement about how short the window is, not evidence that taste does not matter.`
+    ? ` In plain terms: this window can only see a taste effect about <b>${mdeRatio.toFixed(0)}× larger</b> than the one the book actually shows (a ${nf(MDE.book.medianDeltaR2Pts)}-point ΔR² against the ${nf(obsPts)} measured) — a statement about how short the window is, not evidence that taste does not matter.`
     : "";
   const basis = sc && sc.testable === false
     ? `<p class="basis" data-audit="basis"><b>Data basis.</b> Qloo's last revision in this pull is the week ending ${esc(sc.lastMove ?? "—")}. The final <b>${sc.frozenAfterWindow} of ${va.oos.trainWeeks + va.oos.testWeeks} weeks</b> repeat that level with a log change of exactly zero for every name, and <b>all ${sc.testWeeks} scored weeks sit inside them</b> — so no held-out test of taste ran, and none is claimed anywhere on this desk. Every number here is in sample.${mdeLay} <a href="#/evidence">Why, and what a test would need →</a></p>`
@@ -1248,7 +1268,9 @@ function mdeBand() {
 // does not exist yet, and the first is checked by the desk on every answer.
 function flipBand(va) {
   const med = MDE?.book?.medianDeltaR2Pts ?? null;
-  const obs = va?.meanDeltaR2 ?? null;
+  // desk.json keeps ΔR² as a fraction and mde.json in points; the band prints points,
+  // so the fraction is scaled once here rather than in three format calls.
+  const obs = va?.meanDeltaR2 != null ? va.meanDeltaR2 * 100 : null;
   const req = (MDE?.designRequirement?.rows ?? []).find((r) => /mean/i.test(String(r.label ?? ""))) ?? null;
   const cmp = Object.values(BASKET?.comparisons ?? {})[0] ?? null;
   const latestRevision = va?.oos?.scoring?.lastMove ?? null;
@@ -1298,7 +1320,7 @@ function flipBand(va) {
         <b>${esc(r.what)}</b>
         <span class="fl-now"><span class="fl-k">today</span>${esc(r.now)}</span>
         <span class="fl-take"><span class="fl-k">what it takes</span>${esc(r.take)}</span>
-        <span class="fl-who"><span class="fl-k">checked by</span>${r.who} · ${esc(r.state)}</span>
+        <span class="fl-who"><span class="fl-k">checked by</span>${r.who}<span class="fl-sep"> · </span>${esc(r.state)}</span>
       </div></div>`).join("")}
     </div>
   </section>`;
@@ -1593,13 +1615,16 @@ function freshBlock(f, { standing = false } = {}) {
 // a check that can never change the answer is decoration.
 function attestationBlock(att) {
   if (!att || !att.stamp) return "";
+  // The three states are only useful if a first-time reader knows what they mean, so
+  // the legend is part of the block rather than a tooltip.
+  const legend = `<span class="att-legend">pass · Qloo was read just now and nothing newer moved the panel &nbsp;·&nbsp; moved · Qloo revised since this panel was built, so the numbers above predate it &nbsp;·&nbsp; unattested · the check could not run, these are committed numbers only</span>`;
   if (att.state === "moved") {
-    return `<div class="att att-moved" data-audit="attestation-gate" data-state="moved"><b>Qloo has moved since this panel was built.</b> ${esc(att.note ?? "")} <code>${esc(att.stamp)}</code></div>`;
+    return `<div class="att att-moved" data-audit="attestation-gate" data-state="moved"><b>Qloo has moved since this panel was built.</b> ${esc(att.note ?? "")} <code>${esc(att.stamp)}</code>${legend}</div>`;
   }
   if (att.state === "unattested") {
-    return `<div class="att att-none" data-audit="attestation-gate" data-state="unattested"><b>Unattested.</b> ${esc(att.note ?? "")} <code>${esc(att.stamp)}</code></div>`;
+    return `<div class="att att-none" data-audit="attestation-gate" data-state="unattested"><b>Unattested.</b> ${esc(att.note ?? "")} <code>${esc(att.stamp)}</code>${legend}</div>`;
   }
-  return `<p class="att att-pass" data-audit="attestation-gate" data-state="pass">${esc(att.note ?? "")} <code>${esc(att.stamp)}</code></p>`;
+  return `<p class="att att-pass" data-audit="attestation-gate" data-state="pass">${esc(att.note ?? "")} <code>${esc(att.stamp)}</code>${legend}</p>`;
 }
 
 function receiptLine(rc) {
@@ -1610,7 +1635,7 @@ function receiptLine(rc) {
     if (!rc.checked) {
       return `<div class="rc"><b>freshness</b><span>not asked — ${esc(FRESH_WHY[rc.why] ?? String(rc.why ?? "unknown").slice(0, 60))}${rc.requests ? ` · ${rc.requests} request(s) spent before failing` : ""}</span></div>`;
     }
-    return `<div class="rc"><b>freshness</b><span>${esc(rc.operation ?? "exec trends")} · entity <code>${esc(rc.entity ?? "—")}</code> (${esc(rc.entityName ?? "")})${rc.entities?.length > 1 ? ` · set ${rc.entities.map((e) => `${esc(e.ticker ?? "?")}:${e.checked ? esc(e.latestWeek ?? "—") : "not read"}`).join(" ")}` : ""} · ${rc.requests ?? 0} request${rc.requests === 1 ? "" : "s"} · correlation ${rc.correlationIds?.length ? rc.correlationIds.map((c) => `<code>${esc(c)}</code>`).join(" ") : "none returned"} · asked ${esc(String(rc.requestedAt ?? "").slice(0, 19))} · answered ${esc(String(rc.respondedAt ?? "").slice(0, 19))}${rc.fromAttestationCache ? ` · this attestation reused for ${rc.attestationCacheSeconds ?? 0}s of the 15-minute book cache` : ""}${rc.fromCachedPage ? " · replayed from the page cache" : ""} · gate ${esc(rc.gate ?? "—")} <code>${esc(rc.stamp ?? "unsigned")}</code> · files ${rc.files?.length ? rc.files.map((f) => `<code>${esc(f)}</code>`).join(" ") : "—"}</span></div>`;
+    return `<div class="rc"><b>freshness</b><span>${esc(rc.operation ?? "exec trends")} · entity <code>${esc(rc.entity ?? "—")}</code> (${esc(rc.entityName ?? "")})${rc.entities?.length > 1 ? ` · set ${rc.entities.map((e) => `${esc(e.ticker ?? "?")}:${e.checked ? esc(e.latestWeek ?? "—") : "not read"}`).join(" ")}` : ""} · ${rc.requests ?? 0} request${rc.requests === 1 ? "" : "s"} · correlation ${rc.correlationIds?.length ? rc.correlationIds.map((c) => `<code>${esc(c)}</code>`).join(" ") : "none returned"} · asked ${esc(String(rc.requestedAt ?? "").slice(0, 19))} · answered ${esc(String(rc.respondedAt ?? "").slice(0, 19))}${rc.fromAttestationCache ? ` · this attestation reused for ${rc.attestationCacheSeconds ?? 0}s of the 15-minute book cache` : ""}${rc.fromCachedPage ? " · replayed from the page cache" : ""} · panel tail ${esc(rc.panel?.lastRevision ?? "—")}${rc.panel?.windowEnd ? ` (window ends ${esc(rc.panel.windowEnd)})` : ""} · gate ${esc(rc.gate ?? "—")} <code>${esc(rc.stamp ?? "unsigned")}</code> · files ${rc.files?.length ? rc.files.map((f) => `<code>${esc(f)}</code>`).join(" ") : "—"}</span></div>`;
   }
   if (rc.kind === "live") {
     const ents = (rc.entities ?? []).slice(0, 6).map((e) => `<code>${esc(shortId(e))}</code>`).join(" ");
@@ -1709,6 +1734,35 @@ function route() {
 }
 
 function wire(hash) {
+  // The filter re-renders the table, so the caret is put back where it was; without
+  // that, typing a second character would drop focus on every keystroke.
+  const q = $("#book-q");
+  if (q) {
+    q.oninput = () => {
+      bookQuery = q.value;
+      const at = q.selectionStart;
+      route();
+      const again = $("#book-q");
+      if (again) { again.focus(); try { again.setSelectionRange(at, at); } catch { /* type=search ignores it in some browsers */ } }
+    };
+    q.onkeydown = (e) => { if (e.key === "Escape") { bookQuery = ""; route(); } };
+  }
+  document.querySelectorAll("[data-clear]").forEach((b) => b.onclick = () => { bookQuery = ""; route(); $("#book-q")?.focus(); });
+  // "/" is the shortcut printed in the placeholder; bound once, because wire()
+  // runs on every route and a listener per render would stack.
+  if (!slashBound) {
+    slashBound = true;
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "/" || e.metaKey || e.ctrlKey || e.altKey) return;
+      const t = e.target;
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+      const box = $("#book-q");
+      if (!box) return;
+      e.preventDefault();
+      box.focus();
+      box.select();
+    });
+  }
   document.querySelectorAll(".fchip").forEach((b) => b.onclick = () => {
     if (sectorFilter === b.dataset.sector) return;
     sectorFilter = b.dataset.sector;

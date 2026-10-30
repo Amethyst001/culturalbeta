@@ -1,0 +1,124 @@
+/* Interaction layer for the Cultural Beta desk. Reuses app.css tokens. */
+
+:where(a, button, summary, input, textarea, select, [tabindex]):focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+/* ---- tables: header, sort, row affordance ---- */
+.tw { position: relative; scrollbar-width: thin; scrollbar-color: var(--hairline) transparent; transition: box-shadow .18s ease; }
+.tw[data-upgraded="scroll"] thead th {
+  position: sticky; top: 0; z-index: 2; background: var(--paper);
+  border-bottom-color: transparent; box-shadow: inset 0 -1px 0 var(--ink);
+}
+.tw[data-stuck="1"] thead th {
+  box-shadow: inset 0 -1px 0 var(--ink), 0 9px 12px -12px rgba(28, 23, 16, .55);
+}
+.card .tw[data-upgraded="scroll"] thead th { background: var(--card); }
+.tw th[data-sortable] {
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.tw th[data-sortable]:hover { color: var(--accent); }
+.tw th[data-sortable]:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: -3px;
+}
+.tw th[data-sortable] .arrow { display: none; }
+
+/* A CSS caret after the header label; plain headers get it after their text. */
+.tw th[data-sortable] .th::after,
+.tw th[data-sortable].sort-plain::after {
+  content: "";
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-left: 6px;
+  border-right: 1.4px solid var(--accent);
+  border-bottom: 1.4px solid var(--accent);
+  transform: rotate(-135deg);
+  opacity: 0;
+  transition: opacity .12s ease, transform .12s ease;
+}
+.tw th[data-sortable="asc"] .th::after,
+.tw th[data-sortable="asc"].sort-plain::after,
+.tw th[data-sortable="desc"] .th::after,
+.tw th[data-sortable="desc"].sort-plain::after { opacity: 1; }
+.tw th[data-sortable="desc"] .th::after,
+.tw th[data-sortable="desc"].sort-plain::after { transform: rotate(45deg); }
+.tw th[data-sortable="none"]:hover .th::after,
+.tw th[data-sortable="none"].sort-plain:hover::after { opacity: .4; }
+
+.tw tbody tr[data-rowlink] { cursor: pointer; }
+.tw tbody tr[data-rowlink] td { transition: background-color .12s ease; }
+.tw tbody tr[data-rowlink]:hover td,
+.tw tbody tr[data-rowlink]:focus-visible td { background: rgba(28, 23, 16, .045); }
+.tw tbody tr[data-rowlink]:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: -2px;
+}
+/* The optional app.js holding link (INTEGRATION NOTE) must remain a 28px target. */
+a.tick[href] {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  text-decoration: none;
+}
+
+/* Long tables scroll inside their frame; the header stays put. */
+@media (min-width: 601px) {
+  .tw[data-long="1"] {
+    max-height: clamp(320px, calc(100vh - 160px), 760px);
+    overflow: auto;
+  }
+}
+.tw[data-overflow="1"][data-end="0"] {
+  box-shadow: inset -18px 0 16px -16px rgba(28, 23, 16, .35);
+}
+.tw[data-upgraded="scroll"]:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+/* ---- copyable identifiers ---- */
+.copyable {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  vertical-align: middle;
+}
+.copyable code {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.copy-id {
+  flex: none;
+  height: 28px;
+  min-height: 28px;
+  padding: 0 6px;
+  border: 1px solid transparent; border-radius: 2px; background: transparent; color: var(--muted);
+  font: 9.5px/1 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color .12s ease, border-color .12s ease, background-color .12s ease;
+}
+.copy-id:hover {
+  border-color: var(--hairline);
+  background: var(--card);
+  color: var(--ink);
+}
+.copy-id:focus-visible { border-color: var(--ink); }
+.copy-id[data-copied="1"] { color: var(--good); border-color: var(--good); }
+.copy-id[data-copied="0"] { color: var(--accent); border-color: var(--accent); }
+@media (hover: none) {
+  .copy-id { border-color: var(--hairline); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tw, .tw tbody tr[data-rowlink] td, .tw th[data-sortable] .th::after,
+  .tw th[data-sortable].sort-plain::after, .copy-id { transition: none !important; }
+}

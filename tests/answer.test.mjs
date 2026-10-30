@@ -39,3 +39,19 @@ test("the committed panel question is never mangled by cleaning", () => {
   const body = "First point.\n\nSecond point.\n\nThird point.";
   assert.equal(cleanAnswer(body), body);
 });
+
+test("an untagged scratchpad before a three-newline seam is dropped", () => {
+  // The exact shape MiniMax M2.7 returned on 2026-10-30 through the fallback chain.
+  const raw = "2. Even in-sample, the BH q = 0.164 exceeds the 0.10 threshold\n\n"
+    + "The detectability data shows the effect is only 75.8% of what is needed.\n\n\n"
+    + "Disney is not flagged for two reasons. The flag rule requires an out-of-sample test, "
+    + "and the held-out slice is frozen at this Qloo vintage, so the test cannot complete.";
+  const out = cleanAnswer(raw);
+  assert.equal(out.startsWith("Disney is not flagged for two reasons."), true, "the answer is kept");
+  assert.equal(/Even in-sample/.test(out), false, "the scratchpad is gone");
+});
+
+test("a short tail after a seam is not treated as the answer", () => {
+  const raw = "A long first paragraph that is the answer.\n\n\nEnd.";
+  assert.equal(cleanAnswer(raw), raw);
+});

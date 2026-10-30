@@ -43,12 +43,22 @@ try {
   await send("Page.enable");
   await send("Emulation.setDeviceMetricsOverride", { width: WIDTH, height: HEIGHT, deviceScaleFactor: 1, mobile: false });
   await send("Page.navigate", { url: `${URL_BASE}/${HASH}` });
-  await sleep(1600);
-  const res = await send("Runtime.evaluate", {
-    expression: `(() => { const el = document.querySelector(${JSON.stringify(SELECTOR)}); if (!el) return "missing"; el.scrollIntoView({ block: "start" }); window.scrollBy(0, -${PAD}); return "ok"; })()`,
-    returnByValue: true,
+  // A heavy route (the evidence page reads nine JSON files and builds a dozen
+  // tables) is not ready at a fixed 1.6 s; wait for the selector instead of for the
+  // clock, so a slow render becomes a longer wait rather than a "missing" error.
+  let found = false;
+  for (let i = 0; i < 40 && !found; i++) {
+    await sleep(400);
+    const probe = await send("Runtime.evaluate", {
+      expression: `!!document.querySelector(${JSON.stringify(SELECTOR)})`,
+      returnByValue: true,
+    });
+    found = probe.result?.value === true;
+  }
+  if (!found) throw new Error(`selector ${SELECTOR} not found on ${HASH}`);
+  await send("Runtime.evaluate", {
+    expression: `(() => { const el = document.querySelector(${JSON.stringify(SELECTOR)}); el.scrollIntoView({ block: "start" }); window.scrollBy(0, -${PAD}); })()`,
   });
-  if (res.result?.value !== "ok") throw new Error(`selector ${SELECTOR} not found on ${HASH}`);
   await sleep(400);
   const shot = await send("Page.captureScreenshot", { format: "png" });
   mkdirSync(dirname(OUT), { recursive: true });
