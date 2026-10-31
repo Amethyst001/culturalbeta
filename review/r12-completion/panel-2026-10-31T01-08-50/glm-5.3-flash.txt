@@ -1,0 +1,32 @@
+```json
+{
+  "scores": {
+    "Technological Implementation": 22,
+    "Design": 21,
+    "Potential Impact": 16,
+    "Quality of the Idea": 20
+  },
+  "justifications": {
+    "Technological Implementation": "The re-estimation block authored by the served pipeline, vintage replay with integrity-break-on-drift, red-team artifact fixed in code (oosTestable gating), and 174 tests against a deterministic replay of 47 pages from real cached Qloo responses is genuinely disciplined engineering, not narration.",
+    "Design": "Replay toggle with an explicit 'not a live revision' banner, the bound promoted to headline copy with an in-sample caveat, and logos/search/copy-receipts make a coherent desk; the 55-vs-102-week confound in the flagship DIS number is surfaced but unresolved in the primary display.",
+    "Potential Impact": "The honest product is a rigorous demonstration that cultural taste data adds ~0.67 ΔR² against a 13.7-point MDE — a credible methodological contribution, but 'we can't detect any effect' is a hard sell to a real audience of desks or investors, and no user beyond the author is evidenced.",
+    "Quality of the Idea": "Cultural beta as a priced regressor with a pre-registered gate, power analysis, permutation placebos, and a revision-triggered self-re-estimating answer is a non-obvious and honest use of Qloo; the idea's ceiling is capped by the same null it reports."
+  },
+  "total": 79,
+  "fatal_flaw": "The core empirical result remains a null: 0/80 flags, 20× under-powered, hold-out frozen — so the panel must award a prize to a product whose own headline is that Qloo's data does not (yet, detectably) move returns; the re-estimation theater cannot change that arithmetic, and the DIS 52.77→43.81 move is confounded by 55-vs-102-week sample length, so even the dramatic 'inference' moment does not isolate the revision.",
+  "remaining_issues": [
+    "Re-estimation fires on at most two cited entities per question — most of the book is never re-estimated on `moved`; the gate is inference-level only for the names the user happens to name.",
+    "Committed-vs-re-estimated pairs mix revision change with a 47-week sample-length difference; the coefficient-moving shape is 'consistent with' a revision but not attributable to one — no decomposition is offered.",
+    "The replay's headline (DIS 52.775 → 43.809, median |Δβ| 0.589) is the confounded comparison presented as the flagship number, however small the print.",
+    "The hold-out is still frozen; the impact claim rests entirely on a dated promise (re-test by 2027-01-31) that no judge can verify.",
+    "MDE is two-sided for a one-sided rule — stated but not corrected, so every power number on the page is inflated.",
+    "Rank fragility (median |Δβ| 11.1 across basket constructions) means the per-name cultural betas, the only interpretable output, are unstable even while the flag count is robust.",
+    "Pre-registered second window is untestable (58/106 weeks) — the design's own replication path is dead at this vintage.",
+    "Freshness attestation covers only three entities per question on a 15-minute cache; the rest of the book can silently ride a stale revision."
+  ],
+  "gate_and_replay_verdict": {
+    "closes_round_11_objection": false,
+    "argument": "It relocates the objection. Round 11's charge was that `moved` served committed betas without recomputation; round 12 makes the server genuinely re-run the estimator and attach its output to the answer payload — that is a real structural fix, not model-narrated prose, and the replay adds vintage reproducibility with an integrity checker. But the closure is partial in three ways. First, scope: re-estimation touches up to two cited entities per question, so the desk's default behavior on a moved revision is still to serve 101 committed betas with a two-name addendum — the gate is inference-level at the margin and witness-level everywhere else. Second, attribution: the re-estimated value is computed on a 55-week vintage against a 102-week committed panel, so the 52.77→43.81 move conflates the Qloo revision with sample length; 'the whole move lands in the coefficient' is the right shape but proves nothing about which cause produced it — the objection is answered mechanically, not evidentially. Third, consequence: since the flag rule and gate verdicts do not change (0 flag flips in replay), the inference that matters — whether cultural beta is priced — is identical whether or not the gate re-runs. The witness/inference gap is closed for the two names in the answer block and relocated into the confound and the coverage gap for the rest of the book."
+  }
+}
+```

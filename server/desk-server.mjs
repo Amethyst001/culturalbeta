@@ -23,7 +23,8 @@ import { ols } from "../src/ols.mjs";
 import { loadUniverse } from "../src/universe.mjs";
 import { computeBudget, spentFromCache } from "../src/budget.mjs";
 import { createDeskTools, readProviders, askQuestion, collectReceipts, LIMITS } from "../src/agent.mjs";
-import { withLiveTools, liveStatus, createFreshnessChecker, freshnessGateReason, attestationGate, FRESHNESS, LIVE, entitiesFor, tickersInQuestion } from "../src/live-qloo.mjs";
+import { withLiveTools, liveStatus, createFreshnessChecker, freshnessGateReason, attestationGate, createLiveTools, FRESHNESS, LIVE, entitiesFor, tickersInQuestion } from "../src/live-qloo.mjs";
+import { reestimateAfterRevision, revisionAddendum, revisionPayload } from "../src/reestimate.mjs";
 
 const PORT = Number(process.env.PORT || 8811);
 const OUT = process.env.CULTURALBETA_OUTPUT_DIR ? resolve(process.env.CULTURALBETA_OUTPUT_DIR) : resolve(ROOT, "output");
@@ -117,8 +118,13 @@ function claimInterval(r) {
   return (q.hi - q.lo) > (f.hi - f.lo) ? "refit per draw" : "fixed coefficients";
 }
 
-function productRow(r) {
+function productRow(r, testable = null) {
   const ok = r.status === "ok";
+  // A frozen scored slice cannot support a row-level out-of-sample reading: the
+  // coefficient is multiplied by a zero regressor, so the number is the training
+  // fit's perturbation, not a test. The product surface withholds it rather than
+  // letting an ingestion client read DIS -5.8 as a reversal.
+  const oosTestable = ok ? testable !== false : null;
   return {
     ticker: r.ticker,
     label: r.label,
@@ -145,14 +151,15 @@ function productRow(r) {
     r2: ok ? r.r2 : null,
     r2Market: ok ? r.r2Market : null,
     deltaR2: ok ? r.deltaR2 : null,
-    oosDeltaR2: ok ? r.oos?.deltaR2 ?? null : null,
-    oosDeltaR2FixedLo: ok ? r.oosFixed?.lo ?? null : null,
-    oosDeltaR2FixedHi: ok ? r.oosFixed?.hi ?? null : null,
-    oosDeltaR2RefitLo: ok ? r.oosRefit?.lo ?? null : null,
-    oosDeltaR2RefitHi: ok ? r.oosRefit?.hi ?? null : null,
+    oosTestable,
+    oosDeltaR2: oosTestable ? r.oos?.deltaR2 ?? null : null,
+    oosDeltaR2FixedLo: oosTestable ? r.oosFixed?.lo ?? null : null,
+    oosDeltaR2FixedHi: oosTestable ? r.oosFixed?.hi ?? null : null,
+    oosDeltaR2RefitLo: oosTestable ? r.oosRefit?.lo ?? null : null,
+    oosDeltaR2RefitHi: oosTestable ? r.oosRefit?.hi ?? null : null,
     // Which of the two intervals the grade uses for this row: the wider one. A
     // single field so a downstream consumer cannot quietly pick the narrow one.
-    oosClaimInterval: ok ? claimInterval(r) : null,
+    oosClaimInterval: oosTestable ? claimInterval(r) : null,
     placeboP: ok ? r.placeboP ?? null : null,
     culturalQ: ok ? r.culturalQ ?? null : null,
     flagged: ok ? Boolean(r.flagged) : null,
@@ -160,7 +167,8 @@ function productRow(r) {
     audience: ok && r.audience ? {
       culturalBeta: r.audience.culturalBeta,
       culturalT: r.audience.culturalT,
-      oosDeltaR2: r.audience.oos?.deltaR2 ?? null,
+      oosTestable,
+      oosDeltaR2: oosTestable ? r.audience.oos?.deltaR2 ?? null : null,
       basket: r.audience.members,
     } : null,
     secondWindow: ok && r.secondary ? {
@@ -182,6 +190,7 @@ function productRow(r) {
 }
 
 function panelFeed({ desk, revision }) {
+  const testable = desk.valueAdd?.oos?.scoring?.testable ?? null;
   return {
     schema: SCHEMA_VERSION,
     revision,
@@ -193,7 +202,7 @@ function panelFeed({ desk, revision }) {
     factorConstruction: desk.factorConstruction,
     valueAdd: desk.valueAdd,
     sampleFloor: desk.sampleFloor,
-    rows: desk.rows.map(productRow),
+    rows: desk.rows.map((r) => productRow(r, testable)),
   };
 }
 
@@ -219,7 +228,7 @@ function alertsFeed({ desk, revision }) {
   for (const r of priced) {
     const reasons = [];
     if (!r.flagged) reasons.push("cultural beta is not negative at |t| >= 2");
-    if (oosTestable === false) reasons.push(`the held-out slice is frozen for every name at this Qloo vintage (last revision ${sc.lastMove})`);
+    if (oosTestable === false) reasons.push(`the held-out slice is frozen for every name at this Qloo vintage (taste series last moved ${sc.lastMove})`);
     else if (!(r.oos?.deltaR2 > 0)) reasons.push("no out-of-sample support for this name");
     if (!(bookP !== null && bookP <= BOOK_P_MAX)) reasons.push("book placebo is not separable at p <= 0.10");
     const base = {
@@ -227,7 +236,8 @@ function alertsFeed({ desk, revision }) {
       label: r.label,
       culturalBeta: r.culturalBeta,
       culturalT: r.culturalT,
-      oosDeltaR2: r.oos?.deltaR2 ?? null,
+      oosTestable,
+      oosDeltaR2: oosTestable === false ? null : r.oos?.deltaR2 ?? null,
       placeboP: r.placeboP ?? null,
     };
     if (reasons.length) suppressed.push({ ...base, reasons, plain: `${r.label} is not alerted: ${reasons.join("; ")}.` });
@@ -255,7 +265,7 @@ function alertsFeed({ desk, revision }) {
     note: status === "watchlist-only"
       ? `This is a read of the committed panel for the ${desk.window.weeks} weeks ending ${desk.window.end}, not a live monitor. ${[
         bookP === null ? "There is no book-level null" : `The book-level placebo is p ${bookP.toFixed(2)}`,
-        oosTestable === false ? `the held-out slice is frozen for every name (last Qloo revision ${sc.lastMove})` : null,
+        oosTestable === false ? `the held-out slice is frozen for every name (taste series last moved ${sc.lastMove})` : null,
       ].filter(Boolean).join(" and ")}, so no name can clear the rule and the feed can only be a watchlist: the suppressed entries carry each name's measured headwind and the exact test it did not clear.`
       : `This is a read of the committed panel for the ${desk.window.weeks} weeks ending ${desk.window.end}, not a live monitor; the book-level placebo is p ${bookP === null ? "—" : bookP.toFixed(2)}.`,
     window: { start: desk.window.start, end: desk.window.end, weeks: desk.window.weeks },
@@ -281,14 +291,13 @@ function csvCell(v) {
 }
 
 function panelCsv(feed) {
-  // Book-level, repeated per row so a spreadsheet cannot read oosDeltaR2 as a
-  // test result without the field that says whether the slice could test anything.
-  const testable = feed.valueAdd?.oos?.scoring?.testable ?? null;
+  // Per-row testability travels with the row, so a spreadsheet cannot read
+  // oosDeltaR2 as a test result without the field that says whether the slice
+  // could test anything. When the book is frozen the product rows carry null.
   const head = CSV_COLUMNS.join(",");
   const body = feed.rows.map((r) => CSV_COLUMNS.map((c) => csvCell(
-    c === "oosTestable" ? testable
-      : c === "resolutionClass" ? r.resolution?.failure ?? null
-        : r[c],
+    c === "resolutionClass" ? r.resolution?.failure ?? null
+      : r[c],
   )).join(","));
   return [head, ...body].join("\n") + "\n";
 }
@@ -383,6 +392,132 @@ async function attestation(checker, refs = null) {
   }
 }
 
+// The gate stops being a label here. When the attestation reports a revision newer
+// than the panel tail, the affected names are re-estimated with the same live tool
+// the analyst can call, and the answer prints committed and re-estimated side by side.
+// Memoised on the attestation stamp so a cached answer and a second click in the same
+// 15-minute freshness window reuse one re-estimate instead of spending again.
+const reestimateCache = new Map();
+
+async function reestimateFor(loaded, freshness, gate, desk = loaded.desk) {
+  if (gate?.state !== "moved" || !liveStatus().enabled) return null;
+  const stamp = `${loaded.revision}|${gate.stamp}`;
+  if (reestimateCache.has(stamp)) return reestimateCache.get(stamp);
+  const moved = (freshness?.entities ?? []).filter((e) => e.checked && e.verdict === "qloo_has_a_newer_revision");
+  if (!moved.length) return null;
+  // Its own tool instance and its own call budget: the analyst's one live read is a
+  // separate allowance from the re-estimate the gate is obliged to run.
+  const tools = createLiveTools({ desk, state: { liveCalls: 0 } });
+  const run = tools.get("live_cultural_beta")?.run;
+  const value = await reestimateAfterRevision({ moved, run, max: 2 });
+  reestimateCache.set(stamp, value);
+  if (reestimateCache.size > 20) reestimateCache.delete(reestimateCache.keys().next().value);
+  console.log(`gate: moved → re-estimated ${value.tickers.join(",") || "none"} (${value.spent} new, ${value.replayed} replayed)`);
+  return value;
+}
+
+function movedFrom(freshness) {
+  return (freshness?.entities ?? []).filter((e) => e.checked && e.verdict === "qloo_has_a_newer_revision");
+}
+
+// ---- replay -------------------------------------------------------------------
+// The live gate cannot fire today: Qloo's newest revision is already in the panel,
+// so a fresh pull reports "newer weeks, no newer signal". A reviewer can therefore
+// never watch the gate do its job. Replay runs the identical machinery against the
+// desk as it stood before the real 2025-12-22 revision: the same cached responses,
+// the same estimator, the same gate. Nothing is synthetic — the pre-revision betas
+// come from replaying the committed series through the committed estimator
+// (output/revision-replay.json), and the live pull is the real one.
+const replayCheckers = new Map();
+
+const REPLAY_CAVEAT = "Replay caveat: the pre-revision vintage is 55 weeks against 102, so this pair mixes the revision with sample length — see the replay artifact for what the comparison cannot separate.";
+
+function loadReplay(asOf) {
+  const day = String(asOf ?? "").slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return null;
+  const f = resolve(OUT, "revision-replay.json");
+  if (!existsSync(f)) return null;
+  try {
+    const art = JSON.parse(readFileSync(f, "utf8"));
+    if (!art?.revisionWeek || !Array.isArray(art.movers)) return null;
+    const before = new Map(art.movers.map((m) => [String(m.ticker), Number(m.betaBefore)]).filter(([, v]) => Number.isFinite(v)));
+    return {
+      asOf: day,
+      revisionWeek: art.revisionWeek,
+      through: art.vintageBefore?.through ?? day,
+      lastRevision: art.vintageBefore?.lastRevision ?? art.vintageBefore?.through ?? day,
+      before,
+      art,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function replayMeta(replay) {
+  if (!replay) return null;
+  return {
+    // The desk vintage and the probe week are different days: the panel is sliced
+    // to the vintage before the revision, the probe is pinned to the revision week.
+    asOf: replay.through,
+    through: replay.through,
+    revisionWeek: replay.revisionWeek,
+    askedAt: replay.asOf,
+    lastRevision: replay.lastRevision,
+    note: `Replay of the desk as it stood before Qloo's ${replay.revisionWeek} revision (panel tail ${replay.through}), with the live probe pinned to ${replay.asOf}. The pre-revision betas were recomputed offline from the committed series with the committed estimator; the Qloo pull behind the re-estimate is real cached data.`,
+  };
+}
+
+function replayDeskFor(desk, replay) {
+  const va = desk.valueAdd ?? {};
+  return {
+    ...desk,
+    window: { ...(desk.window ?? {}), end: replay.through },
+    valueAdd: { ...va, oos: { ...(va.oos ?? {}), scoring: { ...(va.oos?.scoring ?? {}), lastMove: replay.lastRevision } } },
+    rows: (desk.rows ?? []).map((r) => (replay.before.has(String(r.ticker)) ? { ...r, culturalBeta: replay.before.get(String(r.ticker)) } : r)),
+  };
+}
+
+// In replay the gate must read the members of the cited basket, not the one
+// representative the live gate would pick: the 2025-12-22 move is the basket's,
+// and a single member (the desk's reference entity) can be flat through it. Three
+// highest-weight members is the same three-page bound the live gate already uses,
+// and the feed still decides what came back.
+function replayRefs(desk, question) {
+  const rows = desk?.rows ?? [];
+  const cited = tickersInQuestion(question, desk);
+  const row = (cited.length ? rows.find((r) => String(r.ticker).toUpperCase() === cited[0]) : null)
+    ?? rows.find((r) => String(r.ticker).toUpperCase() === "DIS" && (r.basket ?? []).length)
+    ?? rows.find((r) => (r.basket ?? []).length);
+  if (!row) return null;
+  const usable = (row.basket ?? [])
+    .filter((m) => m?.id && m?.type)
+    .sort((a, b) => (Number(b.weight) || 0) - (Number(a.weight) || 0));
+  return usable.slice(0, 3).map((m) => ({
+    ticker: row.ticker,
+    sector: row.sector ?? null,
+    id: m.id,
+    name: m.name,
+    type: m.type,
+    weight: Number(m.weight) || 0,
+  }));
+}
+
+function replayChecker(desk, series, revisionWeek) {
+  if (!replayCheckers.has(revisionWeek)) {
+    // The probe is pinned to the week the revision landed, not to the vintage date:
+    // the trend endpoint returns only the newest twenty weeks before its end date,
+    // so a window ending 2025-12-01 predates the move and a window ending today is
+    // past it. Ending exactly on 2025-12-22 is the one window that contains the
+    // real change, and it is a real pull at a real date. Only the probe is pinned:
+    // the checker's own clock stays real, or a cached failure would never expire.
+    const probeClock = () => Date.parse(`${revisionWeek}T12:00:00Z`);
+    replayCheckers.set(revisionWeek, createFreshnessChecker({ desk, series, probeClock }));
+    if (replayCheckers.size > 4) replayCheckers.delete(replayCheckers.keys().next().value);
+  }
+  return replayCheckers.get(revisionWeek);
+}
+
 function clientIp(req) {
   const fwd = String(req.headers["x-forwarded-for"] || "").split(",")[0].trim();
   return fwd || req.socket.remoteAddress || "unknown";
@@ -452,21 +587,29 @@ const server = createServer(async (req, res) => {
     const question = String(body?.question ?? "").trim();
     if (!question) return send(res, 400, JSON.stringify({ error: "EMPTY_QUESTION" }));
     if (question.length > LIMITS.maxQuestionChars) return send(res, 400, JSON.stringify({ error: "QUESTION_TOO_LONG", max: LIMITS.maxQuestionChars }));
-    const checker = freshnessCheckerFor(loaded);
-    const key = `${loaded.revision}|${question.toLowerCase()}`;
+    const replay = loadReplay(body?.replay);
+    const activeDesk = replay ? replayDeskFor(loaded.desk, replay) : loaded.desk;
+    const checker = replay ? replayChecker(activeDesk, loaded.series, replay.revisionWeek) : freshnessCheckerFor(loaded);
+    const key = `${loaded.revision}|${question.toLowerCase()}${replay ? `|replay:${replay.asOf}` : ""}`;
     const hit = askCache.get(key);
     if (hit) {
       // The answer text may be reused; the attestation may not be. A cached answer
       // is still re-attested, and the checker's own book cache means that costs a
       // request at most once every cacheMinutes, not once per click.
-      const freshness = await attestation(checker, entitiesFor(loaded.desk, tickersInQuestion(question, loaded.desk)));
-      const gate = attestationGate(freshness);
+      const freshness = await attestation(checker, replay ? replayRefs(activeDesk, question) : entitiesFor(activeDesk, tickersInQuestion(question, activeDesk)));
+      const base = attestationGate(freshness);
+      const reestimation = await reestimateFor(loaded, freshness, base, activeDesk);
+      const addendum = reestimation ? revisionAddendum({ moved: movedFrom(freshness), reestimation, caveat: replay ? REPLAY_CAVEAT : null }) : null;
+      const gate = addendum ? { ...base, note: `${base.note} ${addendum}` } : base;
       return send(res, 200, JSON.stringify({
         ...hit,
+        answer: addendum ? `${hit.answer}\n\n${addendum}` : hit.answer,
         cached: true,
+        replay: replayMeta(replay),
         freshness,
         attestation: gate,
-        receipts: collectReceipts({ desk: loaded.desk, revision: loaded.revision, trace: hit.trace, freshness, attestation: gate }),
+        reestimation: revisionPayload(reestimation, movedFrom(freshness)),
+        receipts: collectReceipts({ desk: activeDesk, revision: loaded.revision, trace: hit.trace, freshness, attestation: gate }),
       }));
     }
     const limit = askAllowed(clientIp(req), Date.now());
@@ -477,12 +620,12 @@ const server = createServer(async (req, res) => {
     const started = Date.now();
     try {
       const live = liveStatus();
-      const tools = live.enabled ? withLiveTools(loaded.tools, { desk: loaded.desk, state: { liveCalls: 0 } }) : loaded.tools;
+      const tools = live.enabled ? withLiveTools(loaded.tools, { desk: activeDesk, state: { liveCalls: 0 } }) : loaded.tools;
       // Asked at the same moment as the model, so its round trip is never added to
       // the answer's latency; the await below only waits for whatever is left.
       // The names the question cites, so the receipt matches the claim; one row per
       // sub-sector otherwise, so a question about the book is attested by the book.
-      const refs = entitiesFor(loaded.desk, tickersInQuestion(question, loaded.desk));
+      const refs = replay ? replayRefs(activeDesk, question) : entitiesFor(activeDesk, tickersInQuestion(question, activeDesk));
       const freshP = attestation(checker, refs);
       const out = await askQuestion({ question, tools, providers: AGENT_PROVIDERS });
       const freshness = await freshP;
@@ -492,13 +635,19 @@ const server = createServer(async (req, res) => {
       // the answer's status, and a check it could not run is stamped as unattested
       // rather than left to look like a pass.
       const gate = attestationGate(freshness);
-      const receipts = collectReceipts({ desk: loaded.desk, revision: loaded.revision, trace: clean.trace, freshness, attestation: gate });
-      const payload = { ...clean, freshness, attestation: gate, receipts, ms: Date.now() - started, cached: false, readOnly: true, live: liveStatus().enabled, limits: agentStatus().limits };
+      const reestimation = await reestimateFor(loaded, freshness, gate, activeDesk);
+      const addendum = reestimation ? revisionAddendum({ moved: movedFrom(freshness), reestimation, caveat: replay ? REPLAY_CAVEAT : null }) : null;
+      const answer = addendum ? `${clean.answer}\n\n${addendum}` : clean.answer;
+      const receipts = collectReceipts({ desk: activeDesk, revision: loaded.revision, trace: clean.trace, freshness, attestation: gate });
+      const payload = { ...clean, answer, replay: replayMeta(replay), freshness, attestation: addendum ? { ...gate, note: `${gate.note} ${addendum}` } : gate, reestimation: revisionPayload(reestimation, movedFrom(freshness)), receipts, ms: Date.now() - started, cached: false, readOnly: true, live: liveStatus().enabled, limits: agentStatus().limits };
       // What is cached is the text and its trace, never the attestation: the next
       // answer must carry one asked after it, not one from the first.
-      const { freshness: _omitF, receipts: _omitR, attestation: _omitA, ...storable } = payload;
+      const { freshness: _omitF, receipts: _omitR, attestation: _omitA, reestimation: _omitS, ...storable } = payload;
+      // The addendum is stamped with the attestation that produced it, so only the
+      // model's own text is cached; the next answer re-derives the re-estimate (from
+      // the memo inside the freshness window) against its own fresh attestation.
       if (askCache.size >= ASK_CACHE_MAX) askCache.delete(askCache.keys().next().value);
-      askCache.set(key, storable);
+      askCache.set(key, { ...storable, answer: clean.answer });
       console.log(`agent: ${question.length} chars, ${clean.toolCalls} tools, ${clean.rounds} rounds, ${clean.provider}, ${payload.ms}ms, freshness ${freshness.checked ? `checked ${freshness.verdict} (${freshness.requests} qloo reqs)` : `not checked: ${freshness.why}`}`);
       return send(res, 200, JSON.stringify(payload));
     } catch (e) {
@@ -510,6 +659,13 @@ const server = createServer(async (req, res) => {
   if (url.pathname === "/api/series.json") {
     const f = resolve(OUT, "series.json");
     if (!existsSync(f)) return send(res, 503, JSON.stringify({ error: "QLOO_REQUIRED", message: "No series without Qloo." }));
+    return send(res, 200, readFileSync(f));
+  }
+  if (url.pathname === "/api/revision-replay.json") {
+    // Real-data replay of the 2025-12-22 revision: the desk as it stood before it,
+    // re-estimated with the committed estimator. Built offline by scripts/revision-replay.mjs.
+    const f = resolve(OUT, "revision-replay.json");
+    if (!existsSync(f)) return send(res, 503, JSON.stringify({ error: "REPLAY_NOT_BUILT", message: "Run node scripts/revision-replay.mjs to compute the replay from the committed series." }));
     return send(res, 200, readFileSync(f));
   }
   if (url.pathname === "/api/mde.json") {

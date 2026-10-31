@@ -1,0 +1,116 @@
+[
+  {
+    "id": "claude-fable-5-1",
+    "label": "Abhibots / Claude Fable 5.1",
+    "endpoint": "https://opus.abhibots.com/v1/chat/completions",
+    "keyVar": "ABHIBOTS_API_KEY",
+    "model": "claude-fable-5-1",
+    "maxTokens": 8000,
+    "gap": 20000,
+    "extraHeaders": {},
+    "ok": true,
+    "verdict": {
+      "technical_implementation": {
+        "score": 15,
+        "justification": "The estimator-gate re-run, integrity-checked replay on cached responses, and per-row oos gating are real, non-trivial plumbing, but the headline statistic remains an in-sample non-detection with a 55 vs 102-week mixed vintage and a frozen hold-out, so the Qloo pipeline's inference output is a null bound, not a measured effect."
+      },
+      "design": {
+        "score": 12,
+        "justification": "The desk is a finished product with coherent surfaces (book, tables, replay toggle, receipts, logos), yet the central claim is that the product cannot detect its own effect, and the landing page now leads with a 20x power shortfall, which undermines the product's value proposition more than any visual polish can repair."
+      },
+      "potential_impact": {
+        "score": 5,
+        "justification": "An in-sample non-detection of +0.67 points in R-square against a 13.7-point MDE, with a frozen hold-out and a re-test date in January 2027, cannot support a credible case that this solves a real problem for a real audience in practice; the impact ceiling is explicitly the one change that was not affordable before the deadline."
+      },
+      "quality_of_idea": {
+        "score": 18,
+        "justification": "Running a weekly cultural-taste basket from population percentiles through a two-regressor OLS with BH and permutation placebos is a creative, non-obvious use of Qloo data, and the team's understanding of the null/red-team is strong, though the category (consumer-equity desk built on cultural beta) is so narrow that the idea's power depends on Qloo's percentiles moving again."
+      },
+      "fatal_flaw": "The product's core claim is a non-detection: the in-sample R-square increment is about 20x smaller than the MDE, the hold-out is frozen at the current Qloo vintage, and the only fix is a re-test scheduled for 2027-01-31, so judges are being asked to prize a desk whose numbers prove it cannot see the effect it sells.",
+      "full_list_ranked": [
+        "The MDE is two-sided-quantile bound for a one-sided flag rule, stated but not corrected.",
+        "The pre-registered second window is untestable (58/106 weeks covered, below the 100-week floor).",
+        "The 55-week replay vintage against 102 committed weeks mixes revision with sample length in every committed-vs-re-estimated pair.",
+        "Median |delta-beta| across basket constructions is 11.1, so rank fragility persists even though the flag count does not move.",
+        "KDP and DIS, the two strongest names in opposite directions, both fail their respective sign/|t|/q gates, which means the null bound, not a signal, is the headline.",
+        "The landing copy now leads with the 20x power shortfall and a January 2027 re-test date, reframing the product as a monitoring desk awaiting data rather than a signal source."
+      ],
+      "does_it_close_round_11": "It relocates the objection, not closes it. Re-running the estimator and serving committed vs re-estimated betas inside the answer makes the gate inference-level for the regression, but the shipped artifact is still a null: a 13.7-point MDE against a 0.67-point in-sample effect and a frozen hold-out mean the desk's inference-level dependency is that it cannot detect a signal in its own data, which is the same witness-level limitation dressed in estimator language."
+    },
+    "finish": "stop",
+    "usage": {
+      "prompt_tokens": 6526,
+      "completion_tokens": 776,
+      "total_tokens": 7302
+    },
+    "ms": 13575
+  },
+  {
+    "id": "glm-5.3-flash",
+    "label": "BeatAPI / GLM 5.3 Flash (free)",
+    "endpoint": "https://api.beatapi.io/v1/chat/completions",
+    "keyVar": "BEATAPI_API_KEY",
+    "model": "glm-5.3-flash-free",
+    "maxTokens": 8000,
+    "gap": 65000,
+    "ok": true,
+    "verdict": {
+      "scores": {
+        "Technological Implementation": 22,
+        "Design": 21,
+        "Potential Impact": 16,
+        "Quality of the Idea": 20
+      },
+      "justifications": {
+        "Technological Implementation": "The re-estimation block authored by the served pipeline, vintage replay with integrity-break-on-drift, red-team artifact fixed in code (oosTestable gating), and 174 tests against a deterministic replay of 47 pages from real cached Qloo responses is genuinely disciplined engineering, not narration.",
+        "Design": "Replay toggle with an explicit 'not a live revision' banner, the bound promoted to headline copy with an in-sample caveat, and logos/search/copy-receipts make a coherent desk; the 55-vs-102-week confound in the flagship DIS number is surfaced but unresolved in the primary display.",
+        "Potential Impact": "The honest product is a rigorous demonstration that cultural taste data adds ~0.67 ΔR² against a 13.7-point MDE — a credible methodological contribution, but 'we can't detect any effect' is a hard sell to a real audience of desks or investors, and no user beyond the author is evidenced.",
+        "Quality of the Idea": "Cultural beta as a priced regressor with a pre-registered gate, power analysis, permutation placebos, and a revision-triggered self-re-estimating answer is a non-obvious and honest use of Qloo; the idea's ceiling is capped by the same null it reports."
+      },
+      "total": 79,
+      "fatal_flaw": "The core empirical result remains a null: 0/80 flags, 20× under-powered, hold-out frozen — so the panel must award a prize to a product whose own headline is that Qloo's data does not (yet, detectably) move returns; the re-estimation theater cannot change that arithmetic, and the DIS 52.77→43.81 move is confounded by 55-vs-102-week sample length, so even the dramatic 'inference' moment does not isolate the revision.",
+      "remaining_issues": [
+        "Re-estimation fires on at most two cited entities per question — most of the book is never re-estimated on `moved`; the gate is inference-level only for the names the user happens to name.",
+        "Committed-vs-re-estimated pairs mix revision change with a 47-week sample-length difference; the coefficient-moving shape is 'consistent with' a revision but not attributable to one — no decomposition is offered.",
+        "The replay's headline (DIS 52.775 → 43.809, median |Δβ| 0.589) is the confounded comparison presented as the flagship number, however small the print.",
+        "The hold-out is still frozen; the impact claim rests entirely on a dated promise (re-test by 2027-01-31) that no judge can verify.",
+        "MDE is two-sided for a one-sided rule — stated but not corrected, so every power number on the page is inflated.",
+        "Rank fragility (median |Δβ| 11.1 across basket constructions) means the per-name cultural betas, the only interpretable output, are unstable even while the flag count is robust.",
+        "Pre-registered second window is untestable (58/106 weeks) — the design's own replication path is dead at this vintage.",
+        "Freshness attestation covers only three entities per question on a 15-minute cache; the rest of the book can silently ride a stale revision."
+      ],
+      "gate_and_replay_verdict": {
+        "closes_round_11_objection": false,
+        "argument": "It relocates the objection. Round 11's charge was that `moved` served committed betas without recomputation; round 12 makes the server genuinely re-run the estimator and attach its output to the answer payload — that is a real structural fix, not model-narrated prose, and the replay adds vintage reproducibility with an integrity checker. But the closure is partial in three ways. First, scope: re-estimation touches up to two cited entities per question, so the desk's default behavior on a moved revision is still to serve 101 committed betas with a two-name addendum — the gate is inference-level at the margin and witness-level everywhere else. Second, attribution: the re-estimated value is computed on a 55-week vintage against a 102-week committed panel, so the 52.77→43.81 move conflates the Qloo revision with sample length; 'the whole move lands in the coefficient' is the right shape but proves nothing about which cause produced it — the objection is answered mechanically, not evidentially. Third, consequence: since the flag rule and gate verdicts do not change (0 flag flips in replay), the inference that matters — whether cultural beta is priced — is identical whether or not the gate re-runs. The witness/inference gap is closed for the two names in the answer block and relocated into the confound and the coverage gap for the rest of the book."
+      }
+    },
+    "finish": "stop",
+    "usage": {
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 2496,
+      "cached_tokens": 2496,
+      "completion_thinking_tokens": 162,
+      "completion_tokens": 1240,
+      "completion_tokens_details": {
+        "accepted_prediction_tokens": 0,
+        "audio_tokens": 0,
+        "cached_tokens": 0,
+        "reasoning_tokens": 162,
+        "rejected_prediction_tokens": 0
+      },
+      "prompt_cache_hit_tokens": 2496,
+      "prompt_cache_miss_tokens": 50,
+      "prompt_cache_write_tokens": 0,
+      "prompt_tokens": 2546,
+      "prompt_tokens_details": {
+        "accepted_prediction_tokens": 0,
+        "audio_tokens": 0,
+        "cached_tokens": 2496,
+        "reasoning_tokens": 0,
+        "rejected_prediction_tokens": 0
+      },
+      "total_tokens": 3786
+    },
+    "ms": 22307
+  }
+]

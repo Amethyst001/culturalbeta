@@ -145,7 +145,7 @@ const AUDIT_JS = (EXPECT, ASKQ) => String.raw`(async () => {
       wh.length + " basket blocks · " + stubRows + " stub rows · " + view.querySelectorAll(".wm-empty").length + " labelled state");
     // a single name's OOS number must carry both ranges and name the wider one
     const ht = view.innerText;
-    add("holding-two-intervals", !/Out of sample/.test(ht) || (/fixed coefficients 90% CI/.test(ht) && /refit per draw 90% CI/.test(ht) && /Claim carries on the/.test(ht)),
+    add("holding-two-intervals", !/Out of sample/.test(ht) || (/fixed coefficients 90% CI/.test(ht) && /refit per draw 90% CI/.test(ht) && /claim rests on the wider interval/i.test(ht)),
       /fixed coefficients 90% CI/.test(ht) ? "both intervals, claim line present" : "no interval block");
   }
 
@@ -178,8 +178,8 @@ const AUDIT_JS = (EXPECT, ASKQ) => String.raw`(async () => {
     const grade = chipEls[0]?.innerText.trim() || "";
     add("verdict-chips", chipEls.length >= 5 && /^(HOLDS|MARGINAL|FAILS|NO SIGNAL|NO SIGNAL \(IN-SAMPLE\)|IN-SAMPLE ONLY)$/.test(grade.toUpperCase()),
       chipEls.length + " chips, grade " + grade);
-    const noteChip = chipEls.map((c) => c.innerText.trim()).find((t) => /^(HOLDS|NO SIGNAL( \(IN-SAMPLE\))?|IN-SAMPLE ONLY|FAILS|MARGINAL|UNTESTABLE) =/.test(t)) || "";
-    add("verdict-note", /^(HOLDS|NO SIGNAL( \(IN-SAMPLE\))?|IN-SAMPLE ONLY|FAILS|MARGINAL|UNTESTABLE) =/.test(noteChip.toUpperCase()), noteChip ? noteChip.slice(0, 48) + "…" : "grade note missing");
+    const noteChip = chipEls.map((c) => c.innerText.trim()).find((t) => /^(HOLDS|NO SIGNAL( \(IN-SAMPLE\))?|IN-SAMPLE ONLY|FAILS|MARGINAL|UNTESTABLE|SECOND WINDOW UNTESTABLE) =/.test(t)) || "";
+    add("verdict-note", /^(HOLDS|NO SIGNAL( \(IN-SAMPLE\))?|IN-SAMPLE ONLY|FAILS|MARGINAL|UNTESTABLE|SECOND WINDOW UNTESTABLE) =/.test(noteChip.toUpperCase()), noteChip ? noteChip.slice(0, 48) + "…" : "grade note missing");
     // A frozen scored slice cannot grade a held-out test, so the grade word itself must say in-sample.
     if (chipEls.some((c) => /held-out slice frozen/i.test(c.innerText.trim()))) {
       add("grade-in-sample", /IN-SAMPLE/.test(grade.toUpperCase()), grade);
@@ -199,6 +199,21 @@ const AUDIT_JS = (EXPECT, ASKQ) => String.raw`(async () => {
         ratio == null ? "no ratio sentence on this build" : "states " + ratio + "× larger");
       add("basis-measured-in-points", measured == null ? true : measured >= 0.1 && measured <= 5,
         measured == null ? "no measured value printed" : "measured " + measured + " ΔR² points");
+      // Reading order: the finding and the state strip come before the book, and
+      // the data basis comes after the book rather than above it. This is the design
+      // change, so it is tested rather than left to the stylesheet.
+      const stripEl = view.querySelector('[data-audit="desk-strip"]');
+      const tableEl = view.querySelector('table[data-audit="holdings"]');
+      const basisEl = view.querySelector('[data-audit="basis"]');
+      add("landing-state-strip", !!stripEl && stripEl.querySelectorAll(".stat").length >= 4,
+        stripEl ? stripEl.querySelectorAll(".stat").length + " facts in the state strip" : "no state strip");
+      add("landing-finding-first", !!(line && stripEl && tableEl
+        && (line.compareDocumentPosition(stripEl) & Node.DOCUMENT_POSITION_FOLLOWING)
+        && (stripEl.compareDocumentPosition(tableEl) & Node.DOCUMENT_POSITION_FOLLOWING)),
+        "finding → state strip → table");
+      add("landing-caveats-below-table", !!(tableEl && basisEl
+        && (tableEl.compareDocumentPosition(basisEl) & Node.DOCUMENT_POSITION_FOLLOWING)),
+        basisEl ? "data basis follows the holdings table" : "no data-basis block");
     }
     // a name the factor could not reach must say why it was not reached, and how
     // hard the resolver looked — an unexplained gap reads as a broken pipeline
@@ -245,6 +260,21 @@ const AUDIT_JS = (EXPECT, ASKQ) => String.raw`(async () => {
     add("ask-suggestions", chips >= 3 || !!notice, chips + " suggestion chips");
     add("ask-no-answer-before-question", !view.querySelector('[data-audit="agent-answer"]'), "no answer rendered cold");
 
+    // Replay is opt-in: the ask page must offer the control, and a banner may only
+    // appear once a replay answer exists (or the URL explicitly asks for replay).
+    const rpBtn = view.querySelector('[data-audit="replay-toggle"]');
+    if (ASKQ) {
+      const rpRect = rpBtn ? rpBtn.getBoundingClientRect() : null;
+      const rpCs = rpBtn ? getComputedStyle(rpBtn) : null;
+      const rpVisible = !!rpBtn && !!rpRect && rpRect.width > 0 && rpRect.height > 0
+        && rpCs.display !== "none" && rpCs.visibility !== "hidden";
+      add("replay-control-present", rpVisible, rpBtn ? rpBtn.innerText.trim().slice(0, 70) : "no replay control");
+      const replayUrl = /[?&]replay=1(?:&|$)/.test(location.href);
+      const rpBanner = view.querySelector('[data-audit="replay-banner"]');
+      add("replay-banner-absent-by-default", replayUrl || !rpBanner,
+        rpBanner ? "banner present (replay=1 in URL: " + replayUrl + ")" : "no replay banner on the default run");
+    }
+
     // Freshness attestation: the desk must show one without a question ever being
     // asked, and it must never show a date the server did not get from Qloo.
     const chip = view.querySelector('[data-audit="freshness"]');
@@ -279,6 +309,10 @@ const AUDIT_JS = (EXPECT, ASKQ) => String.raw`(async () => {
     const answered = !!view.querySelector('[data-audit="agent-answer"]');
     const refused = !!view.querySelector(".ask-err") || !!notice;
     if (ASKQ) add("ask-answer-arrives", answered || refused, answered ? "answered" : refused ? (view.querySelector(".ask-err")?.innerText.trim().slice(0, 90) ?? "refused") : "no answer and no refusal");
+    // The receipt sits inside a collapsed <details>; innerText of hidden content is
+    // "", so open it before reading. The disclosure itself is graded separately.
+    const rcDetails = view.querySelector('[data-audit="receipt-details"]');
+    if (rcDetails && !rcDetails.open) rcDetails.open = true;
     const rcBlock = view.querySelector('[data-audit="receipts"]');
     const rows = rcBlock ? [...rcBlock.querySelectorAll(".rc")] : [];
     const headOf = (n) => (n.querySelector("b")?.innerText.trim() || "");
@@ -301,11 +335,13 @@ const AUDIT_JS = (EXPECT, ASKQ) => String.raw`(async () => {
     // state which of the three outcomes it reached.
     const gateEl = view.querySelector('[data-audit="attestation-gate"]');
     const gateState = gateEl?.getAttribute("data-state") ?? "";
-    // The answer's first prose paragraph, not the attestation line that sits above it.
+    // The answer's first prose paragraph, not the question label or the attestation
+    // line beside it. The design now puts the answer first and the one-line status
+    // immediately after it, so the order check reads in that direction.
     const answerEl = [...view.querySelectorAll(".ask-answer p")].find((p) => !p.classList.contains("ask-q") && !p.classList.contains("att")) || null;
-    const gateBeforeAnswer = !!(gateEl && answerEl && (gateEl.compareDocumentPosition(answerEl) & Node.DOCUMENT_POSITION_FOLLOWING));
-    add("ask-attestation-gate", answered ? !!gateEl && gateBeforeAnswer && /^(pass|moved|unattested)$/.test(gateState) && /att-[0-9a-f]{12}/.test(gateEl.innerText) : true,
-      gateEl ? gateState + " · " + (gateEl.innerText.match(/att-[0-9a-f]{12}/) || ["no stamp"])[0] + " · above the answer: " + gateBeforeAnswer : "no gate element");
+    const gateAfterAnswer = !!(gateEl && answerEl && (answerEl.compareDocumentPosition(gateEl) & Node.DOCUMENT_POSITION_FOLLOWING));
+    add("ask-attestation-gate", answered ? !!gateEl && gateAfterAnswer && /^(pass|moved|unattested)$/.test(gateState) && /att-[0-9a-f]{12}/.test(gateEl.innerText) : true,
+      gateEl ? gateState + " · " + (gateEl.innerText.match(/att-[0-9a-f]{12}/) || ["no stamp"])[0] + " · after the answer: " + gateAfterAnswer : "no gate element");
     add("ask-attestation-gate-is-not-a-pass-without-a-reading", !(gateState === "pass") || !!(FJ && FJ.checked),
       FJ ? "gate " + gateState + " vs check " + FJ.checked : "no freshness payload to compare");
     const evidenceRows = rows.filter((n) => /^live ·|^committed/.test(headOf(n)));
@@ -425,6 +461,26 @@ const AUDIT_JS = (EXPECT, ASKQ) => String.raw`(async () => {
       "what Qloo adds over the no-Qloo peer basket is stated, not inferred");
   }
   if (vw <= 600 && onDesk) {
+    // Below 600px the thead is hidden, so the mobile selector is the only sort
+    // affordance. It must be visible and drive the same order the desktop th does.
+    if (location.hash === "" || location.hash === "#/") {
+      const sortWrap = view.querySelector('[data-audit="mobile-sort"]');
+      const sortSel = sortWrap?.querySelector("select");
+      const shown = sortWrap ? getComputedStyle(sortWrap).display : "none";
+      add("mobile-sort", !!sortWrap && shown !== "none" && !!sortSel && sortSel.options.length >= 3,
+        sortWrap ? shown + " · " + (sortSel ? sortSel.options.length + " options" : "no select") : "no sort control");
+      if (sortSel) {
+        sortSel.value = "ticker:1";
+        sortSel.dispatchEvent(new Event("change", { bubbles: true }));
+        await new Promise((r) => setTimeout(r, 180));
+      }
+      const nextSort = view.querySelector('[data-audit="mobile-sort"] select');
+      const firstTicker = view.querySelector('table[data-audit="holdings"] tbody tr .tick')?.innerText.trim() || "";
+      const alphaFirst = [...view.querySelectorAll('table[data-audit="holdings"] tbody tr .tick')]
+        .map((n) => n.innerText.trim()).sort((a, b) => a.localeCompare(b))[0] || "";
+      add("mobile-sort-wired", nextSort?.value === "ticker:1" && firstTicker === alphaFirst,
+        nextSort ? "state " + nextSort.value + " · first " + firstTicker + " / " + alphaFirst : "selector lost after re-render");
+    }
     const tr = view.querySelector("tbody tr.link");
     const sig = tr?.querySelector(".c-sig")?.getBoundingClientRect();
     const ta = tr?.querySelector(".ta")?.getBoundingClientRect();
@@ -484,6 +540,11 @@ const ROUTES = [
   // real and audits the answer the way a reviewer would read it.
   { hash: "#/ask", name: "ask-answered", ask: "Why is Disney not flagged?" },
 ];
+// A replay run spends one live re-estimate (up to ~50 page replays) when the
+// deployment has Qloo budget, so it is opt-in and desktop-only.
+if (process.argv.includes("--replay")) {
+  ROUTES.push({ hash: "#/ask", name: "ask-replay", ask: "Why is Disney not flagged?", replay: true, desktopOnly: true });
+}
 const VIEWPORTS = [
   { width: 1440, height: 1100, name: "desktop" },
   { width: 768, height: 1024, name: "tablet", mobile: true },
@@ -507,11 +568,12 @@ try {
   for (const vp of VIEWPORTS) {
     await cdp.send("Emulation.setDeviceMetricsOverride", { width: vp.width, height: vp.height, deviceScaleFactor: 1, mobile: Boolean(vp.mobile) });
     for (const route of ROUTES) {
+      if (route.desktopOnly && vp.name !== "desktop") continue;
       // A unique query makes every route a real document load. Navigating between
       // hash routes alone reuses the SPA's state, so a later route would be graded
       // against DOM and in-memory answers left by an earlier one.
       const nonce = `${vp.name}-${route.name}-${++navCount}`;
-      await cdp.send("Page.navigate", { url: `${URL_BASE}/?r=${nonce}${route.hash}` });
+      await cdp.send("Page.navigate", { url: `${URL_BASE}/?r=${nonce}${route.replay ? "&replay=1" : ""}${route.hash}` });
       // Wait for the desk's own ready flag rather than a fixed sleep: the panel is
       // nine files and a slow link must not be graded as a missing headline.
       const waitReady = async () => {

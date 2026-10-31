@@ -408,7 +408,7 @@ function multiSentence(entities, panel, when, primary) {
   return `Qloo was asked ${when} about ${read.length} entities${sectors ? ` across ${sectors} sub-sectors` : ""} — ${parts.join("; ")}. ${verdict}${missed.length ? ` Not read: ${missed.join("; ")}.` : ""}`;
 }
 
-export async function runFreshnessCheck({ desk, refs = null, series = null, qloo = {}, budgetFile = BUDGET_FILE, cap = LIVE.dailyRequests, clock = () => Date.now() } = {}) {
+export async function runFreshnessCheck({ desk, refs = null, series = null, qloo = {}, budgetFile = BUDGET_FILE, cap = LIVE.dailyRequests, clock = () => Date.now(), probeClock = clock } = {}) {
   const blocked = freshnessGateReason();
   const at = iso(clock());
   if (blocked) return { checked: false, why: blocked, at };
@@ -431,7 +431,10 @@ export async function runFreshnessCheck({ desk, refs = null, series = null, qloo
   // The newest weekly grid point Qloo could be answering for, not today's date:
   // between grid days the endpoint returns an empty page, which would read as
   // "Qloo has nothing" when it really means "ask me on the grid".
-  const gridEnd = nextTrendWeek(new Date(clock()).toISOString().slice(0, 10));
+  // `probeClock` pins the week the probe asks about without freezing the clock that
+  // timestamps the answer and ages the checker's cache: a replay pins the window,
+  // not the calendar the receipt is stamped with.
+  const gridEnd = nextTrendWeek(new Date(probeClock()).toISOString().slice(0, 10));
   const requestedAt = iso(clock());
   const seriesFn = qloo.series ?? qlooTrendPage;
   const entities = await Promise.all(chosen.map((ref) => probeEntity(ref, { gridEnd, requestedAt, seriesFn, panel, clock })));
