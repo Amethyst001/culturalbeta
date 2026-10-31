@@ -133,7 +133,7 @@
     // Every priced name is in the replay; only a material move is called one, so a
     // 0.2-point wobble from the shorter pre-revision window is not sold as news.
     if (Math.abs(m.betaAfter - m.betaBefore) < MOVE_MIN) return null;
-    return `moved across Qloo's December 2025 revision: ${f2(m.betaBefore)} at the pre-revision vintage → ${f2(m.betaAfter)} today`;
+    return `moved between vintages: ${f2(m.betaBefore)} at the pre-revision vintage (55 weeks) → ${f2(m.betaAfter)} on today's panel (102 weeks); the move mixes Qloo's December 2025 revision with the longer sample`;
   }
 
   const MOVE_MIN = 1; // |Δβ| in beta points
@@ -192,7 +192,8 @@
       ? `<p class="xray-line">${pct(r.topShare)} of your position-weighted basket weight sits on one entity, ${esc(r.entities[0].name)}; the top five carry ${pct(r.entities.slice(0, 5).reduce((a, e) => a + e.score, 0))}.</p>`
       : "";
 
-    const gateBits = [`Qloo freshness check: <b>${esc(gate.state)}</b>${gate.stamp !== "unsigned" ? ` · ${esc(gate.stamp)}` : ""}`];
+    const GATE_WORD = { pass: "pass", moved: "Qloo has newer data", unattested: "not run this session" };
+    const gateBits = [`Qloo freshness check: <b>${esc(GATE_WORD[gate.state] ?? gate.state)}</b>${gate.stamp !== "unsigned" ? ` · ${esc(gate.stamp)}` : ""}`];
     if (gate.detail) gateBits.push(esc(gate.detail));
 
     return `
