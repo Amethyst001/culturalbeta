@@ -1785,7 +1785,7 @@ function reestSection(re) {
   const rows = ok.map((x) => {
     const c = x.committed ?? {};
     const l = x.live ?? {};
-    return `<tr><td class="reest-t">${esc(x.ticker ?? "—")}</td><td class="reest-v"><span>β ${nf(c.beta)} → ${nf(l.beta)}</span><span>t ${nf(c.t)} → ${nf(l.t)}</span><span>ΔR² ${nf(c.deltaR2, 4)} → ${nf(l.deltaR2, 4)}</span></td></tr>`;
+    return `<tr><td class="reest-t">${esc(x.ticker ?? "—")}</td><td class="reest-v"><span>β ${nf(c.beta)} → ${nf(l.beta)}</span><span>t ${nf(c.t)} → ${nf(l.t)}</span><span>ΔR² ${pts(c.deltaR2)} → ${pts(l.deltaR2)}</span></td>${x.identicalNote ? `<td class="reest-note">${esc(x.identicalNote)}</td>` : ""}</tr>`;
   }).join("");
   return `<div class="reest" data-audit="reestimation">
     <span class="reest-k">Re-estimated live · the committed reading is unchanged</span>
