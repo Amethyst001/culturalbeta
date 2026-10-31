@@ -440,7 +440,11 @@ function loadReplay(asOf) {
   try {
     const art = JSON.parse(readFileSync(f, "utf8"));
     if (!art?.revisionWeek || !Array.isArray(art.movers)) return null;
-    const before = new Map(art.movers.map((m) => [String(m.ticker), Number(m.betaBefore)]).filter(([, v]) => Number.isFinite(v)));
+    // Full mover record, not just the beta: the replayed vintage's own t and
+    // deltaR2 travel with it, so the re-estimation table never prints a
+    // pre-revision beta beside post-revision t and dR2 (they are not the same
+    // row's numbers, and printing them as one row looks like a copy bug).
+    const before = new Map(art.movers.map((m) => [String(m.ticker), { beta: Number(m.betaBefore), t: Number(m.tBefore), deltaR2: Number(m.deltaR2Before) }]).filter(([, v]) => Number.isFinite(v.beta)));
     return {
       asOf: day,
       revisionWeek: art.revisionWeek,
@@ -474,7 +478,16 @@ function replayDeskFor(desk, replay) {
     ...desk,
     window: { ...(desk.window ?? {}), end: replay.through },
     valueAdd: { ...va, oos: { ...(va.oos ?? {}), scoring: { ...(va.oos?.scoring ?? {}), lastMove: replay.lastRevision } } },
-    rows: (desk.rows ?? []).map((r) => (replay.before.has(String(r.ticker)) ? { ...r, culturalBeta: replay.before.get(String(r.ticker)) } : r)),
+    rows: (desk.rows ?? []).map((r) => {
+      const b = replay.before.get(String(r.ticker));
+      if (!b) return r;
+      return {
+        ...r,
+        culturalBeta: b.beta,
+        culturalT: Number.isFinite(b.t) ? b.t : r.culturalT,
+        deltaR2: Number.isFinite(b.deltaR2) ? b.deltaR2 : r.deltaR2,
+      };
+    }),
   };
 }
 
@@ -760,6 +773,9 @@ const server = createServer(async (req, res) => {
     const type = candidate.endsWith(".html") ? "text/html"
       : candidate.endsWith(".css") ? "text/css"
       : candidate.endsWith(".js") ? "text/javascript"
+      : candidate.endsWith(".svg") ? "image/svg+xml"
+      : candidate.endsWith(".ico") ? "image/x-icon"
+      : candidate.endsWith(".png") ? "image/png"
       : candidate.endsWith(".woff") ? "font/woff"
       : candidate.endsWith(".woff2") ? "font/woff2"
       : "application/octet-stream";

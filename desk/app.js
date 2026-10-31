@@ -772,18 +772,20 @@ function deskView() {
   const plainPts = va?.meanDeltaR2 != null ? pts(va.meanDeltaR2).replace(/^\+/, "") : "—";
   // meanDeltaR2 is a fraction of variance; medianDeltaR2Pts is already in points.
   const mdePts = nf(MDE?.book?.medianDeltaR2Pts, 1);
-  const finding = `Taste adds ${plainPts} points of R² in sample across ${ok.length} priced names, and ${flagged} of ${ok.length} clear the flag rule. The held-out slice is frozen at this Qloo vintage, so this is an in-sample non-detection, not a completed held-out test.`;
-  return `${headBlock(`We tested taste against <span class="thin">${ok.length} consumer names.</span> <span class="thin">The test could see ${mdePts} points of R²; in sample the book added ${plainPts}.</span>`,
-    `Every consumer name in the book, priced two ways: market beta against the S&P 500, and cultural beta against its own sub-sector's taste basket built from Qloo — ${DESK.rows.length} names across ${sectors} sub-sectors, ${ok.length} priced. Below the table, the data basis says what they can claim.`,
+  const finding = `And it won't cry wolf: ${flagged} of ${ok.length} priced names clear a strict flag rule (|t| ≥ 2 and q ≤ 0.10). At this Qloo vintage the desk could have seen an effect of about ${mdePts} R² points; taste adds ${plainPts} in sample.`;
+  // 52.77 → 43.81 from revision-replay.json, committed vintage.
+  return `${headBlock(`Every consumer stock, <span class="thin">read through what its audience loves.</span>`,
+    `Cultural beta prices ${DESK.rows.length} consumer names across ${sectors} sub-sectors against the S&P 500 and against a basket of what each sub-sector's audience loves, from Qloo. When Qloo's taste data moves, the desk re-checks itself: on 2025-12-15 Qloo revised two Disney-basket entities, and the desk re-priced Disney's cultural beta from 52.77 to 43.81.`,
     DESK.window, `${ok.length} of ${DESK.rows.length} priced · ${liveLabel()}${frozenAfter()}`, liveTone())}
     <p class="verdict-line" data-audit="verdict-line">${esc(finding)}</p>
     <section class="strip" data-audit="desk-strip" aria-label="State of the desk">
-      <div class="stat grade hl"><b>${esc(v.grade)}</b><span>desk verdict${sc && sc.testable === false ? " · held-out slice frozen" : ""}</span></div>
+      <div class="stat grade neutral" title="${esc(v.grade)}${sc && sc.testable === false ? " · held-out slice frozen" : ""}"><b>${flagged} cry-wolf flags</b><span>strict rule · bound published</span></div>
       <div class="stat"><b>${ok.length} / ${DESK.rows.length}</b><span>names priced</span></div>
       <div class="stat"><b>${esc(sc?.lastMove ?? "—")}</b><span>last taste-series move</span></div>
       <div class="stat"><b>${flagged} of ${ok.length}</b><span>taste-risk flags</span></div>
       <div class="stat"><b>${pts(va?.meanDeltaR2)}</b><span>ΔR² from taste · in sample</span></div>
     </section>
+    <nav class="start" data-audit="start-here" aria-label="Start here"><a href="#/holding/DIS"><i>1</i>See what Disney's audience loves</a><a href="?replay=1#/ask" data-prefill="Recompute Disney's cultural beta live."><i>2</i>Watch the desk catch a Qloo revision</a><a href="#/evidence"><i>3</i>Why nothing is flagged, and why that's the point</a></nav>
     <section class="null-bound" data-audit="null-bound" aria-labelledby="null-bound-title">
       <div class="nb-head">
         <span class="eyebrow">What the null is, exactly</span>
@@ -846,7 +848,7 @@ function holdingView(tick) {
   const sc = DESK?.valueAdd?.oos?.scoring;
   const verdict = r.flagged
     ? "Flagged: taste is a significant headwind."
-    : sig ? "Significant, and with taste: a tailwind, not a risk flag."
+    : sig ? `Strongest-tier taste exposure (t ${f2(r.culturalT)}), short of the book-wide bar (q ${r.culturalQ != null ? r.culturalQ.toFixed(3) : "—"}).`
     : "Not significant at |t| ≥ 2. Measured, and not charged.";
   const s = SERIES?.[tick];
   const chart1 = s ? lineChart(s.dates, s.returns, s.basket, tick, `${r.sectorLabel ?? "sub-sector"} basket`) : "";
@@ -880,6 +882,7 @@ function holdingView(tick) {
       <div class="state ${liveTone()}">${DESK.rows.filter((x) => x.status === "ok").length} of ${DESK.rows.length} names priced · ${liveLabel()}${frozenAfter()}</div>
     </div>
   </div>
+  ${(r.basket ?? []).length ? `<p class="loves"><b>${esc(r.label)}'s audience also loves</b> ${r.basket.slice(0, 5).map((b) => esc(b.name)).join(", ")}, so that audience's weekly taste momentum is ${esc(r.label)}'s cultural factor.</p>` : ""}
   <div class="big">
     <div class="stat"><b>${f2(r.marketBeta)}</b><small>market beta ± ${r.marketSE.toFixed(2)}</small></div>
     <div class="stat"><b style="color:${r.culturalBeta < 0 ? "var(--accent)" : "var(--good)"}">${f2(r.culturalBeta)}</b><small>cultural beta ± ${r.culturalSE.toFixed(2)} · identified on ${r.activeWeeks ?? "—"} of ${r.weeks} weeks</small></div>
@@ -928,12 +931,18 @@ const SECTOR_SHORT = {
   retail: "Specialty", travel: "Travel", auto: "Autos",
 };
 
+function medianOf(xs) {
+  const s = [...xs].sort((x, y) => x - y);
+  const m = s.length >> 1;
+  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+}
+
 function mapView() {
   const ok = DESK.rows.filter((r) => r.status === "ok");
   const acc = new Map();
   for (const r of ok) {
-    const a = acc.get(r.sector) ?? { sumM: 0, sumC: 0, n: 0, label: r.sectorLabel, tickers: [] };
-    a.sumM += r.marketBeta; a.sumC += r.culturalBeta; a.n++; a.tickers.push(r.ticker);
+    const a = acc.get(r.sector) ?? { sumM: 0, n: 0, c: [], label: r.sectorLabel, tickers: [] };
+    a.sumM += r.marketBeta; a.c.push(r.culturalBeta); a.n++; a.tickers.push(r.ticker);
     acc.set(r.sector, a);
   }
   const points = [...acc].map(([id, a]) => ({
@@ -941,7 +950,7 @@ function mapView() {
     ticker: SECTOR_SHORT[id] ?? a.label,
     label: a.label,
     marketBeta: a.sumM / a.n,
-    culturalBeta: a.sumC / a.n,
+    culturalBeta: medianOf(a.c),
     n: a.n,
     members: a.tickers,
   }));
@@ -949,7 +958,7 @@ function mapView() {
   return `
   <div class="head">
     <div class="lede-col"><h1>Taste <span class="thin">map.</span></h1>
-      <p class="sub">Each dot is a sub-sector, placed by its average market beta (x) and average cultural beta (y);
+      <p class="sub">Each dot is a sub-sector, placed by its average market beta (x) and median cultural beta (y);
       dot size is the number of names with a cultural beta. The corner to watch is bottom-right: high market risk, taste against it.
       Hover a dot for the names inside it, or click to open that sub-sector on the desk.</p></div>
     <div class="side">${windowPill(DESK.window)}
@@ -959,15 +968,15 @@ function mapView() {
   <div class="cards">
     <div class="card wide"><h3>The consumer book, priced two ways${isStub() ? `<span class="stubtag">stub harness · magnitudes are layout only</span>` : ""}</h3>${quadrant(points)}
       <div class="legend">
-        <span><i class="sw neg"></i>mean cultural beta below zero — taste is a headwind</span>
+        <span><i class="sw neg"></i>median cultural beta below zero — for the typical name, taste runs against</span>
         <span><i class="sw pos"></i>above zero — taste is a tailwind</span>
         <span>dot area ∝ names with a cultural beta</span>
       </div>
     </div>
   </div>
   <p class="lede">${negative.length
-    ? `${negative.map((p) => `${p.label} (${f2(p.culturalBeta)})`).join(", ")} ${negative.length === 1 ? "sits" : "sit"} below zero — on average, taste is a headwind for ${negative.length === 1 ? "that sub-sector" : "those sub-sectors"}.`
-    : "Every sub-sector averages a positive cultural beta today."}</p>`;
+    ? `${negative.map((p) => `${p.label} (${f2(p.culturalBeta)})`).join(", ")} ${negative.length === 1 ? "sits" : "sit"} below zero — for the typical name in ${negative.length === 1 ? "that sub-sector" : "those sub-sectors"}, taste runs against.`
+    : "Every sub-sector's median cultural beta is positive today."}</p>`;
 }
 
 function evidenceRows(rows) {
@@ -1864,10 +1873,16 @@ function route() {
   // the tab state on the first tick; a slow connection then reads "reading the panel"
   // instead of a blank page with no tabs marked.
   if (BOOTING) { v.innerHTML = bootView(); setTabs(h); return; }
-  if (DESK && h.startsWith("#/holding/")) v.innerHTML = holdingView(decodeURIComponent(h.split("/")[2] || ""));
+  if (h.startsWith("#/xray")) window.xrayView(h);
+  else if (DESK && h.startsWith("#/holding/")) v.innerHTML = holdingView(decodeURIComponent(h.split("/")[2] || ""));
   else if (DESK && h.startsWith("#/map")) v.innerHTML = mapView();
   else if (h.startsWith("#/read")) v.innerHTML = readView();
-  else if (h.startsWith("#/ask")) v.innerHTML = askView();
+  else if (h.startsWith("#/ask")) {
+    const pre = sessionStorage.getItem("cbPrefill");
+    if (pre && !ASK.q) ASK.q = pre;
+    sessionStorage.removeItem("cbPrefill");
+    v.innerHTML = askView();
+  }
   else if (h.startsWith("#/evidence")) v.innerHTML = evidenceView(DESK ? decodeURIComponent(h.split("/")[2] || "") : "");
   else v.innerHTML = deskView();
   const wk = $("#note-weeks");
@@ -2022,6 +2037,12 @@ function refreshNote(text) {
 }
 
 window.addEventListener("hashchange", route);
+// "Start here" link 2 carries its question in a data attribute; the ask view
+// reads it once. Never auto-submits: an ask spends a model call.
+document.addEventListener("click", (e) => {
+  const a = e.target instanceof Element ? e.target.closest("[data-prefill]") : null;
+  if (a) sessionStorage.setItem("cbPrefill", a.getAttribute("data-prefill") || "");
+});
 // The boot frame is the first paint; load() replaces it when the files arrive.
 route();
 load();
