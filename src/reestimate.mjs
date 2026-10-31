@@ -16,6 +16,30 @@
 
 const fmt = (v, d = 2) => (v == null || !Number.isFinite(Number(v)) ? null : Number(v).toFixed(d));
 
+// ΔR² is stored as a fraction of R²; readers read points of R², so the prose prints
+// both sides of the pair in points with an explicit sign (a negative increment is a
+// finding, not a formatting accident). Same rule the desk's UI uses for its own ΔR².
+const pts = (v) => (v == null || !Number.isFinite(Number(v)) ? "—" : `${Number(v) >= 0 ? "+" : ""}${(Number(v) * 100).toFixed(2)} pts`);
+
+// The sentence for the one honest way the headline pair can print an unchanged t and
+// an unchanged ΔR² while the beta moves: OLS is invariant to a rescaling of the
+// regressor, so when the revision's move is (near) proportional in the basket series
+// the whole of it lands in the coefficient — beta scales, t = beta/se does not, and
+// neither does the fit. Server-authored because it is a claim about the estimator,
+// not a number the model should be free to paraphrase away.
+const IDENTICAL_NOTE = "The revision's whole move lands in the coefficient; the fit neither tightened nor loosened (t = beta/se scales with it).";
+
+const sameAt = (a, b, d) =>
+  a != null && b != null && Number.isFinite(Number(a)) && Number.isFinite(Number(b)) && Number(a).toFixed(d) === Number(b).toFixed(d);
+
+// Identical at the precision the answer prints: t to 2dp, ΔR² to 4dp. Committed-side
+// fields come from the desk row of record, never from the re-estimate, so the note
+// can only fire when the two independently sourced numbers really round the same.
+function identicalNoteFor(committed, liveT, liveDeltaR2) {
+  if (!committed) return null;
+  return sameAt(committed.culturalT, liveT, 2) && sameAt(committed.deltaR2, liveDeltaR2, 4) ? IDENTICAL_NOTE : null;
+}
+
 function nameOf(m) {
   const ticker = m?.entity?.ticker ?? m?.ticker ?? "?";
   const label = m?.entity?.name ? ` (${m.entity.name})` : "";
@@ -87,9 +111,14 @@ export function revisionAddendum({ moved = [], reestimation = null, caveat = nul
     const after = fmt(r.live?.beta, 2);
     const tBefore = fmt(r.committed?.culturalT, 2);
     const tAfter = fmt(r.live?.t, 2);
-    const r2Before = fmt(r.committed?.deltaR2, 4);
-    const r2After = fmt(r.deltaR2, 4);
-    return `${r.ticker}: cultural beta ${before} → ${after} (t ${tBefore} → ${tAfter}; ΔR² ${r2Before} → ${r2After})`;
+    // Both ΔR² readings in points, committed side and live side, so a reader never
+    // has to know the stored fraction convention to compare the pair.
+    const r2Before = pts(r.committed?.deltaR2);
+    const r2After = pts(r.deltaR2);
+    const note = identicalNoteFor(r.committed, r.live?.t, r.deltaR2);
+    // The sentence-level template supplies the line's full stop, so the appended
+    // note loses its own rather than printing two.
+    return `${r.ticker}: cultural beta ${before} → ${after} (t ${tBefore ?? "—"} → ${tAfter ?? "—"}; ΔR² ${r2Before} → ${r2After})${note ? ` — ${note.replace(/\.$/, "")}` : ""}`;
   });
   const spend = reestimation.spent
     ? `${reestimation.spent} new Qloo request${reestimation.spent === 1 ? "" : "s"}, ${reestimation.replayed} replayed from the page cache`
@@ -119,6 +148,12 @@ export function revisionPayload(reestimation, moved = []) {
       error: r.error ?? null,
       committed: r.ok ? { beta: r.committed?.culturalBeta ?? null, t: r.committed?.culturalT ?? null, deltaR2: r.committed?.deltaR2 ?? null } : null,
       live: r.ok ? { beta: r.live?.beta ?? null, t: r.live?.t ?? null, deltaR2: r.deltaR2 ?? null, weeks: r.weeks?.liveWeeks ?? null } : null,
+      // The committed side again, as flat fields: the UI renders the pair as a table
+      // and should never have to know which nested object is the desk row of record.
+      // deltaR2 stays the stored fraction; the prose, not the payload, converts to pts.
+      committedT: r.ok ? r.committed?.culturalT ?? null : null,
+      committedDeltaR2: r.ok ? r.committed?.deltaR2 ?? null : null,
+      identicalNote: r.ok ? identicalNoteFor(r.committed, r.live?.t, r.deltaR2) : null,
       change: r.change ?? null,
       requests: r.requests ?? 0,
       replayedPages: r.replayedPages ?? 0,
