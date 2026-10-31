@@ -843,6 +843,7 @@ function holdingView(tick) {
       It stays in the book, marked, with no cultural beta — the sample floor, shown rather than hidden.</p>`;
   }
   const sig = Math.abs(r.culturalT) >= 2;
+  const sc = DESK?.valueAdd?.oos?.scoring;
   const verdict = r.flagged
     ? "Flagged: taste is a significant headwind."
     : sig ? "Significant, and with taste: a tailwind, not a risk flag."
