@@ -115,7 +115,7 @@ test("gate: a checked peek maps verdicts to pass/moved, keeping only carried fie
 
 test("replay: the mover sentence is built from the artifact's own numbers", () => {
   const replay = { revisionWeek: "2025-12-22", vintageBefore: { through: "2025-12-01" }, movers: [{ ticker: "DIS", betaBefore: 52.77452111145094, betaAfter: 43.80898536170825 }] };
-  assert.equal(X.moverLine("DIS", replay), "moved across Qloo's December 2025 revision: 52.77 at the pre-revision vintage → 43.81 today");
+  assert.equal(X.moverLine("DIS", replay), "moved between vintages: 52.77 at the pre-revision vintage (55 weeks) → 43.81 on today's panel (102 weeks); the move mixes Qloo's December 2025 revision with the longer sample");
   assert.equal(X.moverLine("KO", { movers: [{ ticker: "KO", betaBefore: 1.2, betaAfter: 1.5 }] }), null); // a sub-point wobble is not a move
   assert.equal(X.moverLine("NKE", replay), null); // not in the artifact, no claim
   assert.equal(X.moverLine("DIS", null), null);

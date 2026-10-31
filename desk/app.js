@@ -777,14 +777,14 @@ function deskView() {
   const finding = `And it won't cry wolf: ${flagged} of ${ok.length} priced names clear a strict flag rule (|t| ≥ 2 and q ≤ 0.10). At this Qloo vintage the desk could have seen an effect of about ${mdePts} R² points; taste adds ${plainPts} in sample.`;
   // 52.77 → 43.81 from revision-replay.json, committed vintage.
   return `${headBlock(`Every consumer stock, <span class="thin">read through what its audience loves.</span>`,
-    `Cultural beta prices ${DESK.rows.length} consumer names across ${sectors} sub-sectors against the S&P 500 and against a basket of what each sub-sector's audience loves, from Qloo. When Qloo's taste data moves, the desk re-checks itself: Qloo revised two Disney-basket entities on 2025-12-15, the freshness gate caught it, and the desk re-estimated Disney's cultural beta live — 52.77 at the pre-revision vintage, 43.81 on today's panel — printing both, with the reading of record labelled.`,
+    `Cultural beta prices ${DESK.rows.length} consumer names across ${sectors} sub-sectors against the S&P 500 and against a basket of what each sub-sector's audience loves, from Qloo. When Qloo's taste data moves, the desk re-checks itself: Qloo revised two Disney-basket entities on 2025-12-15, the freshness gate flagged it, and the desk re-estimated Disney's cultural beta with zero new Qloo requests — 52.77 at the pre-revision vintage (55 weeks), 43.81 on today's panel (102 weeks). Both are printed, because that move mixes the revision with the longer sample.`,
     DESK.window, `${ok.length} of ${DESK.rows.length} priced · ${liveLabel()}${frozenAfter()}`, liveTone())}
     <p class="verdict-line" data-audit="verdict-line">${esc(finding)}</p>
     <section class="strip" data-audit="desk-strip" aria-label="State of the desk">
       <div class="stat neutral" title="${esc(v.grade)}${sc && sc.testable === false ? " · held-out slice frozen" : ""}"><b>${flagged} cry-wolf flags</b><span>of ${ok.length} priced · strict rule</span></div>
       <div class="stat"><b>${ok.length} / ${DESK.rows.length}</b><span>names priced</span></div>
       <div class="stat"><b>${esc(sc?.lastMove ?? "—")}</b><span>last taste-series move</span></div>
-      <div class="stat"><b>52.77 → 43.81</b><span>DIS re-estimated · Qloo revision</span></div>
+      <div class="stat"><b>52.77 → 43.81</b><span>DIS · pre-revision vintage → today</span></div>
       <div class="stat"><b>${pts(va?.meanDeltaR2)}</b><span>ΔR² from taste · in sample</span></div>
     </section>
     <nav class="start" data-audit="start-here" aria-label="Start here"><a href="#/holding/DIS"><i>1</i>See what Disney's audience loves</a><a href="?replay=1#/ask" data-prefill="Recompute Disney's cultural beta live."><i>2</i>Watch the desk catch a Qloo revision</a><a href="#/evidence"><i>3</i>Why nothing is flagged, and why that's the point</a></nav>
