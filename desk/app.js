@@ -11,8 +11,10 @@ const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<
 // blocked the img removes itself and the monogram is what remains, so a row never
 // shows a broken-image glyph and the layout never shifts when the image lands.
 const monoOf = (s) => String(s ?? "").replace(/[^A-Za-z0-9]/g, "").slice(0, 2).toUpperCase() || "··";
+// Marks published white-on-transparent vanish on the white tile; they sit on ink.
+const DARK_TILE = new Set(["DIS"]);
 function logoTile(ticker, label, size = "sm", eager = false) {
-  return `<span class="logo-wrap ${size}" aria-hidden="true"><span class="logo-mono">${esc(monoOf(ticker || label))}</span><img src="logos/${encodeURIComponent(ticker)}.png" alt="" ${eager ? "" : 'loading="lazy"'} decoding="async" onerror="this.remove()"></span>`;
+  return `<span class="logo-wrap ${size}${DARK_TILE.has(String(ticker).toUpperCase()) ? " dark" : ""}" aria-hidden="true"><span class="logo-mono">${esc(monoOf(ticker || label))}</span><img src="logos/${encodeURIComponent(ticker)}.png" alt="" ${eager ? "" : 'loading="lazy"'} decoding="async" onerror="this.remove()"></span>`;
 }
 
 let DESK = null, SERIES = null, EVIDENCE = null, MARKET = null, BUDGET = null, AGENT = null;
@@ -775,17 +777,18 @@ function deskView() {
   const finding = `And it won't cry wolf: ${flagged} of ${ok.length} priced names clear a strict flag rule (|t| ≥ 2 and q ≤ 0.10). At this Qloo vintage the desk could have seen an effect of about ${mdePts} R² points; taste adds ${plainPts} in sample.`;
   // 52.77 → 43.81 from revision-replay.json, committed vintage.
   return `${headBlock(`Every consumer stock, <span class="thin">read through what its audience loves.</span>`,
-    `Cultural beta prices ${DESK.rows.length} consumer names across ${sectors} sub-sectors against the S&P 500 and against a basket of what each sub-sector's audience loves, from Qloo. When Qloo's taste data moves, the desk re-checks itself: on 2025-12-15 Qloo revised two Disney-basket entities, and the desk re-priced Disney's cultural beta from 52.77 to 43.81.`,
+    `Cultural beta prices ${DESK.rows.length} consumer names across ${sectors} sub-sectors against the S&P 500 and against a basket of what each sub-sector's audience loves, from Qloo. When Qloo's taste data moves, the desk re-checks itself: Qloo revised two Disney-basket entities on 2025-12-15, the freshness gate caught it, and the desk re-estimated Disney's cultural beta live — 52.77 at the pre-revision vintage, 43.81 on today's panel — printing both, with the reading of record labelled.`,
     DESK.window, `${ok.length} of ${DESK.rows.length} priced · ${liveLabel()}${frozenAfter()}`, liveTone())}
     <p class="verdict-line" data-audit="verdict-line">${esc(finding)}</p>
     <section class="strip" data-audit="desk-strip" aria-label="State of the desk">
-      <div class="stat grade neutral" title="${esc(v.grade)}${sc && sc.testable === false ? " · held-out slice frozen" : ""}"><b>${flagged} cry-wolf flags</b><span>strict rule · bound published</span></div>
+      <div class="stat neutral" title="${esc(v.grade)}${sc && sc.testable === false ? " · held-out slice frozen" : ""}"><b>${flagged} cry-wolf flags</b><span>of ${ok.length} priced · strict rule</span></div>
       <div class="stat"><b>${ok.length} / ${DESK.rows.length}</b><span>names priced</span></div>
       <div class="stat"><b>${esc(sc?.lastMove ?? "—")}</b><span>last taste-series move</span></div>
-      <div class="stat"><b>${flagged} of ${ok.length}</b><span>taste-risk flags</span></div>
+      <div class="stat"><b>52.77 → 43.81</b><span>DIS re-estimated · Qloo revision</span></div>
       <div class="stat"><b>${pts(va?.meanDeltaR2)}</b><span>ΔR² from taste · in sample</span></div>
     </section>
     <nav class="start" data-audit="start-here" aria-label="Start here"><a href="#/holding/DIS"><i>1</i>See what Disney's audience loves</a><a href="?replay=1#/ask" data-prefill="Recompute Disney's cultural beta live."><i>2</i>Watch the desk catch a Qloo revision</a><a href="#/evidence"><i>3</i>Why nothing is flagged, and why that's the point</a></nav>
+    <p class="xray-cta" data-audit="xray-cta"><a href="#/xray?h=DIS:40,NKE:25,SBUX:20,AAPL:15">Paste your own holdings → Taste X-ray</a> <span>what your portfolio's audience loves, its cultural beta beside its market beta, and which names moved with Qloo's last revision. Runs in the page; nothing is stored.</span></p>
     <section class="null-bound" data-audit="null-bound" aria-labelledby="null-bound-title">
       <div class="nb-head">
         <span class="eyebrow">What the null is, exactly</span>
@@ -886,9 +889,9 @@ function holdingView(tick) {
   <div class="big">
     <div class="stat"><b>${f2(r.marketBeta)}</b><small>market beta ± ${r.marketSE.toFixed(2)}</small></div>
     <div class="stat"><b style="color:${r.culturalBeta < 0 ? "var(--accent)" : "var(--good)"}">${f2(r.culturalBeta)}</b><small>cultural beta ± ${r.culturalSE.toFixed(2)} · identified on ${r.activeWeeks ?? "—"} of ${r.weeks} weeks</small></div>
-    <div class="stat"><b>${f2(r.culturalT, 1)}</b><small>t · p ${r.culturalP < 0.001 ? "< 0.001" : r.culturalP.toFixed(3)}</small></div>
+    <div class="stat"><b>${f2(r.culturalT)}</b><small>t · p ${r.culturalP < 0.001 ? "< 0.001" : r.culturalP.toFixed(3)}</small></div>
     <div class="stat"><b>${r.culturalQ != null ? r.culturalQ.toFixed(3) : "—"}</b><small>q · Benjamini–Hochberg</small></div>
-    <div class="stat"><b>${pts(r.deltaR2)}</b><small>ΔR² over market only</small></div>
+    <div class="stat"><b>${ptsSigned(r.deltaR2)}</b><small>ΔR² over market only</small></div>
     <div class="stat"><b>${r.r2.toFixed(2)}</b><small>R² · ${r.weeks} weeks</small></div>
   </div>
   ${r.oos ? (() => {
@@ -941,15 +944,17 @@ function mapView() {
   const ok = DESK.rows.filter((r) => r.status === "ok");
   const acc = new Map();
   for (const r of ok) {
-    const a = acc.get(r.sector) ?? { sumM: 0, n: 0, c: [], label: r.sectorLabel, tickers: [] };
-    a.sumM += r.marketBeta; a.c.push(r.culturalBeta); a.n++; a.tickers.push(r.ticker);
+    const a = acc.get(r.sector) ?? { m: [], n: 0, c: [], label: r.sectorLabel, tickers: [] };
+    a.m.push(r.marketBeta); a.c.push(r.culturalBeta); a.n++; a.tickers.push(r.ticker);
     acc.set(r.sector, a);
   }
   const points = [...acc].map(([id, a]) => ({
     id,
     ticker: SECTOR_SHORT[id] ?? a.label,
     label: a.label,
-    marketBeta: a.sumM / a.n,
+    // Medians on both axes: one thin-basket name (PARA, −242) dragged the media
+    // mean to −27 while the typical media name sits above zero.
+    marketBeta: medianOf(a.m),
     culturalBeta: medianOf(a.c),
     n: a.n,
     members: a.tickers,
@@ -958,7 +963,7 @@ function mapView() {
   return `
   <div class="head">
     <div class="lede-col"><h1>Taste <span class="thin">map.</span></h1>
-      <p class="sub">Each dot is a sub-sector, placed by its average market beta (x) and median cultural beta (y);
+      <p class="sub">Each dot is a sub-sector, placed by its median market beta (x) and median cultural beta (y) — medians, so one outlier name cannot drag a sub-sector across zero;
       dot size is the number of names with a cultural beta. The corner to watch is bottom-right: high market risk, taste against it.
       Hover a dot for the names inside it, or click to open that sub-sector on the desk.</p></div>
     <div class="side">${windowPill(DESK.window)}
@@ -975,8 +980,8 @@ function mapView() {
     </div>
   </div>
   <p class="lede">${negative.length
-    ? `${negative.map((p) => `${p.label} (${f2(p.culturalBeta)})`).join(", ")} ${negative.length === 1 ? "sits" : "sit"} below zero — for the typical name in ${negative.length === 1 ? "that sub-sector" : "those sub-sectors"}, taste runs against.`
-    : "Every sub-sector's median cultural beta is positive today."}</p>`;
+    ? `${negative.map((p) => `${p.label} (${f2(p.culturalBeta)})`).join(", ")} ${negative.length === 1 ? "sits" : "sit"} below zero — for the typical name in ${negative.length === 1 ? "that sub-sector" : "those sub-sectors"}, taste runs against. None of these sub-sector readings clears the desk's flag rule; they describe exposure, not a signal.`
+    : "Every sub-sector's median cultural beta is positive today. None of these readings clears the desk's flag rule; they describe exposure, not a signal."}</p>`;
 }
 
 function evidenceRows(rows) {
@@ -1277,6 +1282,7 @@ function dispersionBand(va) {
 // flagged, and only a robust one next to the alternative constructions that were also
 // tried. Both bands read a committed analysis file served by the desk: nothing here is
 // re-derived in the browser, and a missing file prints as "not computed".
+const ptsf = (x) => (x == null || !Number.isFinite(Number(x)) ? "—" : (Number(x) >= 0 ? "+" : "") + (Number(x) * 100).toFixed(2));
 const nf = (x, d = 2) => (x == null || !Number.isFinite(Number(x)) ? "—" : Number(x).toFixed(d));
 const npc = (x, d = 1) => (x == null ? "—" : (Number(x) * 100).toFixed(d) + "%");
 
@@ -1740,7 +1746,7 @@ function replayToggle() {
   return `<div class="replay-row">
     <button type="button" id="replay-toggle" class="replay-toggle${ASK_REPLAY ? " on" : ""}" data-audit="replay-toggle" aria-pressed="${ASK_REPLAY}" ${ASK.busy ? "disabled" : ""}>
       <span class="replay-box" aria-hidden="true">${ASK_REPLAY ? "✓" : ""}</span>
-      <span>Replay the desk as of ${REPLAY_ASOF} — before Qloo's 2025-12-22 revision</span>
+      <span>Replay the desk as of ${REPLAY_ASOF} — before Qloo's December 2025 revision</span>
     </button>
     <span class="replay-state">${ASK_REPLAY ? `on · replay ${esc(REPLAY_ASOF)}` : "off · today's desk"}</span>
   </div>`;
@@ -1755,7 +1761,7 @@ function replayBanner(rp) {
   const through = esc(rp.through ?? "—");
   return `<div class="replay" data-audit="replay-banner" role="note">
     <span class="replay-k">Replay · not a live revision</span>
-    <p><b>This is a replay, and not a claim that Qloo revised today.</b> It shows the desk as it stood on <b>${asOf}</b> — the vintage before Qloo's ${rev} revision, with the panel tail at ${through}. The pre-revision betas were recomputed offline from the committed series with the committed estimator. The live Qloo pull behind any re-estimate is a real request, never simulated data.</p>
+    <p><b>This is a replay, and not a claim that Qloo revised today.</b> It shows the desk as it stood on <b>${asOf}</b> — the vintage before Qloo's December 2025 revision (the gate dates the Disney-basket entity revisions to 2025-12-15; the baskets' last non-zero week is ${rev}), with the panel tail at ${through}. The pre-revision betas were recomputed offline from the committed series with the committed estimator. The live Qloo pull behind any re-estimate is a real request, never simulated data.</p>
   </div>`;
 }
 
@@ -1785,7 +1791,7 @@ function reestSection(re) {
   const rows = ok.map((x) => {
     const c = x.committed ?? {};
     const l = x.live ?? {};
-    return `<tr><td class="reest-t">${esc(x.ticker ?? "—")}</td><td class="reest-v"><span>β ${nf(c.beta)} → ${nf(l.beta)}</span><span>t ${nf(c.t)} → ${nf(l.t)}</span><span>ΔR² ${pts(c.deltaR2)} → ${pts(l.deltaR2)}</span></td>${x.identicalNote ? `<td class="reest-note">${esc(x.identicalNote)}</td>` : ""}</tr>`;
+    return `<tr><td class="reest-t">${esc(x.ticker ?? "—")}</td><td class="reest-v"><span>β ${nf(c.beta)} → ${nf(l.beta)}</span><span>t ${nf(c.t)} → ${nf(l.t)}</span><span>ΔR² ${ptsf(c.deltaR2)} → ${ptsf(l.deltaR2)} pts</span></td></tr>`;
   }).join("");
   return `<div class="reest" data-audit="reestimation">
     <span class="reest-k">Re-estimated live · the committed reading is unchanged</span>
@@ -1859,7 +1865,8 @@ function setTabs(hash) {
     const on = (a.dataset.tab === "desk" && (hash === "#/" || hash.startsWith("#/holding/") || hash.startsWith("#/read")))
       || (hash.startsWith("#/map") && a.dataset.tab === "map")
       || (hash.startsWith("#/evidence") && a.dataset.tab === "evidence")
-      || (hash.startsWith("#/ask") && a.dataset.tab === "ask");
+      || (hash.startsWith("#/ask") && a.dataset.tab === "ask")
+      || (hash.startsWith("#/xray") && a.dataset.tab === "xray");
     a.classList.toggle("on", on);
     if (a.dataset.tab === "map") a.hidden = !DESK;
   });

@@ -18,10 +18,12 @@
   // the rest, so the paste is never silently re-balanced beyond that rule.
   function parseHoldings(text) {
     const list = [];
+    const skipped = []; // [{ raw, why }] — printed back to the reader, never silently dropped
     const byTicker = new Map();
     const add = (rawTicker, w) => {
       const ticker = String(rawTicker ?? "").trim().toUpperCase().replace(/[^A-Z0-9.&~-]/g, "");
       if (!/^[A-Z][A-Z0-9.&~-]{0,9}$/.test(ticker)) return;
+      if (Number.isFinite(w) && w < 0) { skipped.push({ raw: `${ticker} ${w}`, why: "short positions are not read; the X-ray is long-only" }); return; }
       const weight = Number.isFinite(w) && w > 0 ? w : null;
       if (byTicker.has(ticker)) {
         const prev = byTicker.get(ticker);
@@ -34,17 +36,26 @@
     };
     // Not tickers, however ticker-shaped they look once uppercased.
     const STOP = new Set(["THE", "AND", "OF", "IN", "AT", "TO", "OR", "FOR", "A"]);
-    for (const chunk of String(text ?? "").split(/[,;\n]+/)) {
+    // Dollar amounts: "$40,000" is one number, not "$40" and "000".
+    let t = String(text ?? "").replace(/\$/g, "");
+    for (let i = 0; i < 3; i++) t = t.replace(/(\d),(\d{3})(?!\d)/g, "$1$2");
+    const TK = "([A-Za-z][A-Za-z0-9.&~-]{0,9})";
+    const NUM = "(-?\\d+(?:\\.\\d+)?)";
+    const re = new RegExp(`${TK}\\s*[:=]\\s*${NUM}\\s*%?|${TK}\\s*[:=]\\s*(\\S+)|${TK}\\s+${NUM}\\s*%?|${TK}`, "g");
+    for (const chunk of t.split(/[,;\n]+/)) {
       const c = chunk.trim();
       if (!c) continue;
-      const re = /([A-Za-z][A-Za-z0-9.&~-]{0,9})\s*[:=]\s*(\d+(?:\.\d+)?)\s*%?|([A-Za-z][A-Za-z0-9.&~-]{0,9})\s*(\d+(?:\.\d+)?)\s*%?|([A-Za-z][A-Za-z0-9.&~-]{0,9})/g;
       let m;
+      re.lastIndex = 0;
       while ((m = re.exec(c))) {
-        if (m[1]) add(m[1], parseFloat(m[2]));            // DIS:40 / DIS=40
-        else if (m[3]) add(m[3], parseFloat(m[4]));       // DIS 40 / DIS 40%
-        else if (m[5] && !STOP.has(m[5].toUpperCase())) add(m[5], null); // DIS
+        if (m[1]) add(m[1], parseFloat(m[2]));                    // DIS:40 / DIS=-10
+        else if (m[3]) skipped.push({ raw: `${m[3].toUpperCase()}:${m[4]}`, why: "the weight is not a number" }); // NKE:abc
+        else if (m[5]) add(m[5], parseFloat(m[6]));               // DIS 40 / DIS 40%
+        else if (m[7] && !STOP.has(m[7].toUpperCase())) add(m[7], null); // DIS
       }
     }
+    list.skipped = skipped;
+    list.mixed = list.some((h) => h.weight === null) && list.some((h) => h.weight !== null);
     return list;
   }
 
@@ -93,7 +104,7 @@
       }
     }
     const entities = [...acc.entries()].map(([name, score]) => ({ name, score })).sort((a, b) => b.score - a.score);
-    return { covered: weighted, cultural, market, entities, topShare: entities.length ? entities[0].score : null };
+    return { covered: weighted, coveredShare: mass, cultural, market, entities, topShare: entities.length ? entities[0].score : null };
   }
 
   /* ---------- freshness gate ---------- */
@@ -108,7 +119,7 @@
     const stamp = typeof fresh.stamp === "string" && fresh.stamp.startsWith("att-") ? fresh.stamp : "unsigned";
     const bits = [];
     if (fresh.latestWeek) bits.push(`latest week ${fresh.latestWeek}`);
-    if (fresh.at) bits.push(`read ${String(fresh.at).slice(0, 19)}`);
+    if (fresh.at) bits.push(`read ${String(fresh.at).slice(0, 16).replace("T", " ")} UTC`);
     return { state, stamp, detail: bits.join(" · ") };
   }
 
@@ -119,9 +130,14 @@
   function moverLine(ticker, replay) {
     const m = replay?.movers?.find((x) => String(x.ticker).toUpperCase() === String(ticker).toUpperCase());
     if (!m || !Number.isFinite(m.betaBefore) || !Number.isFinite(m.betaAfter)) return null;
-    const through = replay.vintageBefore?.through ?? replay.revisionWeek ?? "";
-    return `moved with Qloo's ${through} revision; re-estimated ${f2(m.betaBefore)} → ${f2(m.betaAfter)}`;
+    // Every priced name is in the replay; only a material move is called one, so a
+    // 0.2-point wobble from the shorter pre-revision window is not sold as news.
+    if (Math.abs(m.betaAfter - m.betaBefore) < MOVE_MIN) return null;
+    return `moved across Qloo's December 2025 revision: ${f2(m.betaBefore)} at the pre-revision vintage → ${f2(m.betaAfter)} today`;
   }
+
+  const MOVE_MIN = 1; // |Δβ| in beta points
+  const inReplay = (ticker, replay) => Boolean(replay?.movers?.some((x) => String(x.ticker).toUpperCase() === String(ticker).toUpperCase()));
 
   /* ---------- data loading (lazy, cached) ---------- */
   const get = async (p) => { try { const r = await fetch(p); return r.ok ? await r.json() : null; } catch { return null; } };
@@ -138,17 +154,17 @@
       let name = h.ticker, status, note = "";
       if (c.kind === "covered") {
         const line = moverLine(h.ticker, replay);
-        status = replay ? (line ? tag("moved", "moved") : tag("stable", "stable")) : tag("", "panel");
+        status = line ? tag("moved", "moved") : inReplay(h.ticker, replay) ? tag("stable", "stable") : tag("", "panel");
         if (line) note = `<div class="xray-move">${esc(line)}</div>`;
         name = `${esc(h.ticker)} <span class="xray-muted">${esc(c.row.label ?? "")}</span>`;
       } else if (c.kind === "listed") {
         status = tag("", "no reading");
         name = `${esc(h.ticker)} <span class="xray-muted">${esc(c.row.label ?? "")}</span>`;
       } else {
-        status = tag("unknown", "unknown");
+        status = tag("unknown", "not covered");
         name = esc(h.ticker);
       }
-      return `<tr><td class="xray-name">${name}${note}</td><td class="xray-num">${c.kind === "covered" ? f2(c.row.culturalBeta) : "—"}</td><td class="xray-num">${c.kind === "covered" ? f2(c.row.marketBeta) : "—"}</td><td>${status}${c.kind === "covered" ? tag("att", "not attested this session") : ""}</td></tr>`;
+      return `<tr><td class="xray-name">${name}${note}</td><td class="xray-num" data-label="Cultural beta">${c.kind === "covered" ? f2(c.row.culturalBeta) : "—"}</td><td class="xray-num" data-label="Market beta">${c.kind === "covered" ? f2(c.row.marketBeta) : "—"}</td><td>${status}</td></tr>`;
     }).join("");
   }
 
@@ -162,10 +178,10 @@
     const stats = r.cultural === null
       ? `<p class="xray-line">Nothing in this paste has a taste reading in the committed panel, so there is no exposure to x-ray.</p>`
       : `<div class="xray-stats">
-           <div class="stat hl"><b>${f2(r.cultural)}</b><span>Portfolio cultural beta</span></div>
+           <div class="stat"><b class="${r.cultural < 0 ? "neg" : "pos"}">${r.cultural > 0 ? "+" : ""}${f2(r.cultural)}</b><span>Blended cultural beta</span></div>
            <div class="stat"><b>${f2(r.market)}</b><span>Market beta, same weights</span></div>
          </div>
-         <p class="xray-fine">Position-weighted over ${r.covered.length} covered name${r.covered.length === 1 ? "" : "s"}; names without a reading contribute nothing.</p>`;
+         <p class="xray-fine">Position-weighted over ${r.covered.length} covered name${r.covered.length === 1 ? "" : "s"} (${pct(r.coveredShare)} of the pasted weight). Names without a reading are left out and the covered names re-weighted to 100%, not counted as zero. Each name's cultural beta is measured against its own sub-sector's taste basket, so this is a blend across baskets, not a beta to one factor.</p>`;
 
     const top5 = r.entities.slice(0, 5).map((e) => e.name);
     const loves = top5.length
@@ -173,10 +189,10 @@
       : `<p class="xray-line">No basket entities to rank for this paste.</p>`;
 
     const conc = r.topShare !== null
-      ? `<p class="xray-line">${pct(r.topShare)} of your taste exposure comes from ${esc(r.entities[0].name)}.</p>`
+      ? `<p class="xray-line">${pct(r.topShare)} of your position-weighted basket weight sits on one entity, ${esc(r.entities[0].name)}; the top five carry ${pct(r.entities.slice(0, 5).reduce((a, e) => a + e.score, 0))}.</p>`
       : "";
 
-    const gateBits = [`gate: ${esc(gate.state)} · ${esc(gate.stamp)}`];
+    const gateBits = [`Qloo freshness check: <b>${esc(gate.state)}</b>${gate.stamp !== "unsigned" ? ` · ${esc(gate.stamp)}` : ""}`];
     if (gate.detail) gateBits.push(esc(gate.detail));
 
     return `
@@ -187,9 +203,11 @@
       <p class="xray-gate">${gateBits.join(" · ")}</p>
       <table><thead><tr><th class="xray-th-l">Holding</th><th>Cultural β</th><th>Market β</th><th>State</th></tr></thead>
       <tbody>${rowsHTML(parsed, desk, replay)}</tbody></table>
-      <p class="xray-fine">The desk-wide check attests the panel's basket entities, not individual holdings, so every row above is not attested this session. Per-name state: ${replay ? "movement read from the committed revision-replay artifact" : "revision-replay artifact not built — no movement claimed"}.</p>
+      <p class="xray-fine">State per holding comes from the revision replay: <b>moved</b> means the name's cultural beta shifted by ${MOVE_MIN}.0 or more between the pre-revision vintage and today's panel; <b>stable</b> means less. The gate line above is the desk-wide Qloo freshness check, which attests basket entities rather than single holdings.</p>
+      ${parsed.skipped?.length ? `<p class="xray-line"><b>Not read:</b> ${parsed.skipped.map((k) => `${esc(k.raw)} (${esc(k.why)})`).join("; ")}.</p>` : ""}
+      ${parsed.mixed ? `<p class="xray-fine">Some holdings came without a weight next to weighted ones; each of those is read as weight 1 on the same scale as the others before normalising. Give every holding a weight to avoid this.</p>` : ""}
       ${listed.length ? `<p class="xray-line"><b>In the book, no taste reading:</b> ${listed.map(esc).join(", ")}.</p>` : ""}
-      ${uncovered.length ? `<p class="xray-line"><b>Not covered yet:</b> ${uncovered.map(esc).join(", ")} — not in the committed book, so nothing is guessed for them.</p>` : ""}
+      ${uncovered.length ? `<p class="xray-line"><b>Not covered yet:</b> ${uncovered.map(esc).join(", ")} — not in the committed 101-name book, so nothing is guessed for ${uncovered.length === 1 ? "it" : "them"}.</p>` : ""}
       <h3>Share this x-ray</h3>
       <div class="xray-share"><input class="xray-link" readonly value="${esc(link)}" aria-label="Share link"><button class="btn ghost xray-copy" type="button">Copy</button></div>
       <p class="xray-foot">Descriptive exposure, not investment advice.</p>`;
@@ -204,7 +222,7 @@
         <textarea id="xray-in" class="xray-input" rows="3" placeholder="DIS 40%, NKE 25%, SBUX 20%, AAPL 15%" spellcheck="false">${esc(pasted)}</textarea>
         <div class="xray-row">
           <button id="xray-go" class="btn" type="button">Parse</button>
-          <span class="xray-fine">Plain tickers take equal weights; percents and DIS:40 forms also parse.</span>
+          <span class="xray-fine">Plain tickers take equal weights; percents, dollar amounts and DIS:40 forms also parse. Long positions only.</span>
         </div>
         <div id="xray-out">${busy ? `<p class="xray-line xray-muted">Reading the committed panel…</p>` : `<p class="xray-line xray-muted">Paste holdings and press Parse.</p>`}</div>
       </div>`;
@@ -213,11 +231,11 @@
   async function render(out, pasted) {
     const parsed = parseHoldings(pasted);
     if (!parsed.length) {
-      out.innerHTML = `<p class="xray-line xray-muted">Nothing parsed. Try <code>DIS 40%, NKE 25%</code>.</p>`;
+      out.innerHTML = `<p class="xray-line xray-muted">Nothing parsed${parsed.skipped?.length ? ` (${parsed.skipped.map((k) => `${esc(k.raw)}: ${esc(k.why)}`).join("; ")})` : ""}. Try <code>DIS 40%, NKE 25%</code>.</p>`;
       return;
     }
     out.innerHTML = `<p class="xray-line xray-muted">Reading the committed panel…</p>`;
-    const [desk, fresh, replay] = await Promise.all([deskOnce(), ...auxOnce()]);
+    const [desk, [fresh, replay]] = await Promise.all([deskOnce(), auxOnce()]);
     if (!desk?.rows) {
       out.innerHTML = `<p class="xray-notice">The committed panel is not available on this deployment, so there is nothing to read this paste against.</p>`;
       return;

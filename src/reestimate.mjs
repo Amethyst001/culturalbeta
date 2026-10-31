@@ -124,7 +124,7 @@ export function revisionAddendum({ moved = [], reestimation = null, caveat = nul
     ? `${reestimation.spent} new Qloo request${reestimation.spent === 1 ? "" : "s"}, ${reestimation.replayed} replayed from the page cache`
     : `${reestimation.replayed} pages replayed from the page cache, no new Qloo request`;
   const tail = failed.length ? ` ${failed.map((r) => `${r.ticker}: ${r.error}`).join("; ")}.` : "";
-  return `Re-estimated at inference because Qloo revised after this panel was built — ${lines.join("; ")}. The first number in each pair is the committed reading of record; the second is the same estimator re-run on a fresh pull at the pipeline's depth (${spend}).${tail}${tailNote}`;
+  return `Re-estimated at inference because Qloo revised after this panel was built — ${lines.join("; ")}. ${caveat ? `The first number in each pair is the pre-revision vintage the replay starts from; the second is the same estimator re-run on a fresh pull at the pipeline's depth (${spend}), which is today's committed reading of record.` : `The first number in each pair is the committed reading of record; the second is the same estimator re-run on a fresh pull at the pipeline's depth (${spend}).`}${tail}${tailNote}`;
 }
 
 // What the payload exposes to the UI, kept separate from the prose so a page can

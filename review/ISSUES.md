@@ -19,7 +19,7 @@ finds it inconvenient is a worse product.
 
 | # | Item | Evidence | Fix / disposition |
 |---|------|----------|-------------------|
-| P0-1 | No public URL, no recorded demo, no Devpost submission | Panel 1 #1, panel 2 #1 | **BLOCKED on deploy + recording.** Deploy kit is written for the shared nginx host (`deploy/install.sh`, `deploy/README.md`). Domain `culturalbeta.ktnamethyst.me` → 84.8.134.19 already resolves. Needs one go-ahead to install on the host (it shares nginx with cockpit). |
+| P0-1 | No public URL, no recorded demo, no Devpost submission | Panel 1 #1, panel 2 #1 | **BLOCKED on deploy + recording.** Deploy kit is written for the shared nginx host (`deploy/install.sh`, `deploy/README.md`). Domain `culturalbeta.ktnamethyst.me` already resolves to the demo host. Needs one go-ahead to install on the host (it shares nginx with cockpit). |
 | P0-2 | Per-name cultural beta is printed as if identified out of sample; DIS shows +43.81 ± 13.84 | Panel 1 #2, panel 2 #2 | **FIX (partial).** The beta *is* identified in sample, on the 19–31 weeks per name where the basket moves; suppressing it would delete the product. What was missing is that fact on the row itself: the sub-label now reads `± se · 23/102 wk`, and the existing identification note is promoted above the table. A full suppression is rejected — it is the desk's central measurement and it carries its own error. |
 | P0-3 | Headline stat card `+0.67 pts ΔR² FROM TASTE` reads as a positive result against a NO SIGNAL grade | Panel 1 #7, panel 2 #3/#7 | **FIX.** Label becomes `ΔR² from taste · in sample`; the highlight is only applied when the factor actually holds out of sample. The number stays (it is real and disclosed) but stops competing with the grade. |
 
