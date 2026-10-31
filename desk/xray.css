@@ -59,3 +59,12 @@
   .xray-link{max-width:none}
   .xray-row{align-items:stretch}
 }
+#xray-out{margin-top:22px}
+@media (max-width:700px){
+  .xray-card td[data-label]::before{content:attr(data-label);display:inline-block;min-width:92px;font-family:var(--mono,monospace);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted,#777);margin-right:8px}
+}
+@media (max-width:700px){
+  .xray-card td.xray-num[data-label]{display:flex;justify-content:space-between;align-items:baseline;text-align:right}
+  .xray-card td[data-label]::before{text-align:left;margin-right:0}
+}
+.xray-stats .stat b.pos{color:var(--good)}.xray-stats .stat b.neg{color:var(--accent)}

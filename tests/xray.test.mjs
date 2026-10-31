@@ -115,7 +115,27 @@ test("gate: a checked peek maps verdicts to pass/moved, keeping only carried fie
 
 test("replay: the mover sentence is built from the artifact's own numbers", () => {
   const replay = { revisionWeek: "2025-12-22", vintageBefore: { through: "2025-12-01" }, movers: [{ ticker: "DIS", betaBefore: 52.77452111145094, betaAfter: 43.80898536170825 }] };
-  assert.equal(X.moverLine("DIS", replay), "moved with Qloo's 2025-12-01 revision; re-estimated 52.77 → 43.81");
+  assert.equal(X.moverLine("DIS", replay), "moved across Qloo's December 2025 revision: 52.77 at the pre-revision vintage → 43.81 today");
+  assert.equal(X.moverLine("KO", { movers: [{ ticker: "KO", betaBefore: 1.2, betaAfter: 1.5 }] }), null); // a sub-point wobble is not a move
   assert.equal(X.moverLine("NKE", replay), null); // not in the artifact, no claim
   assert.equal(X.moverLine("DIS", null), null);
+});
+
+test("shorts, junk weights and dollar amounts are read back, never silently re-signed or re-weighted", () => {
+  const a = X.parseHoldings("DIS:-10, NKE:abc, SBUX 20");
+  assert.equal(JSON.stringify(a.map((h) => [h.ticker, h.weight])), JSON.stringify([["SBUX", 20]]));
+  assert.equal(a.skipped.length, 2);
+  assert.match(a.skipped[0].why, /long-only/);
+  assert.match(a.skipped[1].why, /not a number/);
+  const b = X.parseHoldings("DIS $40,000, NKE $25,000");
+  assert.equal(JSON.stringify(b.map((h) => [h.ticker, h.weight])), JSON.stringify([["DIS", 40000], ["NKE", 25000]]));
+  assert.equal(X.parseHoldings("DIS:40, NKE").mixed, true);
+  assert.equal(X.parseHoldings("DIS:40, NKE:60").mixed, false);
+});
+
+test("the rollup reports what share of the pasted weight it covers", () => {
+  const desk = { rows: [{ ticker: "DIS", status: "ok", culturalBeta: 40, marketBeta: 1, basket: [] }] };
+  const r = X.rollup(X.parseHoldings("DIS:75, ZZZZ:25"), desk);
+  assert.ok(Math.abs(r.coveredShare - 0.75) < 1e-12);
+  assert.equal(r.cultural, 40);
 });

@@ -640,3 +640,14 @@ tr.empty .fclear{display:inline-block;margin-left:6px;vertical-align:-8px}
 @media(max-width:600px){.loves{font-size:18px}}
 /* Verdict tile, neutral ink instead of red */
 .strip .stat.grade.neutral b{color:var(--ink)}
+/* brand mark in the kicker */
+.kicker .brand{display:inline-flex;align-items:center;margin-right:2px;line-height:0}
+.kicker .brand-mark{width:20px;height:20px;border-radius:5px;display:block}
+.logo-wrap.dark{background:var(--ink);border-color:var(--ink)}
+.strip .stat.neutral b{color:var(--ink)}
+.xray-cta{margin:4px 0 18px;font:400 15px/1.45 Georgia,serif;color:var(--muted)}
+.xray-cta a{color:var(--accent);font-weight:700;text-decoration:none;border-bottom:1.5px solid currentColor;margin-right:6px}
+.xray-cta a:hover{color:var(--ink)}
+
+/* Mobile: the side pills must wrap, or the head grid widens past the viewport. */
+@media (max-width:600px){.side{white-space:normal}.side .state{white-space:normal;text-align:left}}
