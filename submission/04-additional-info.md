@@ -14,7 +14,7 @@ That is the first commit (`git log --reverse`). The build is 10 commits to 30 Oc
 https://culturalbeta.ktnamethyst.me
 ```
 
-Pending deploy — DNS already resolves `culturalbeta.ktnamethyst.me` → `84.8.134.19`.
+Pending deploy — DNS already resolves `culturalbeta.ktnamethyst.me` to the demo host.
 If the domain changes, update only this line; nothing in the story depends on it.
 
 ## Public code repo
