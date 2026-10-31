@@ -1,0 +1,3232 @@
+{
+ "stamp": "2026-10-30T23-43-22",
+ "target": "http://127.0.0.1:8811",
+ "results": [
+  {
+   "viewport": "desktop",
+   "route": "desk",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 1440 / viewport 1440"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 50px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "We tested taste against 80 consumer stocks. None"
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "102 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "101 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "12 sector chips"
+    },
+    {
+     "id": "book-filter-narrows",
+     "ok": true,
+     "detail": "typed disney: 1 of 101"
+    },
+    {
+     "id": "book-filter-clears",
+     "ok": true,
+     "detail": "cleared: 101 of 101"
+    },
+    {
+     "id": "book-filter-keeps-focus",
+     "ok": true,
+     "detail": "focus survives the re-render"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "4 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "value-add-slot",
+     "ok": true,
+     "detail": "ΔR² slot present"
+    },
+    {
+     "id": "verdict-line",
+     "ok": true,
+     "detail": "146 chars"
+    },
+    {
+     "id": "verdict-chips",
+     "ok": true,
+     "detail": "8 chips, grade NO SIGNAL (IN-SAMPLE)"
+    },
+    {
+     "id": "verdict-note",
+     "ok": true,
+     "detail": "NO SIGNAL (IN-SAMPLE) = graded in sample only. T…"
+    },
+    {
+     "id": "grade-in-sample",
+     "ok": true,
+     "detail": "NO SIGNAL (IN-SAMPLE)"
+    },
+    {
+     "id": "basis-on-landing",
+     "ok": true,
+     "detail": "Data basis. Qloo's last revision in this pull is the week en…"
+    },
+    {
+     "id": "basis-effect-ratio-plausible",
+     "ok": true,
+     "detail": "states 20× larger"
+    },
+    {
+     "id": "basis-measured-in-points",
+     "ok": true,
+     "detail": "measured 0.67 ΔR² points"
+    },
+    {
+     "id": "landing-state-strip",
+     "ok": true,
+     "detail": "5 facts in the state strip"
+    },
+    {
+     "id": "landing-finding-first",
+     "ok": true,
+     "detail": "finding → state strip → table"
+    },
+    {
+     "id": "landing-caveats-below-table",
+     "ok": true,
+     "detail": "data basis follows the holdings table"
+    },
+    {
+     "id": "unresolved-states-why",
+     "ok": true,
+     "detail": "18 unresolved rows"
+    },
+    {
+     "id": "state-tag-derived",
+     "ok": true,
+     "detail": "80/101 PRICED · QLOO-SOURCED · SERIES ENDS 2025-12-22"
+    },
+    {
+     "id": "state-tag-no-freshness-claim",
+     "ok": true,
+     "detail": "80/101 PRICED · QLOO-SOURCED · SERIES ENDS 2025-12-22"
+    },
+    {
+     "id": "contrast-secondary",
+     "ok": true,
+     "detail": "5.29:1 rgb(107, 97, 82) on rgb(244, 239, 227)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "table-headers-match",
+     "ok": true,
+     "detail": "5 th vs 5 cells"
+    },
+    {
+     "id": "numeric-alignment",
+     "ok": true,
+     "detail": "right-aligned numerals"
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-30T23-43-22/desktop-desk.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "desktop",
+   "route": "map",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 1440 / viewport 1440"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 50px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "Taste map."
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "102 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "0 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "0 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "4 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "map-one-dot-per-sector",
+     "ok": true,
+     "detail": "11 sub-sector dots"
+    },
+    {
+     "id": "map-labels-separated",
+     "ok": true,
+     "detail": "11 labels, no overlap"
+    },
+    {
+     "id": "contrast-secondary",
+     "ok": true,
+     "detail": "16.77:1 rgb(28, 23, 16) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-30T23-43-22/desktop-map.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "desktop",
+   "route": "evidence",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 1440 / viewport 1440"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 50px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "Evidence desk."
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "102 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "101 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "0 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": "169/169 169/169 169/169 169/169 169/169 169/169 169/169 169/169 169/169 169/169 169/169 169/169 169/169 169/169 169/169 169/169 169/169 169/169 169/169 169/169 169/169 169/169 169/169 169/169 169/169 169/169 169/169 169/"
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "4 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "robustness-band",
+     "ok": true,
+     "detail": "2 tests: no test · p 0.898"
+    },
+    {
+     "id": "window-labels",
+     "ok": true,
+     "detail": "1 window labels"
+    },
+    {
+     "id": "ablation-band",
+     "ok": true,
+     "detail": "2 cells: -0.78 pts · 57%"
+    },
+    {
+     "id": "ablation-intervals",
+     "ok": true,
+     "detail": "2 interval lines, refit labelled: true"
+    },
+    {
+     "id": "ablation-no-insample-cell",
+     "ok": true,
+     "detail": "in-sample cell not in the band"
+    },
+    {
+     "id": "ablation-interval-rule",
+     "ok": true,
+     "detail": "wider-interval rule printed at the number"
+    },
+    {
+     "id": "peer-control-no-qloo",
+     "ok": true,
+     "detail": "peer control stated as Qloo-free"
+    },
+    {
+     "id": "second-window-regime",
+     "ok": true,
+     "detail": "second window reported as untestable, pre-registration stated"
+    },
+    {
+     "id": "ablation-rotation-null",
+     "ok": true,
+     "detail": "ablation carries its own rotation null"
+    },
+    {
+     "id": "sentiment-exclusion",
+     "ok": true,
+     "detail": "sentiment exclusion printed with source, cadence and interval"
+    },
+    {
+     "id": "sentiment-chip-honest",
+     "ok": true,
+     "detail": "chip does not claim survival when its interval crosses zero"
+    },
+    {
+     "id": "alerts-route",
+     "ok": true,
+     "detail": "alerts feed listed in the product surface"
+    },
+    {
+     "id": "cost-band-numbers",
+     "ok": true,
+     "detail": "3,816 requests · 0 requests · p 0.898 · p 0.830 · p 0.126"
+    },
+    {
+     "id": "cost-band-both-nulls",
+     "ok": true,
+     "detail": "rotation p 0.898 / permutation p 0.830 / peer p 0.126"
+    },
+    {
+     "id": "pooled-panel",
+     "ok": true,
+     "detail": "11 sub-sector rows, post-hoc label true"
+    },
+    {
+     "id": "pooled-multiplicity",
+     "ok": true,
+     "detail": "multiplicity across sub-sector tests printed"
+    },
+    {
+     "id": "pooled-estimand-scoped",
+     "ok": true,
+     "detail": "pooled reading scoped as a sub-sector estimand, not a per-name test"
+    },
+    {
+     "id": "pooled-name-market",
+     "ok": true,
+     "detail": "common-slope restriction removed in a second arm"
+    },
+    {
+     "id": "revision-cut-sensitivity",
+     "ok": true,
+     "detail": "revision cut carries its own re-run"
+    },
+    {
+     "id": "permutation-null",
+     "ok": true,
+     "detail": "date-permutation null printed beside the rotation null"
+    },
+    {
+     "id": "permutation-blocks",
+     "ok": true,
+     "detail": "cadence-respecting permutation printed beside the week-by-week one"
+    },
+    {
+     "id": "nulls-every-null",
+     "ok": true,
+     "detail": "claim requires every null, and the rule is named as max-of-p"
+    },
+    {
+     "id": "dispersion-test",
+     "ok": true,
+     "detail": "variance vs noise vs independent-rotation null"
+    },
+    {
+     "id": "dispersion-power",
+     "ok": true,
+     "detail": "power calibration printed and the reading scoped to it"
+    },
+    {
+     "id": "dispersion-power-observed",
+     "ok": true,
+     "detail": "power at the observed spread printed, non-detection scoped to it"
+    },
+    {
+     "id": "dispersion-power-pre-specified",
+     "ok": true,
+     "detail": "power bar fixed before the run, not read off the observed spread"
+    },
+    {
+     "id": "dispersion-benchmark-reconciled",
+     "ok": true,
+     "detail": "miscalibrated benchmark identified from inside the null"
+    },
+    {
+     "id": "frozen-heldout",
+     "ok": true,
+     "detail": "held-out slice marked untestable with the reason, not reported as a negative"
+    },
+    {
+     "id": "grade-summary",
+     "ok": true,
+     "detail": "grade and its frozen-slice qualifier printed before the table"
+    },
+    {
+     "id": "vintage-card",
+     "ok": true,
+     "detail": "data vintage card names the last revision and the carry-forward"
+    },
+    {
+     "id": "qloo-vs-peer",
+     "ok": true,
+     "detail": "what Qloo adds over the no-Qloo peer basket is stated, not inferred"
+    },
+    {
+     "id": "contrast-secondary",
+     "ok": true,
+     "detail": "5.72:1 rgb(107, 97, 82) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "table-headers-match",
+     "ok": true,
+     "detail": "6 th vs 6 cells"
+    },
+    {
+     "id": "numeric-alignment",
+     "ok": true,
+     "detail": "right-aligned numerals"
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-30T23-43-22/desktop-evidence.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "desktop",
+   "route": "holding",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 1440 / viewport 1440"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 50px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "ELF — e.l.f. Beauty"
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "102 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "0 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "0 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "4 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "value-add-slot",
+     "ok": true,
+     "detail": "ΔR² slot present"
+    },
+    {
+     "id": "holding-basket-legible",
+     "ok": true,
+     "detail": "2 basket blocks · 0 stub rows · 0 labelled state"
+    },
+    {
+     "id": "holding-two-intervals",
+     "ok": true,
+     "detail": "no interval block"
+    },
+    {
+     "id": "contrast-secondary",
+     "ok": true,
+     "detail": "16.77:1 rgb(28, 23, 16) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-30T23-43-22/desktop-holding.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "desktop",
+   "route": "read",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 1440 / viewport 1440"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 50px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "How to read this desk."
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "102 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "0 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "0 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "4 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "read-plain-language",
+     "ok": true,
+     "detail": "3623 words"
+    },
+    {
+     "id": "read-no-raw-markup",
+     "ok": true,
+     "detail": "no raw markup"
+    },
+    {
+     "id": "read-falsifiers",
+     "ok": true,
+     "detail": "four falsifiers named"
+    },
+    {
+     "id": "read-claim-level",
+     "ok": true,
+     "detail": "claim bounded to the book"
+    },
+    {
+     "id": "read-negative-valuation",
+     "ok": true,
+     "detail": "negative case priced honestly"
+    },
+    {
+     "id": "read-two-nulls",
+     "ok": true,
+     "detail": "market null and ablation null told apart"
+    },
+    {
+     "id": "read-sentiment-exclusion",
+     "ok": true,
+     "detail": "sentiment exclusion named on the read page"
+    },
+    {
+     "id": "read-run-cost-numeric",
+     "ok": true,
+     "detail": "the Qloo cost of a run printed as numbers, control arm at zero"
+    },
+    {
+     "id": "contrast-secondary",
+     "ok": true,
+     "detail": "16.77:1 rgb(28, 23, 16) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-30T23-43-22/desktop-read.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "desktop",
+   "route": "ask",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 1440 / viewport 1440"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 50px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "Ask the desk."
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "102 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "0 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "0 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "4 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "ask-route-input",
+     "ok": true,
+     "detail": "input present"
+    },
+    {
+     "id": "ask-read-only-claim",
+     "ok": true,
+     "detail": "read-only claim present"
+    },
+    {
+     "id": "ask-form-or-refusal",
+     "ok": true,
+     "detail": "enabled form"
+    },
+    {
+     "id": "ask-suggestions",
+     "ok": true,
+     "detail": "7 suggestion chips"
+    },
+    {
+     "id": "ask-no-answer-before-question",
+     "ok": true,
+     "detail": "no answer rendered cold"
+    },
+    {
+     "id": "ask-freshness-attestation",
+     "ok": true,
+     "detail": "FRESHNESS NOT CHECKED — today's live Qloo budget is spent."
+    },
+    {
+     "id": "ask-unchecked-attestation-carries-no-date",
+     "ok": true,
+     "detail": "reason shown, no date: FRESHNESS NOT CHECKED — today's live Qloo budget is spent."
+    },
+    {
+     "id": "ask-freshness-endpoint-present",
+     "ok": true,
+     "detail": "checked=false why=budget_exhausted"
+    },
+    {
+     "id": "ask-receipt-block",
+     "ok": true,
+     "detail": "no receipt block"
+    },
+    {
+     "id": "ask-receipt-names-the-panel-and-revision",
+     "ok": true,
+     "detail": "no panel entry"
+    },
+    {
+     "id": "ask-receipt-carries-the-attestation",
+     "ok": true,
+     "detail": "no freshness entry"
+    },
+    {
+     "id": "ask-attestation-gate",
+     "ok": true,
+     "detail": "no gate element"
+    },
+    {
+     "id": "ask-attestation-gate-is-not-a-pass-without-a-reading",
+     "ok": true,
+     "detail": "gate  vs check false"
+    },
+    {
+     "id": "ask-receipt-not-invented",
+     "ok": true,
+     "detail": "0 call entries against 0 trace rows"
+    },
+    {
+     "id": "ask-receipt-each-call-names-a-response",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "ask-receipt-no-credential",
+     "ok": true,
+     "detail": "0 entries swept for credential-shaped text"
+    },
+    {
+     "id": "ask-receipt-in-the-desks-language",
+     "ok": true,
+     "detail": "no block"
+    },
+    {
+     "id": "provenance-chip-contrast",
+     "ok": true,
+     "detail": ".fresh-v 5.72:1 at 10.5px rgb(107, 97, 82) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-30T23-43-22/desktop-ask.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "desktop",
+   "route": "ask-answered",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 1440 / viewport 1440"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 50px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "Ask the desk."
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "102 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "0 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "0 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "4 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "ask-route-input",
+     "ok": true,
+     "detail": "input present"
+    },
+    {
+     "id": "ask-read-only-claim",
+     "ok": true,
+     "detail": "read-only claim present"
+    },
+    {
+     "id": "ask-form-or-refusal",
+     "ok": true,
+     "detail": "enabled form"
+    },
+    {
+     "id": "ask-suggestions",
+     "ok": true,
+     "detail": "7 suggestion chips"
+    },
+    {
+     "id": "ask-no-answer-before-question",
+     "ok": true,
+     "detail": "no answer rendered cold"
+    },
+    {
+     "id": "replay-control-present",
+     "ok": true,
+     "detail": "REPLAY THE DESK BEFORE QLOO'S 2025-12-22 REVISION"
+    },
+    {
+     "id": "replay-banner-absent-by-default",
+     "ok": true,
+     "detail": "no replay banner on the default run"
+    },
+    {
+     "id": "ask-freshness-attestation",
+     "ok": true,
+     "detail": "FRESHNESS NOT CHECKED — today's live Qloo budget is spent."
+    },
+    {
+     "id": "ask-unchecked-attestation-carries-no-date",
+     "ok": true,
+     "detail": "reason shown, no date: FRESHNESS NOT CHECKED — today's live Qloo budget is spent."
+    },
+    {
+     "id": "ask-freshness-endpoint-present",
+     "ok": true,
+     "detail": "checked=false why=budget_exhausted"
+    },
+    {
+     "id": "ask-answer-arrives",
+     "ok": true,
+     "detail": "answered"
+    },
+    {
+     "id": "ask-receipt-block",
+     "ok": true,
+     "detail": ", ,  ()"
+    },
+    {
+     "id": "ask-receipt-names-the-panel-and-revision",
+     "ok": false,
+     "detail": "no panel entry"
+    },
+    {
+     "id": "ask-receipt-carries-the-attestation",
+     "ok": false,
+     "detail": "no freshness entry"
+    },
+    {
+     "id": "ask-attestation-gate",
+     "ok": true,
+     "detail": "unattested · att-d344a8673f54 · after the answer: true"
+    },
+    {
+     "id": "ask-attestation-gate-is-not-a-pass-without-a-reading",
+     "ok": true,
+     "detail": "gate unattested vs check false"
+    },
+    {
+     "id": "ask-receipt-not-invented",
+     "ok": true,
+     "detail": "0 call entries against 2 trace rows"
+    },
+    {
+     "id": "ask-receipt-each-call-names-a-response",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "ask-receipt-no-credential",
+     "ok": true,
+     "detail": "3 entries swept for credential-shaped text"
+    },
+    {
+     "id": "ask-receipt-in-the-desks-language",
+     "ok": true,
+     "detail": "ui-monospace · receipt sits above the trace: true"
+    },
+    {
+     "id": "answered-no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 1440 / viewport 1440 with the receipt open"
+    },
+    {
+     "id": "answered-receipt-rows-readable",
+     "ok": true,
+     "detail": "966/966 966/966 966/966"
+    },
+    {
+     "id": "provenance-body-contrast",
+     "ok": true,
+     "detail": ".receipts .rc span 5.72:1 at 10.5px rgb(107, 97, 82) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "provenance-head-contrast",
+     "ok": true,
+     "detail": ".receipts .rc b 16.77:1 at 10.5px rgb(28, 23, 16) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "provenance-chip-contrast",
+     "ok": true,
+     "detail": ".fresh-v 5.72:1 at 10.5px rgb(107, 97, 82) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-30T23-43-22/desktop-ask-answered.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "desktop",
+   "route": "ask-replay",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 1440 / viewport 1440"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 50px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "Ask the desk."
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "102 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "0 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "0 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "4 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "ask-route-input",
+     "ok": true,
+     "detail": "input present"
+    },
+    {
+     "id": "ask-read-only-claim",
+     "ok": true,
+     "detail": "read-only claim present"
+    },
+    {
+     "id": "ask-form-or-refusal",
+     "ok": true,
+     "detail": "enabled form"
+    },
+    {
+     "id": "ask-suggestions",
+     "ok": true,
+     "detail": "7 suggestion chips"
+    },
+    {
+     "id": "ask-no-answer-before-question",
+     "ok": true,
+     "detail": "no answer rendered cold"
+    },
+    {
+     "id": "replay-control-present",
+     "ok": true,
+     "detail": "✓\nREPLAY THE DESK BEFORE QLOO'S 2025-12-22 REVISION"
+    },
+    {
+     "id": "replay-banner-absent-by-default",
+     "ok": true,
+     "detail": "no replay banner on the default run"
+    },
+    {
+     "id": "ask-freshness-attestation",
+     "ok": true,
+     "detail": "FRESHNESS NOT CHECKED — today's live Qloo budget is spent."
+    },
+    {
+     "id": "ask-unchecked-attestation-carries-no-date",
+     "ok": true,
+     "detail": "reason shown, no date: FRESHNESS NOT CHECKED — today's live Qloo budget is spent."
+    },
+    {
+     "id": "ask-freshness-endpoint-present",
+     "ok": true,
+     "detail": "checked=false why=budget_exhausted"
+    },
+    {
+     "id": "ask-answer-arrives",
+     "ok": true,
+     "detail": "answered"
+    },
+    {
+     "id": "ask-receipt-block",
+     "ok": true,
+     "detail": ", ,  ()"
+    },
+    {
+     "id": "ask-receipt-names-the-panel-and-revision",
+     "ok": false,
+     "detail": "no panel entry"
+    },
+    {
+     "id": "ask-receipt-carries-the-attestation",
+     "ok": false,
+     "detail": "no freshness entry"
+    },
+    {
+     "id": "ask-attestation-gate",
+     "ok": true,
+     "detail": "unattested · att-d344a8673f54 · after the answer: true"
+    },
+    {
+     "id": "ask-attestation-gate-is-not-a-pass-without-a-reading",
+     "ok": true,
+     "detail": "gate unattested vs check false"
+    },
+    {
+     "id": "ask-receipt-not-invented",
+     "ok": true,
+     "detail": "0 call entries against 1 trace rows"
+    },
+    {
+     "id": "ask-receipt-each-call-names-a-response",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "ask-receipt-no-credential",
+     "ok": true,
+     "detail": "3 entries swept for credential-shaped text"
+    },
+    {
+     "id": "ask-receipt-in-the-desks-language",
+     "ok": true,
+     "detail": "ui-monospace · receipt sits above the trace: true"
+    },
+    {
+     "id": "answered-no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 1440 / viewport 1440 with the receipt open"
+    },
+    {
+     "id": "answered-receipt-rows-readable",
+     "ok": true,
+     "detail": "966/966 966/966 966/966"
+    },
+    {
+     "id": "provenance-body-contrast",
+     "ok": true,
+     "detail": ".receipts .rc span 5.72:1 at 10.5px rgb(107, 97, 82) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "provenance-head-contrast",
+     "ok": true,
+     "detail": ".receipts .rc b 16.77:1 at 10.5px rgb(28, 23, 16) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "provenance-chip-contrast",
+     "ok": true,
+     "detail": ".fresh-v 5.72:1 at 10.5px rgb(107, 97, 82) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-30T23-43-22/desktop-ask-replay.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "tablet",
+   "route": "desk",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 768 / viewport 768"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 38px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "We tested taste against 80 consumer stocks. None"
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "102 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "101 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "12 sector chips"
+    },
+    {
+     "id": "book-filter-narrows",
+     "ok": true,
+     "detail": "typed disney: 1 of 101"
+    },
+    {
+     "id": "book-filter-clears",
+     "ok": true,
+     "detail": "cleared: 101 of 101"
+    },
+    {
+     "id": "book-filter-keeps-focus",
+     "ok": true,
+     "detail": "focus survives the re-render"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "4 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "value-add-slot",
+     "ok": true,
+     "detail": "ΔR² slot present"
+    },
+    {
+     "id": "verdict-line",
+     "ok": true,
+     "detail": "146 chars"
+    },
+    {
+     "id": "verdict-chips",
+     "ok": true,
+     "detail": "8 chips, grade NO SIGNAL (IN-SAMPLE)"
+    },
+    {
+     "id": "verdict-note",
+     "ok": true,
+     "detail": "NO SIGNAL (IN-SAMPLE) = graded in sample only. T…"
+    },
+    {
+     "id": "grade-in-sample",
+     "ok": true,
+     "detail": "NO SIGNAL (IN-SAMPLE)"
+    },
+    {
+     "id": "basis-on-landing",
+     "ok": true,
+     "detail": "Data basis. Qloo's last revision in this pull is the week en…"
+    },
+    {
+     "id": "basis-effect-ratio-plausible",
+     "ok": true,
+     "detail": "states 20× larger"
+    },
+    {
+     "id": "basis-measured-in-points",
+     "ok": true,
+     "detail": "measured 0.67 ΔR² points"
+    },
+    {
+     "id": "landing-state-strip",
+     "ok": true,
+     "detail": "5 facts in the state strip"
+    },
+    {
+     "id": "landing-finding-first",
+     "ok": true,
+     "detail": "finding → state strip → table"
+    },
+    {
+     "id": "landing-caveats-below-table",
+     "ok": true,
+     "detail": "data basis follows the holdings table"
+    },
+    {
+     "id": "unresolved-states-why",
+     "ok": true,
+     "detail": "18 unresolved rows"
+    },
+    {
+     "id": "state-tag-derived",
+     "ok": true,
+     "detail": "80/101 PRICED · QLOO-SOURCED · SERIES ENDS 2025-12-22"
+    },
+    {
+     "id": "state-tag-no-freshness-claim",
+     "ok": true,
+     "detail": "80/101 PRICED · QLOO-SOURCED · SERIES ENDS 2025-12-22"
+    },
+    {
+     "id": "contrast-secondary",
+     "ok": true,
+     "detail": "5.29:1 rgb(107, 97, 82) on rgb(244, 239, 227)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "table-headers-match",
+     "ok": true,
+     "detail": "5 th vs 5 cells"
+    },
+    {
+     "id": "numeric-alignment",
+     "ok": true,
+     "detail": "right-aligned numerals"
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-30T23-43-22/tablet-desk.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "tablet",
+   "route": "map",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 768 / viewport 768"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 38px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "Taste map."
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "102 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "0 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "0 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "4 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "map-one-dot-per-sector",
+     "ok": true,
+     "detail": "11 sub-sector dots"
+    },
+    {
+     "id": "map-labels-separated",
+     "ok": true,
+     "detail": "11 labels, no overlap"
+    },
+    {
+     "id": "contrast-secondary",
+     "ok": true,
+     "detail": "16.77:1 rgb(28, 23, 16) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-30T23-43-22/tablet-map.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "tablet",
+   "route": "evidence",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 1117 / viewport 1117"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 38px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "Evidence desk."
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "102 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "101 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "0 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": "178/178 178/178 178/178 178/178 178/178 178/178 178/178 178/178 178/178 178/178 178/178 178/178 178/178 178/178 178/178 178/178 178/178 178/178 178/178 178/178 178/178 178/178 178/178 178/178 178/178 178/178 178/178 178/"
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "4 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "robustness-band",
+     "ok": true,
+     "detail": "2 tests: no test · p 0.898"
+    },
+    {
+     "id": "window-labels",
+     "ok": true,
+     "detail": "1 window labels"
+    },
+    {
+     "id": "ablation-band",
+     "ok": true,
+     "detail": "2 cells: -0.78 pts · 57%"
+    },
+    {
+     "id": "ablation-intervals",
+     "ok": true,
+     "detail": "2 interval lines, refit labelled: true"
+    },
+    {
+     "id": "ablation-no-insample-cell",
+     "ok": true,
+     "detail": "in-sample cell not in the band"
+    },
+    {
+     "id": "ablation-interval-rule",
+     "ok": true,
+     "detail": "wider-interval rule printed at the number"
+    },
+    {
+     "id": "peer-control-no-qloo",
+     "ok": true,
+     "detail": "peer control stated as Qloo-free"
+    },
+    {
+     "id": "second-window-regime",
+     "ok": true,
+     "detail": "second window reported as untestable, pre-registration stated"
+    },
+    {
+     "id": "ablation-rotation-null",
+     "ok": true,
+     "detail": "ablation carries its own rotation null"
+    },
+    {
+     "id": "sentiment-exclusion",
+     "ok": true,
+     "detail": "sentiment exclusion printed with source, cadence and interval"
+    },
+    {
+     "id": "sentiment-chip-honest",
+     "ok": true,
+     "detail": "chip does not claim survival when its interval crosses zero"
+    },
+    {
+     "id": "alerts-route",
+     "ok": true,
+     "detail": "alerts feed listed in the product surface"
+    },
+    {
+     "id": "cost-band-numbers",
+     "ok": true,
+     "detail": "3,816 requests · 0 requests · p 0.898 · p 0.830 · p 0.126"
+    },
+    {
+     "id": "cost-band-both-nulls",
+     "ok": true,
+     "detail": "rotation p 0.898 / permutation p 0.830 / peer p 0.126"
+    },
+    {
+     "id": "pooled-panel",
+     "ok": true,
+     "detail": "11 sub-sector rows, post-hoc label true"
+    },
+    {
+     "id": "pooled-multiplicity",
+     "ok": true,
+     "detail": "multiplicity across sub-sector tests printed"
+    },
+    {
+     "id": "pooled-estimand-scoped",
+     "ok": true,
+     "detail": "pooled reading scoped as a sub-sector estimand, not a per-name test"
+    },
+    {
+     "id": "pooled-name-market",
+     "ok": true,
+     "detail": "common-slope restriction removed in a second arm"
+    },
+    {
+     "id": "revision-cut-sensitivity",
+     "ok": true,
+     "detail": "revision cut carries its own re-run"
+    },
+    {
+     "id": "permutation-null",
+     "ok": true,
+     "detail": "date-permutation null printed beside the rotation null"
+    },
+    {
+     "id": "permutation-blocks",
+     "ok": true,
+     "detail": "cadence-respecting permutation printed beside the week-by-week one"
+    },
+    {
+     "id": "nulls-every-null",
+     "ok": true,
+     "detail": "claim requires every null, and the rule is named as max-of-p"
+    },
+    {
+     "id": "dispersion-test",
+     "ok": true,
+     "detail": "variance vs noise vs independent-rotation null"
+    },
+    {
+     "id": "dispersion-power",
+     "ok": true,
+     "detail": "power calibration printed and the reading scoped to it"
+    },
+    {
+     "id": "dispersion-power-observed",
+     "ok": true,
+     "detail": "power at the observed spread printed, non-detection scoped to it"
+    },
+    {
+     "id": "dispersion-power-pre-specified",
+     "ok": true,
+     "detail": "power bar fixed before the run, not read off the observed spread"
+    },
+    {
+     "id": "dispersion-benchmark-reconciled",
+     "ok": true,
+     "detail": "miscalibrated benchmark identified from inside the null"
+    },
+    {
+     "id": "frozen-heldout",
+     "ok": true,
+     "detail": "held-out slice marked untestable with the reason, not reported as a negative"
+    },
+    {
+     "id": "grade-summary",
+     "ok": true,
+     "detail": "grade and its frozen-slice qualifier printed before the table"
+    },
+    {
+     "id": "vintage-card",
+     "ok": true,
+     "detail": "data vintage card names the last revision and the carry-forward"
+    },
+    {
+     "id": "qloo-vs-peer",
+     "ok": true,
+     "detail": "what Qloo adds over the no-Qloo peer basket is stated, not inferred"
+    },
+    {
+     "id": "contrast-secondary",
+     "ok": true,
+     "detail": "5.72:1 rgb(107, 97, 82) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "table-headers-match",
+     "ok": true,
+     "detail": "6 th vs 6 cells"
+    },
+    {
+     "id": "numeric-alignment",
+     "ok": true,
+     "detail": "right-aligned numerals"
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-30T23-43-22/tablet-evidence.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "tablet",
+   "route": "holding",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 768 / viewport 768"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 38px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "ELF — e.l.f. Beauty"
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "102 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "0 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "0 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "4 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "value-add-slot",
+     "ok": true,
+     "detail": "ΔR² slot present"
+    },
+    {
+     "id": "holding-basket-legible",
+     "ok": true,
+     "detail": "2 basket blocks · 0 stub rows · 0 labelled state"
+    },
+    {
+     "id": "holding-two-intervals",
+     "ok": true,
+     "detail": "no interval block"
+    },
+    {
+     "id": "contrast-secondary",
+     "ok": true,
+     "detail": "16.77:1 rgb(28, 23, 16) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-30T23-43-22/tablet-holding.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "tablet",
+   "route": "read",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 768 / viewport 768"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 38px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "How to read this desk."
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "102 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "0 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "0 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "4 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "read-plain-language",
+     "ok": true,
+     "detail": "3623 words"
+    },
+    {
+     "id": "read-no-raw-markup",
+     "ok": true,
+     "detail": "no raw markup"
+    },
+    {
+     "id": "read-falsifiers",
+     "ok": true,
+     "detail": "four falsifiers named"
+    },
+    {
+     "id": "read-claim-level",
+     "ok": true,
+     "detail": "claim bounded to the book"
+    },
+    {
+     "id": "read-negative-valuation",
+     "ok": true,
+     "detail": "negative case priced honestly"
+    },
+    {
+     "id": "read-two-nulls",
+     "ok": true,
+     "detail": "market null and ablation null told apart"
+    },
+    {
+     "id": "read-sentiment-exclusion",
+     "ok": true,
+     "detail": "sentiment exclusion named on the read page"
+    },
+    {
+     "id": "read-run-cost-numeric",
+     "ok": true,
+     "detail": "the Qloo cost of a run printed as numbers, control arm at zero"
+    },
+    {
+     "id": "contrast-secondary",
+     "ok": true,
+     "detail": "16.77:1 rgb(28, 23, 16) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-30T23-43-22/tablet-read.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "tablet",
+   "route": "ask",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 768 / viewport 768"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 38px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "Ask the desk."
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "102 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "0 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "0 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "4 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "ask-route-input",
+     "ok": true,
+     "detail": "input present"
+    },
+    {
+     "id": "ask-read-only-claim",
+     "ok": true,
+     "detail": "read-only claim present"
+    },
+    {
+     "id": "ask-form-or-refusal",
+     "ok": true,
+     "detail": "enabled form"
+    },
+    {
+     "id": "ask-suggestions",
+     "ok": true,
+     "detail": "7 suggestion chips"
+    },
+    {
+     "id": "ask-no-answer-before-question",
+     "ok": true,
+     "detail": "no answer rendered cold"
+    },
+    {
+     "id": "ask-freshness-attestation",
+     "ok": true,
+     "detail": "FRESHNESS NOT CHECKED — today's live Qloo budget is spent."
+    },
+    {
+     "id": "ask-unchecked-attestation-carries-no-date",
+     "ok": true,
+     "detail": "reason shown, no date: FRESHNESS NOT CHECKED — today's live Qloo budget is spent."
+    },
+    {
+     "id": "ask-freshness-endpoint-present",
+     "ok": true,
+     "detail": "checked=false why=budget_exhausted"
+    },
+    {
+     "id": "ask-receipt-block",
+     "ok": true,
+     "detail": "no receipt block"
+    },
+    {
+     "id": "ask-receipt-names-the-panel-and-revision",
+     "ok": true,
+     "detail": "no panel entry"
+    },
+    {
+     "id": "ask-receipt-carries-the-attestation",
+     "ok": true,
+     "detail": "no freshness entry"
+    },
+    {
+     "id": "ask-attestation-gate",
+     "ok": true,
+     "detail": "no gate element"
+    },
+    {
+     "id": "ask-attestation-gate-is-not-a-pass-without-a-reading",
+     "ok": true,
+     "detail": "gate  vs check false"
+    },
+    {
+     "id": "ask-receipt-not-invented",
+     "ok": true,
+     "detail": "0 call entries against 0 trace rows"
+    },
+    {
+     "id": "ask-receipt-each-call-names-a-response",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "ask-receipt-no-credential",
+     "ok": true,
+     "detail": "0 entries swept for credential-shaped text"
+    },
+    {
+     "id": "ask-receipt-in-the-desks-language",
+     "ok": true,
+     "detail": "no block"
+    },
+    {
+     "id": "provenance-chip-contrast",
+     "ok": true,
+     "detail": ".fresh-v 5.72:1 at 10.5px rgb(107, 97, 82) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-30T23-43-22/tablet-ask.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "tablet",
+   "route": "ask-answered",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 768 / viewport 768"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 38px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "Ask the desk."
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "102 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "0 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "0 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "4 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "ask-route-input",
+     "ok": true,
+     "detail": "input present"
+    },
+    {
+     "id": "ask-read-only-claim",
+     "ok": true,
+     "detail": "read-only claim present"
+    },
+    {
+     "id": "ask-form-or-refusal",
+     "ok": true,
+     "detail": "enabled form"
+    },
+    {
+     "id": "ask-suggestions",
+     "ok": true,
+     "detail": "7 suggestion chips"
+    },
+    {
+     "id": "ask-no-answer-before-question",
+     "ok": true,
+     "detail": "no answer rendered cold"
+    },
+    {
+     "id": "replay-control-present",
+     "ok": true,
+     "detail": "REPLAY THE DESK BEFORE QLOO'S 2025-12-22 REVISION"
+    },
+    {
+     "id": "replay-banner-absent-by-default",
+     "ok": true,
+     "detail": "no replay banner on the default run"
+    },
+    {
+     "id": "ask-freshness-attestation",
+     "ok": true,
+     "detail": "FRESHNESS NOT CHECKED — today's live Qloo budget is spent."
+    },
+    {
+     "id": "ask-unchecked-attestation-carries-no-date",
+     "ok": true,
+     "detail": "reason shown, no date: FRESHNESS NOT CHECKED — today's live Qloo budget is spent."
+    },
+    {
+     "id": "ask-freshness-endpoint-present",
+     "ok": true,
+     "detail": "checked=false why=budget_exhausted"
+    },
+    {
+     "id": "ask-answer-arrives",
+     "ok": true,
+     "detail": "answered"
+    },
+    {
+     "id": "ask-receipt-block",
+     "ok": true,
+     "detail": ", ,  ()"
+    },
+    {
+     "id": "ask-receipt-names-the-panel-and-revision",
+     "ok": false,
+     "detail": "no panel entry"
+    },
+    {
+     "id": "ask-receipt-carries-the-attestation",
+     "ok": false,
+     "detail": "no freshness entry"
+    },
+    {
+     "id": "ask-attestation-gate",
+     "ok": true,
+     "detail": "unattested · att-d344a8673f54 · after the answer: true"
+    },
+    {
+     "id": "ask-attestation-gate-is-not-a-pass-without-a-reading",
+     "ok": true,
+     "detail": "gate unattested vs check false"
+    },
+    {
+     "id": "ask-receipt-not-invented",
+     "ok": true,
+     "detail": "0 call entries against 2 trace rows"
+    },
+    {
+     "id": "ask-receipt-each-call-names-a-response",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "ask-receipt-no-credential",
+     "ok": true,
+     "detail": "3 entries swept for credential-shaped text"
+    },
+    {
+     "id": "ask-receipt-in-the-desks-language",
+     "ok": true,
+     "detail": "ui-monospace · receipt sits above the trace: true"
+    },
+    {
+     "id": "answered-no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 768 / viewport 768 with the receipt open"
+    },
+    {
+     "id": "answered-receipt-rows-readable",
+     "ok": true,
+     "detail": "678/678 678/678 678/678"
+    },
+    {
+     "id": "provenance-body-contrast",
+     "ok": true,
+     "detail": ".receipts .rc span 5.72:1 at 10.5px rgb(107, 97, 82) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "provenance-head-contrast",
+     "ok": true,
+     "detail": ".receipts .rc b 16.77:1 at 10.5px rgb(28, 23, 16) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "provenance-chip-contrast",
+     "ok": true,
+     "detail": ".fresh-v 5.72:1 at 10.5px rgb(107, 97, 82) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-30T23-43-22/tablet-ask-answered.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "phone",
+   "route": "desk",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 390 / viewport 390"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 31px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "We tested taste against 80 consumer stocks. None"
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "102 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "101 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "12 sector chips"
+    },
+    {
+     "id": "book-filter-narrows",
+     "ok": true,
+     "detail": "typed disney: 1 of 101"
+    },
+    {
+     "id": "book-filter-clears",
+     "ok": true,
+     "detail": "cleared: 101 of 101"
+    },
+    {
+     "id": "book-filter-keeps-focus",
+     "ok": true,
+     "detail": "focus survives the re-render"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "4 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "value-add-slot",
+     "ok": true,
+     "detail": "ΔR² slot present"
+    },
+    {
+     "id": "verdict-line",
+     "ok": true,
+     "detail": "146 chars"
+    },
+    {
+     "id": "verdict-chips",
+     "ok": true,
+     "detail": "8 chips, grade NO SIGNAL (IN-SAMPLE)"
+    },
+    {
+     "id": "verdict-note",
+     "ok": true,
+     "detail": "NO SIGNAL (IN-SAMPLE) = graded in sample only. T…"
+    },
+    {
+     "id": "grade-in-sample",
+     "ok": true,
+     "detail": "NO SIGNAL (IN-SAMPLE)"
+    },
+    {
+     "id": "basis-on-landing",
+     "ok": true,
+     "detail": "Data basis. Qloo's last revision in this pull is the week en…"
+    },
+    {
+     "id": "basis-effect-ratio-plausible",
+     "ok": true,
+     "detail": "states 20× larger"
+    },
+    {
+     "id": "basis-measured-in-points",
+     "ok": true,
+     "detail": "measured 0.67 ΔR² points"
+    },
+    {
+     "id": "landing-state-strip",
+     "ok": true,
+     "detail": "5 facts in the state strip"
+    },
+    {
+     "id": "landing-finding-first",
+     "ok": true,
+     "detail": "finding → state strip → table"
+    },
+    {
+     "id": "landing-caveats-below-table",
+     "ok": true,
+     "detail": "data basis follows the holdings table"
+    },
+    {
+     "id": "unresolved-states-why",
+     "ok": true,
+     "detail": "18 unresolved rows"
+    },
+    {
+     "id": "state-tag-derived",
+     "ok": true,
+     "detail": "80/101 PRICED · QLOO-SOURCED · SERIES ENDS 2025-12-22"
+    },
+    {
+     "id": "state-tag-no-freshness-claim",
+     "ok": true,
+     "detail": "80/101 PRICED · QLOO-SOURCED · SERIES ENDS 2025-12-22"
+    },
+    {
+     "id": "mobile-sort",
+     "ok": true,
+     "detail": "flex · 5 options"
+    },
+    {
+     "id": "mobile-sort-wired",
+     "ok": true,
+     "detail": "state ticker:1 · first ABNB / ABNB"
+    },
+    {
+     "id": "mobile-signal-line",
+     "ok": true,
+     "detail": "signal top 928 · trace top 928"
+    },
+    {
+     "id": "contrast-secondary",
+     "ok": true,
+     "detail": "5.29:1 rgb(107, 97, 82) on rgb(244, 239, 227)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "table-headers-match",
+     "ok": true,
+     "detail": "5 th vs 5 cells"
+    },
+    {
+     "id": "numeric-alignment",
+     "ok": true,
+     "detail": "right-aligned numerals"
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-30T23-43-22/phone-desk.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "phone",
+   "route": "map",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 390 / viewport 390"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 31px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "Taste map."
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "102 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "0 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "0 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "4 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "map-one-dot-per-sector",
+     "ok": true,
+     "detail": "11 sub-sector dots"
+    },
+    {
+     "id": "map-labels-separated",
+     "ok": true,
+     "detail": "11 labels, no overlap"
+    },
+    {
+     "id": "contrast-secondary",
+     "ok": true,
+     "detail": "16.77:1 rgb(28, 23, 16) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-30T23-43-22/phone-map.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "phone",
+   "route": "evidence",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 396 / viewport 396"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 31px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "Evidence desk."
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "102 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "101 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "0 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": "300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/300 300/"
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "4 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "robustness-band",
+     "ok": true,
+     "detail": "2 tests: no test · p 0.898"
+    },
+    {
+     "id": "window-labels",
+     "ok": true,
+     "detail": "1 window labels"
+    },
+    {
+     "id": "ablation-band",
+     "ok": true,
+     "detail": "2 cells: -0.78 pts · 57%"
+    },
+    {
+     "id": "ablation-intervals",
+     "ok": true,
+     "detail": "2 interval lines, refit labelled: true"
+    },
+    {
+     "id": "ablation-no-insample-cell",
+     "ok": true,
+     "detail": "in-sample cell not in the band"
+    },
+    {
+     "id": "ablation-interval-rule",
+     "ok": true,
+     "detail": "wider-interval rule printed at the number"
+    },
+    {
+     "id": "peer-control-no-qloo",
+     "ok": true,
+     "detail": "peer control stated as Qloo-free"
+    },
+    {
+     "id": "second-window-regime",
+     "ok": true,
+     "detail": "second window reported as untestable, pre-registration stated"
+    },
+    {
+     "id": "ablation-rotation-null",
+     "ok": true,
+     "detail": "ablation carries its own rotation null"
+    },
+    {
+     "id": "sentiment-exclusion",
+     "ok": true,
+     "detail": "sentiment exclusion printed with source, cadence and interval"
+    },
+    {
+     "id": "sentiment-chip-honest",
+     "ok": true,
+     "detail": "chip does not claim survival when its interval crosses zero"
+    },
+    {
+     "id": "alerts-route",
+     "ok": true,
+     "detail": "alerts feed listed in the product surface"
+    },
+    {
+     "id": "cost-band-numbers",
+     "ok": true,
+     "detail": "3,816 requests · 0 requests · p 0.898 · p 0.830 · p 0.126"
+    },
+    {
+     "id": "cost-band-both-nulls",
+     "ok": true,
+     "detail": "rotation p 0.898 / permutation p 0.830 / peer p 0.126"
+    },
+    {
+     "id": "pooled-panel",
+     "ok": true,
+     "detail": "11 sub-sector rows, post-hoc label true"
+    },
+    {
+     "id": "pooled-multiplicity",
+     "ok": true,
+     "detail": "multiplicity across sub-sector tests printed"
+    },
+    {
+     "id": "pooled-estimand-scoped",
+     "ok": true,
+     "detail": "pooled reading scoped as a sub-sector estimand, not a per-name test"
+    },
+    {
+     "id": "pooled-name-market",
+     "ok": true,
+     "detail": "common-slope restriction removed in a second arm"
+    },
+    {
+     "id": "revision-cut-sensitivity",
+     "ok": true,
+     "detail": "revision cut carries its own re-run"
+    },
+    {
+     "id": "permutation-null",
+     "ok": true,
+     "detail": "date-permutation null printed beside the rotation null"
+    },
+    {
+     "id": "permutation-blocks",
+     "ok": true,
+     "detail": "cadence-respecting permutation printed beside the week-by-week one"
+    },
+    {
+     "id": "nulls-every-null",
+     "ok": true,
+     "detail": "claim requires every null, and the rule is named as max-of-p"
+    },
+    {
+     "id": "dispersion-test",
+     "ok": true,
+     "detail": "variance vs noise vs independent-rotation null"
+    },
+    {
+     "id": "dispersion-power",
+     "ok": true,
+     "detail": "power calibration printed and the reading scoped to it"
+    },
+    {
+     "id": "dispersion-power-observed",
+     "ok": true,
+     "detail": "power at the observed spread printed, non-detection scoped to it"
+    },
+    {
+     "id": "dispersion-power-pre-specified",
+     "ok": true,
+     "detail": "power bar fixed before the run, not read off the observed spread"
+    },
+    {
+     "id": "dispersion-benchmark-reconciled",
+     "ok": true,
+     "detail": "miscalibrated benchmark identified from inside the null"
+    },
+    {
+     "id": "frozen-heldout",
+     "ok": true,
+     "detail": "held-out slice marked untestable with the reason, not reported as a negative"
+    },
+    {
+     "id": "grade-summary",
+     "ok": true,
+     "detail": "grade and its frozen-slice qualifier printed before the table"
+    },
+    {
+     "id": "vintage-card",
+     "ok": true,
+     "detail": "data vintage card names the last revision and the carry-forward"
+    },
+    {
+     "id": "qloo-vs-peer",
+     "ok": true,
+     "detail": "what Qloo adds over the no-Qloo peer basket is stated, not inferred"
+    },
+    {
+     "id": "contrast-secondary",
+     "ok": true,
+     "detail": "5.72:1 rgb(107, 97, 82) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "table-headers-match",
+     "ok": true,
+     "detail": "6 th vs 6 cells"
+    },
+    {
+     "id": "numeric-alignment",
+     "ok": true,
+     "detail": "right-aligned numerals"
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-30T23-43-22/phone-evidence.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "phone",
+   "route": "holding",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 396 / viewport 396"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 31px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "ELF — e.l.f. Beauty"
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "102 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "0 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "0 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "4 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "value-add-slot",
+     "ok": true,
+     "detail": "ΔR² slot present"
+    },
+    {
+     "id": "holding-basket-legible",
+     "ok": true,
+     "detail": "2 basket blocks · 0 stub rows · 0 labelled state"
+    },
+    {
+     "id": "holding-two-intervals",
+     "ok": true,
+     "detail": "no interval block"
+    },
+    {
+     "id": "mobile-signal-line",
+     "ok": true,
+     "detail": "no row"
+    },
+    {
+     "id": "contrast-secondary",
+     "ok": true,
+     "detail": "16.77:1 rgb(28, 23, 16) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-30T23-43-22/phone-holding.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "phone",
+   "route": "read",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 390 / viewport 390"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 31px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "How to read this desk."
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "102 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "0 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "0 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "4 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "read-plain-language",
+     "ok": true,
+     "detail": "3623 words"
+    },
+    {
+     "id": "read-no-raw-markup",
+     "ok": true,
+     "detail": "no raw markup"
+    },
+    {
+     "id": "read-falsifiers",
+     "ok": true,
+     "detail": "four falsifiers named"
+    },
+    {
+     "id": "read-claim-level",
+     "ok": true,
+     "detail": "claim bounded to the book"
+    },
+    {
+     "id": "read-negative-valuation",
+     "ok": true,
+     "detail": "negative case priced honestly"
+    },
+    {
+     "id": "read-two-nulls",
+     "ok": true,
+     "detail": "market null and ablation null told apart"
+    },
+    {
+     "id": "read-sentiment-exclusion",
+     "ok": true,
+     "detail": "sentiment exclusion named on the read page"
+    },
+    {
+     "id": "read-run-cost-numeric",
+     "ok": true,
+     "detail": "the Qloo cost of a run printed as numbers, control arm at zero"
+    },
+    {
+     "id": "contrast-secondary",
+     "ok": true,
+     "detail": "16.77:1 rgb(28, 23, 16) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-30T23-43-22/phone-read.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "phone",
+   "route": "ask",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 543 / viewport 543"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 31px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "Ask the desk."
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "102 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "0 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "0 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "4 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "ask-route-input",
+     "ok": true,
+     "detail": "input present"
+    },
+    {
+     "id": "ask-read-only-claim",
+     "ok": true,
+     "detail": "read-only claim present"
+    },
+    {
+     "id": "ask-form-or-refusal",
+     "ok": true,
+     "detail": "enabled form"
+    },
+    {
+     "id": "ask-suggestions",
+     "ok": true,
+     "detail": "7 suggestion chips"
+    },
+    {
+     "id": "ask-no-answer-before-question",
+     "ok": true,
+     "detail": "no answer rendered cold"
+    },
+    {
+     "id": "ask-freshness-attestation",
+     "ok": true,
+     "detail": "FRESHNESS NOT CHECKED — today's live Qloo budget is spent."
+    },
+    {
+     "id": "ask-unchecked-attestation-carries-no-date",
+     "ok": true,
+     "detail": "reason shown, no date: FRESHNESS NOT CHECKED — today's live Qloo budget is spent."
+    },
+    {
+     "id": "ask-freshness-endpoint-present",
+     "ok": true,
+     "detail": "checked=false why=budget_exhausted"
+    },
+    {
+     "id": "ask-receipt-block",
+     "ok": true,
+     "detail": "no receipt block"
+    },
+    {
+     "id": "ask-receipt-names-the-panel-and-revision",
+     "ok": true,
+     "detail": "no panel entry"
+    },
+    {
+     "id": "ask-receipt-carries-the-attestation",
+     "ok": true,
+     "detail": "no freshness entry"
+    },
+    {
+     "id": "ask-attestation-gate",
+     "ok": true,
+     "detail": "no gate element"
+    },
+    {
+     "id": "ask-attestation-gate-is-not-a-pass-without-a-reading",
+     "ok": true,
+     "detail": "gate  vs check false"
+    },
+    {
+     "id": "ask-receipt-not-invented",
+     "ok": true,
+     "detail": "0 call entries against 0 trace rows"
+    },
+    {
+     "id": "ask-receipt-each-call-names-a-response",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "ask-receipt-no-credential",
+     "ok": true,
+     "detail": "0 entries swept for credential-shaped text"
+    },
+    {
+     "id": "ask-receipt-in-the-desks-language",
+     "ok": true,
+     "detail": "no block"
+    },
+    {
+     "id": "provenance-chip-contrast",
+     "ok": true,
+     "detail": ".fresh-v 5.72:1 at 10.5px rgb(107, 97, 82) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-30T23-43-22/phone-ask.png",
+   "consoleErrors": []
+  },
+  {
+   "viewport": "phone",
+   "route": "ask-answered",
+   "checks": [
+    {
+     "id": "no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 543 / viewport 543"
+    },
+    {
+     "id": "type-hierarchy",
+     "ok": true,
+     "detail": "Georgia, \"Times New Roman\", serif 31px"
+    },
+    {
+     "id": "page-errors",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "headline-present",
+     "ok": true,
+     "detail": "Ask the desk."
+    },
+    {
+     "id": "window-label",
+     "ok": true,
+     "detail": "102 weeks "
+    },
+    {
+     "id": "book-size",
+     "ok": true,
+     "detail": "0 rows of 101 names"
+    },
+    {
+     "id": "sector-filter",
+     "ok": true,
+     "detail": "0 sector chips"
+    },
+    {
+     "id": "cached-response-wraps",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "id": "tabs-present",
+     "ok": true,
+     "detail": "4 visible tabs"
+    },
+    {
+     "id": "no-placeholder-copy",
+     "ok": true,
+     "detail": "placeholder sweep"
+    },
+    {
+     "id": "ask-route-input",
+     "ok": true,
+     "detail": "input present"
+    },
+    {
+     "id": "ask-read-only-claim",
+     "ok": true,
+     "detail": "read-only claim present"
+    },
+    {
+     "id": "ask-form-or-refusal",
+     "ok": true,
+     "detail": "enabled form"
+    },
+    {
+     "id": "ask-suggestions",
+     "ok": true,
+     "detail": "7 suggestion chips"
+    },
+    {
+     "id": "ask-no-answer-before-question",
+     "ok": true,
+     "detail": "no answer rendered cold"
+    },
+    {
+     "id": "replay-control-present",
+     "ok": true,
+     "detail": "REPLAY THE DESK BEFORE QLOO'S 2025-12-22 REVISION"
+    },
+    {
+     "id": "replay-banner-absent-by-default",
+     "ok": true,
+     "detail": "no replay banner on the default run"
+    },
+    {
+     "id": "ask-freshness-attestation",
+     "ok": true,
+     "detail": "FRESHNESS NOT CHECKED — today's live Qloo budget is spent."
+    },
+    {
+     "id": "ask-unchecked-attestation-carries-no-date",
+     "ok": true,
+     "detail": "reason shown, no date: FRESHNESS NOT CHECKED — today's live Qloo budget is spent."
+    },
+    {
+     "id": "ask-freshness-endpoint-present",
+     "ok": true,
+     "detail": "checked=false why=budget_exhausted"
+    },
+    {
+     "id": "ask-answer-arrives",
+     "ok": true,
+     "detail": "answered"
+    },
+    {
+     "id": "ask-receipt-block",
+     "ok": true,
+     "detail": ", ,  ()"
+    },
+    {
+     "id": "ask-receipt-names-the-panel-and-revision",
+     "ok": false,
+     "detail": "no panel entry"
+    },
+    {
+     "id": "ask-receipt-carries-the-attestation",
+     "ok": false,
+     "detail": "no freshness entry"
+    },
+    {
+     "id": "ask-attestation-gate",
+     "ok": true,
+     "detail": "unattested · att-d344a8673f54 · after the answer: true"
+    },
+    {
+     "id": "ask-attestation-gate-is-not-a-pass-without-a-reading",
+     "ok": true,
+     "detail": "gate unattested vs check false"
+    },
+    {
+     "id": "ask-receipt-not-invented",
+     "ok": true,
+     "detail": "0 call entries against 2 trace rows"
+    },
+    {
+     "id": "ask-receipt-each-call-names-a-response",
+     "ok": true,
+     "detail": "none"
+    },
+    {
+     "id": "ask-receipt-no-credential",
+     "ok": true,
+     "detail": "3 entries swept for credential-shaped text"
+    },
+    {
+     "id": "ask-receipt-in-the-desks-language",
+     "ok": true,
+     "detail": "ui-monospace · receipt sits above the trace: true"
+    },
+    {
+     "id": "answered-no-horizontal-overflow",
+     "ok": true,
+     "detail": "scrollWidth 543 / viewport 543 with the receipt open"
+    },
+    {
+     "id": "answered-receipt-rows-readable",
+     "ok": true,
+     "detail": "300/300 300/300 300/300"
+    },
+    {
+     "id": "provenance-body-contrast",
+     "ok": true,
+     "detail": ".receipts .rc span 5.72:1 at 10.5px rgb(107, 97, 82) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "provenance-head-contrast",
+     "ok": true,
+     "detail": ".receipts .rc b 16.77:1 at 10.5px rgb(28, 23, 16) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "provenance-chip-contrast",
+     "ok": true,
+     "detail": ".fresh-v 5.72:1 at 10.5px rgb(107, 97, 82) on rgb(251, 248, 239)"
+    },
+    {
+     "id": "tap-targets",
+     "ok": true,
+     "detail": ""
+    }
+   ],
+   "screenshot": "C:/Users/USER/Documents/Random/culturalbeta/review/shots-2026-10-30T23-43-22/phone-ask-answered.png",
+   "consoleErrors": []
+  }
+ ]
+}

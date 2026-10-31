@@ -224,6 +224,81 @@ writes the results to `valueAdd.oos`, `valueAdd.placebo`, `valueAdd.permutation`
 `valueAdd.ablation`, with per-name `oos`, `placeboP`, `activeWeeks` and `ablation`
 on every priced row.
 
+## What the null is, exactly
+
+The headline is a null, and a null is only worth reading next to the detection limit
+that produced it. Three numbers make the claim precise.
+
+**It is not a sign error.** Of the 80 priced names, 44 have a negative cultural beta
+and 36 a positive one. The pre-registered rule screens the negative side because the
+hypothesis is a headwind, not because the book leans one way.
+
+**Nothing clears the multiplicity bar, in either direction.** The strongest raw
+association is positive: DIS, beta +43.81, t 3.17, p 0.00205. A lone discovery at
+Benjamini–Hochberg q ≤ 0.10 across 80 names needs p ≤ 0.00125, so DIS misses by a
+factor of 1.64 (q 0.164). The only negative name past |t| ≥ 2 is KDP (beta −27.38,
+t −2.67, p 0.0088, q 0.351). HSY is the other positive name past |t| 2 (t 2.42,
+q 0.461). No name reaches the corrected critical value t 3.32; the closest is DIS at
+3.17.
+
+**The design could not have seen a small effect.** The median name's minimum
+detectable increment is 13.66 points of ΔR² at 80% power (IQR 12.15–14.54; the most
+detectable name needs 8.65). The largest observed increment in the book is 6.73 points
+(DIS), and the book mean is 0.67. So "0 of 80" bounds large effects; it does not show
+that taste has no small one. The held-out slice cannot narrow that bound at this
+vintage: after Qloo's 2025-12-22 revision, all 35 scored weeks carry a zero basket
+return for every name (`nonzeroRegressorWeeks: 0`), so the OOS cell reads "no test"
+rather than a number. The per-row `oos.deltaR2` is the difference two training fits
+make when projected onto a frozen regressor; it is not evidence of reversal and is not
+quoted as one.
+
+The reading is therefore a **bounded null**: no effect large enough to clear the
+pre-registered bar was detected, and the window can exclude effects above roughly 14
+points of ΔR², not below it.
+
+### Known statistical limitations
+
+Three properties of the arithmetic bound what this null can say. The full
+decomposition is in `review/NULL-REDTEAM.md`.
+
+- The Benjamini–Hochberg family is the 80 of 101 names Qloo could resolve and price;
+  18 unresolved names and 3 without complete prices sit outside it, so the null is
+  conditional on that population.
+- The flag rule tests a one-sided negative hypothesis while the q is computed from
+  two-sided p-values, which is conservative for negative names. It changes no flag at
+  q ≤ 0.10: KDP's one-sided q is 0.1756–0.3511 depending on the variant (all-p-halved,
+  sign-adjusted, negative-only), all above 0.10.
+- The minimum-detectable-effect bound uses the two-sided t quantile (t 3.32); the
+  one-sided quantile at the same threshold is 3.10, which would put DIS's own MDE at
+  9.99 points of ΔR² rather than 10.97.
+
+## Replaying a real catalogue revision
+
+The live gate cannot fire today: Qloo's newest revision (2025-12-22) is already in
+the panel, so a fresh probe reports "newer weeks, no newer signal". To show what the
+gate does when it fires, the desk replays the revision on the real cached data.
+
+`node scripts/revision-replay.mjs` rebuilds the desk as it stood before 2025-12-22
+(pre-revision vintage through 2025-12-01, 55 aligned weeks) with the same estimator,
+basket construction and revision cut as the committed pipeline, and compares it with
+the committed 102-week panel. Both sides price the same 80 names, and the
+Benjamini–Hochberg q is recomputed across the whole book on each side, because every
+name is re-estimated.
+
+Result: **0 flags on both sides, 0 flips**; median |Δβ| 0.589 points, p90 6.74, max
+160.3 (PARA). DIS moves 52.775 → 43.809 (Δ −8.97). The revision moves point
+estimates; it does not change the conclusion. The comparison also cannot separate the
+revision from sample length — 55 weeks before against 102 after — and the artifact's
+`caveat` says so.
+
+The same artifact powers `POST /api/ask` with `{"replay":"2025-12-22"}`: the server
+slices the desk to the pre-revision vintage, pins the live probe to the revision week,
+and, when the gate reports `moved`, re-runs `live_cultural_beta` and prints the
+committed and re-estimated betas side by side. On this checkout that re-estimate
+replays 47 pages from the page cache and spends **0 new Qloo requests**. The committed
+number is never overwritten; the answer carries both, and the replay banner says it is
+a replay, not a revision today.
+
 ## Products surface
 
 The desk is a product, not a page — the same book served four ways:
@@ -232,8 +307,11 @@ The desk is a product, not a page — the same book served four ways:
 - `GET /api/v1/holding/:ticker` — one name: series, basket weights, audience reading,
   both windows, provenance.
 - `GET /api/v1/alerts` — names firing the flag rule, plus every suppressed name with
-  its reason. A name fires only when the flag rule holds **and** its own
-  out-of-sample ΔR² is positive **and** the book placebo beats rotation at p ≤ 0.10.
+  its reason. A name fires only when the flag rule holds **and** the held-out slice
+  is testable at this data vintage **and** its own out-of-sample ΔR² is positive
+  **and** the book placebo beats rotation at p ≤ 0.10. When the slice is frozen
+  (`valueAdd.oos.scoring.testable` is false) no name can fire and the feed reports
+  `status: "watchlist-only"`.
 - `GET /export/panel.csv` — the panel with sector, q, and both windows' betas.
 
 A missing factor is a named 503 refusal, never a zero-filled beta.
@@ -252,13 +330,16 @@ decline:
   is newer than the panel's frozen tail, Qloo's own correlation id and the cached
   response file name. This runs outside the tool loop, so the model can neither skip
   it nor substitute a claim of its own. If it cannot run, the answer says why.
-- **A gate the answer has to pass.** The check is not decorative: if any attested
-  entity reports a Qloo revision after the panel's last revision, the answer carries
-  a warning above its own text saying the numbers below predate the feed; a check
-  that could not run is stamped unattested in the same place, so it can never read
-  as a pass. Each reading is stamped `att-<12 hex>`, a hash of exactly the fields
-  printed in the receipt, so the line above the answer and the receipt can be shown
-  to be the same claim.
+- **A gate the answer has to act on.** The check is not decorative: if any attested
+  entity reports a Qloo revision after the panel's last revision, the server re-runs
+  `live_cultural_beta` on up to two revised names and appends a server-authored line
+  with the committed → re-estimated beta, t and ΔR². The committed number stays the
+  reading of record and is never overwritten; the answer prints both, and the
+  re-estimate is memoised on the attestation stamp so a second click in the same
+  15-minute window does not spend again. A check that could not run is stamped
+  unattested in the same place, so it can never read as a pass. Each reading is
+  stamped `att-<12 hex>`, a hash of exactly the fields printed in the receipt, so the
+  line above the answer and the receipt can be shown to be the same claim.
 - **A receipt** naming the panel file and revision, the attested entities, the gate
   state and stamp, and every tool call with the request that produced it and the
   cached response behind it.
@@ -311,7 +392,9 @@ from Qloo.
 
 - **Desk** — every name, market beta next to cultural beta, with sector filters, the
   flag rule, the multiplicity-corrected q, and the headline verdict with a
-  replication chip.
+  replication chip. A null-bound card above the table decomposes "0 of 80" into its
+  sign split, its closest candidates and the design's detection limit, so the null is
+  read as a bound rather than as an absence.
 - **Holding** — one name: price vs taste indexed to 100, sector-basket weights, the
   featured audience basket, both windows, and the residualised scatter whose slope is
   the cultural beta.
@@ -342,8 +425,12 @@ npm run qloo:series         # fixtures/qloo/series.json — weekly taste series 
 npm run compute-betas       # refuses to print without Qloo fixtures
 npm run serve               # desk at http://localhost:8811
 npm test                    # ols, null-route, floor, market-only, robustness, second window, ablation, sentiment, budget, multiplicity, universe
+node scripts/revision-replay.mjs
+                            # rebuilds the pre-2025-12-22 desk from the committed series; no Qloo requests
 node scripts/audit.mjs --url http://localhost:8811
-                            # ~450 UI checks, 5 routes × 3 viewports (1440 / 768 / 390), CDP, no deps
+                            # ~640 UI checks, 7 routes × 3 viewports (1440 / 768 / 390), CDP, no deps
+node scripts/audit.mjs --url http://localhost:8811 --replay
+                            # adds the desktop replay route; cached page replays, 0 new Qloo requests
 ```
 
 Call budget for the full book, computed by `npm run qloo:budget` from the same

@@ -1575,3 +1575,76 @@ were both mine: a stale local server that had the new static files and old serve
 served an un-stamped answer to the audit), and an answer whose reasoning scratchpad arrived
 untagged from MiniMax — now stripped by a seam rule with two tests.
 
+## 18. Round 12 — the gate becomes the estimator (2026-10-30/31)
+
+The external panel of round 11 made one objection in four voices: the attestation gate was a
+witness, not a dependency. It could prove the feed had moved — `pass` became `moved`, the receipt
+carried a newer revision — and then it served the committed betas anyway. Flipping a status label
+is still witness-level, and the desk had no answer to that.
+
+Round 12 makes the gate the estimator. When the freshness check reports a Qloo revision newer
+than the panel tail, the server does not stop at the label: it re-runs the live estimator for up
+to two affected names and prints the committed and re-estimated cultural beta, the t-statistic and
+ΔR² side by side. The block is **server-authored** — computed from the served pipeline, not
+narrated by the model — and it rides on the answer itself under `reestimation`, so the change
+appears where the claim is made rather than in a log the reader has to go find.
+
+**This is the real revision, not a fixture.** `output/revision-replay.json` replays the desk as it
+stood on **2025-12-01** — 55 aligned weeks, ending one revision before the tail — against the
+committed 102-week panel: same estimator, same basket construction, BH recomputed separately per
+vintage, because a q-value from one sample says nothing about another. The replay is
+integrity-checked against `output/desk.json` and `output/series.json`, so a drift in either the
+committed panel or the cached series breaks the file instead of quietly rewriting the story. The
+headline is honest and small: DIS **52.775 → 43.809**, median |Δβ| **0.589**, **0 flips**, and
+**80 priced names in each vintage**. The largest mover is PARA (−82.2 → −242.5), a name whose
+basket is thin and whose beta was already an extrapolation; the median is the statistic that
+matters, and it says most names barely notice the revision.
+
+Three surfaces expose it. `GET /api/revision-replay.json` serves the replay file;
+`POST /api/ask` accepts `{"replay":"2025-12-01"}` and answers against the earlier vintage; and the
+desk carries a replay toggle (`?replay=1`) that raises a banner reading **"Replay · not a live
+revision"**. All three say the same thing in words: this is the desk as it stood before Qloo's
+December 2025 revision, recomputed, not a live reading — and not simulated data either, since the
+baskets and the post-revision side are the committed estimator run on real cached levels.
+
+**Verified locally on 2026-10-30, clean server.** The question *"Why is Disney not flagged?"* with
+`replay` returned in **20.8 s** with the gate in state `moved`. The probe found Captain Marvel and
+Venom both revised **2025-12-15**, so re-estimation triggered for DIS: **52.77 → 43.81**, t
+**3.17 → 3.17**, ΔR² **0.0673 → 0.0673**. The whole move is in the coefficient — 8.96 points lower,
+with the fit neither tighter nor looser — which is the right shape for a taste factor whose
+regressors changed while the returns did not. 47 pages were replayed from the page cache and the
+answer spent **0 new Qloo requests**. The addendum carries its own caveat and should: the
+pre-revision vintage is 55 weeks against 102, so this pair mixes the revision with sample length
+and cannot attribute the movement to the revision alone.
+
+**Three defects had to be fixed** before the run was deterministic, and each would have looked like
+flakiness from the outside. The replay checker's frozen probe clock also froze the age of its own
+cache, so a cached failure never expired; the probe window is now pinned while the checker's clock
+stays real. The probe read only the basket's reference member — Youtube — which is flat through
+the revision, so the gate could never have seen the move at all; it now reads the three
+highest-weight basket members. And a replayed page still spawned the harness to rewrite its
+record, which cost 15–35 s per page and raced the 45 s request timeout; a replayed page no longer
+rewrites its record, and the harness-version promise is memoised.
+
+`npm test` is **174/174**. The CDP audit and the deployed-host verification were still being
+exercised while this section was written; their results belong in the audit report beside this
+file, and this section claims nothing about them. What it does claim is narrower than §17's "the
+state the entry ships in": the `moved` path has now fired on real data, and the estimator ran
+inside the answer.
+
+
+## 19. Red-team residuals (2026-10-31)
+
+The NULL-REDTEAM pass (review/NULL-REDTEAM.md) confirmed the 0/80 flag count as a
+bounded null and exposed the row-level OOS artifact. Verified end-to-end on a clean
+spawn of `server/desk-server.mjs` (live gate off, zero Qloo calls): `/api/v1/panel`
+carries `oosTestable:false` and null OOS numbers on all 80 ok rows (defects 1–3, fixed
+in the prior session); `/export/panel.csv` already ships the per-row `oosTestable`
+column beside emptied `oosDeltaR2` cells; `/api/v1/alerts` reports `watchlist-only`
+with the frozen-slice reason; `desk/app.js` renders "no test" on the evidence and
+holding views from the same `scoring.testable` field. Fixed here: README's alert rule
+now states the held-out-slice-testable guard (defect 9) and gains a "Known statistical
+limitations" note covering the 80/101 conditional population (defect 4), the
+one-sided-rule/two-sided-q mismatch that changes no flag at q<=0.10 (defect 6), and
+the two-sided MDE quantile (defect 8). New `tests/oos-gating.test.mjs` pins the row
+nulling, the CSV flag and the watchlist state; `npm test` is 177/177.

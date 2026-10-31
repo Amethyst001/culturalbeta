@@ -24,8 +24,10 @@ const SERIES_MAX_POINTS = 20; // limit maximum
 const SERIES_MAX_CALLS = 400; // refuse to half-fill a series rather than page forever
 
 let versionOnce = null;
-async function version() {
-  if (versionOnce === null) versionOnce = await harnessVersion().catch(() => "unknown");
+function version() {
+  // The promise is memoised, not its result: three probes started together must
+  // share one harness spawn instead of racing three of them.
+  if (versionOnce === null) versionOnce = harnessVersion().catch(() => "unknown");
   return versionOnce;
 }
 
@@ -389,7 +391,10 @@ export async function qlooTrendPage(entityIds, entityType, { start, end, cacheNa
     byEntity.set(id, points.filter((p) => p?.date && !seen.has(p.date) && seen.add(p.date))
       .sort((a, b) => a.date.localeCompare(b.date)));
   }
-  if (cacheName) {
+  // A replayed page already has its record on disk; rewriting it would only cost a
+  // harness spawn, which is the difference between an instant attestation and one
+  // that races the answer's own timeout.
+  if (cacheName && !replay) {
     writeCache(cacheName, {
       harness: { version: await version(), surface: "exec trends" },
       entityType,
