@@ -13,3 +13,10 @@ review/panel-*/
 
 # Early live-probe responses: real Qloo data, must never be published.
 .probe/
+
+review/panel-*.md
+review/r12-completion/
+review/REVIEW.md
+review/brief-round11.md
+scripts/panel.mjs
+scripts/external-review.mjs
